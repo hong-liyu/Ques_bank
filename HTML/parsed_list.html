@@ -8,27 +8,42 @@
     <link rel="stylesheet" href="../css/parsed_list.css"> <!-- 新增：分离的历史题库专用样式 -->
 </head>
 <body>
-    <div class="container"> <!-- 页面主容器，居中显示内容 -->
+    <div class="container">
         <!-- 左上角返回主页按钮 -->
         <a href="index.html" class="back-home-btn" title="返回主页">
             <svg viewBox="0 0 24 24">
-            <path d="M15 6L9 12L15 18" fill="none" stroke="#3a7afe" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>        </a>
+                <path d="M15 6L9 12L15 18" fill="none" stroke="#333333" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </a>
         <header>
-            <h1>历史题库</h1> <!-- 页面主标题 -->
+            <h1>历史题库</h1>
         </header>
         <main>
-            <!-- 历史题库列表，JS动态渲染 -->
-            <ul class="history-list" id="historyList"></ul>
+            <div class="filter-controls">
+                <div class="search-box">
+                    <input type="text" id="searchQuery" placeholder="搜索题库...">
+                    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                </div>
+                <div class="sort-dropdown">
+                    <select id="sortOrder">
+                        <option value="newest">按最新上传</option>
+                        <option value="oldest">按最早上传</option>
+                    </select>
+                </div>
+            </div>
+            <div class="history-grid" id="historyGrid"></div>
             <div class="empty-tip" id="emptyTip" style="display:none;">暂无历史题库，请先上传并解析。</div>
         </main>
     </div>
     <!-- 题库预览弹窗，点击预览按钮时显示 -->
-    <div id="previewModal" style="display:none;position:fixed;z-index:9999;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.25);align-items:center;justify-content:center;">
-        <div style="background:#fff;max-width:90vw;max-height:80vh;overflow:auto;border-radius:10px;padding:28px 22px 18px 22px;box-shadow:0 8px 32px rgba(64,158,255,0.18);position:relative;">
-            <button id="closePreviewBtn">×</button>
-            <h2 style="margin-top:0;font-size:20px;text-align:center;">题库预览</h2>
-            <div id="previewContent" style="font-size:15px;line-height:1.7;"></div>
+    <div id="previewModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>题库预览</h2>
+            <div id="previewContent" class="preview-content"></div>
         </div>
     </div>
     <script src="../js/parsed_list.js"></script>

@@ -1,43 +1,157 @@
-<!-- 刷题系统首页，主导航和简介说明 -->
 <!DOCTYPE html>
-<html lang="zh-cn">
+<html lang="zh-CN">
 <head>
-    <meta charset="UTF-8"> <!-- 设置网页字符编码为UTF-8，支持中文显示 -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- 移动端适配 -->
-    <title>刷题系统-首页</title> <!-- 网页标题 -->
-    <!-- 引入全局样式 -->
-    <link rel="stylesheet" href="../css/style.css"> <!-- 全站通用样式表 -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>刷题系统-首页</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        body {
+            background: #F3F4F6;
+            font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;
+        }
+        .hero-title {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #1F2937;
+            margin-bottom: 0.5em;
+            text-align: center;
+        }
+        .hero-subtitle {
+            font-size: 1.125rem;
+            color: #6B7280;
+            text-align: center;
+            margin-bottom: 2em;
+        }
+        .cta-group {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 2.5em;
+        }
+        .cta-main {
+            background: #7C3AED;
+            color: #fff;
+            font-weight: 600;
+            border-radius: 0.5em;
+            padding: 0.75em 2em;
+            border: none;
+            font-size: 1.1rem;
+            transition: background 0.2s;
+            text-decoration: none;
+        }
+        .cta-main:hover {
+            background: #5B21B6;
+        }
+        .cta-secondary {
+            background: #fff;
+            color: #7C3AED;
+            font-weight: 600;
+            border: 1.5px solid #DDD6FE;
+            border-radius: 0.5em;
+            padding: 0.75em 2em;
+            font-size: 1.1rem;
+            transition: background 0.2s;
+            text-decoration: none;
+        }
+        .cta-secondary:hover {
+            background: #F5F3FF;
+        }
+        .features-card {
+            background: #fff;
+            border-radius: 1em;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+            padding: 2.5em 2em;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+        .features-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #1F2937;
+            margin-bottom: 1.5em;
+        }
+        .features-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .features-list li {
+            display: flex;
+            align-items: center;
+            gap: 0.75em;
+            color: #4B5563;
+            font-size: 1rem;
+            margin-bottom: 1.2em;
+        }
+        .features-list li:last-child {
+            margin-bottom: 0;
+        }
+        .feature-icon {
+            width: 20px;
+            height: 20px;
+            color: #7C3AED;
+            flex-shrink: 0;
+        }
+        .header-bar {
+            background: #fff;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+            padding: 1em 2em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 2.5em;
+        }
+        .header-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #1F2937;
+        }
+    </style>
 </head>
 <body>
-    <div class="container"> <!-- 页面主容器，居中显示内容 -->
-        <!-- 页头：系统标题与欢迎语 -->
-        <header>
-            <h1>刷题系统</h1> <!-- 系统主标题 -->
-            <p>欢迎使用刷题与题库管理平台</p> <!-- 欢迎语/副标题 -->
-        </header>
-        <main>
-            <!-- 主导航：跳转到登录、上传、刷题页面 -->
-            <nav class="main-nav">
-                <ul>
-                    <li><a href="upload.html">上传题库</a></li> <!-- 跳转到上传题库页 -->
-                    <li><a href="quiz.html">开始刷题</a></li> <!-- 跳转到刷题页 -->
-                    <li><a href="parsed_list.html">历史题库</a></li> <!-- 跳转到历史题库页 -->
-                </ul>
-            </nav>
-            <!-- 简介区：功能说明 -->
-            <section class="intro">
-                <h2>功能简介</h2>
-                <ul>
-                    <li>支持 <strong>.docx</strong> 题库上传与解析</li>
-                    <li>解析后题库自动存储到本地，可随时刷题</li>
-                    <li>支持单选、多选题型</li>
-                </ul>
-            </section>
-        </main>
-        <!-- 页脚：版权信息 -->
-        <footer>
-            <p>&copy; 2025 李芋头</p> <!-- 版权声明 -->
-        </footer>
-    </div>
+    <header class="header-bar">
+        <span class="header-title">刷题系统</span>
+    </header>
+    <main>
+        <div class="hero-title">欢迎使用刷题系统</div>
+        <div class="hero-subtitle">一个简洁高效的题库管理与练习平台</div>
+        <div class="cta-group">
+            <a href="quiz.html" class="cta-main">开始刷题</a>
+            <a href="upload.html" class="cta-secondary">上传题库</a>
+            <a href="parsed_list.html" class="cta-secondary">历史题库</a>
+        </div>
+        <div class="features-card">
+            <div class="features-title">功能简介</div>
+            <ul class="features-list">
+                <li>
+                    <!-- 上传 -->
+                    <svg class="feature-icon" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16V4m0 0l-4 4m4-4l4 4M4 20h16" /></svg>
+                    支持 <strong>.docx</strong> 题库上传与解析
+                </li>
+                <li>
+                    <!-- 存储 -->
+                    <svg class="feature-icon" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m0 0c-4.418 0-8-1.79-8-4V8c0-2.21 3.582-4 8-4s8 1.79 8 4v6c0 2.21-3.582 4-8 4z" /></svg>
+                    解析后题库自动存储到本地，可随时刷题
+                </li>
+                <li>
+                    <!-- 题型 -->
+                    <svg class="feature-icon" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" /></svg>
+                    支持单选、多选、判断题型
+                </li>
+                <li>
+                    <!-- 收藏/反馈 -->
+                    <svg class="feature-icon" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a1.5 1.5 0 012.04 0l2.12 2.122a1.5 1.5 0 002.12 0l2.12-2.122a1.5 1.5 0 012.12 2.122l-2.12 2.122a1.5 1.5 0 000 2.122l2.12 2.122a1.5 1.5 0 01-2.12 2.122l-2.12-2.122a1.5 1.5 0 00-2.12 0l-2.12 2.122a1.5 1.5 0 01-2.12-2.122l2.12-2.122a1.5 1.5 0 000-2.122l-2.12-2.122a1.5 1.5 0 010-2.122z" /></svg>
+                    刷题支持收藏、进度记录、错题反馈
+                </li>
+                <li>
+                    <!-- 历史 -->
+                    <svg class="feature-icon" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    历史题库可随时预览与管理
+                </li>
+            </ul>
+        </div>
+    </main>
 </body>
 </html>

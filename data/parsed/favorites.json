@@ -1,22 +1,5 @@
 [
   {
-    "type": "单选",
-    "content": "Triphthongs are now commonly perceived as ________, thus, treated as having _______ syllables.",
-    "options": [
-      "A. two phonemes consisting of a diphthong + monophthong; two",
-      "B. two phonemes consisting of a monophthong + schwa; three",
-      "C. three monophthongs; three",
-      "D. two phonemes consisting of a diphthong + schwa; two"
-    ],
-    "answer": "D"
-  },
-  {
-    "type": "判断",
-    "content": "[l] and [ɫ] are the allophones of /l/...",
-    "options": [],
-    "answer": "True"
-  },
-  {
     "type": "判断",
     "content": "A lingua franca is always an official language of the countries where it is used.",
     "options": [],
@@ -49,5 +32,77 @@
       "D. occur"
     ],
     "answer": "AB"
+  },
+  {
+    "type": "判断",
+    "content": "Tongue height, tongue backwardness and lip roundedness are the three features that can be used to describe vowels.",
+    "options": [],
+    "answer": "True"
+  },
+  {
+    "type": "多选",
+    "content": "Which of the following statements is/are correct about vowels?",
+    "options": [
+      "A. Vowels are produced without significant obstruction of the air flowing through the mouth.",
+      "B. There are 28 vowel sounds in English.",
+      "C. Vowels refer to the sounds in spoken language that are made with no obstruction of air flow in the mouth.",
+      "D. All vowels are voiced."
+    ],
+    "answer": "ACD"
+  },
+  {
+    "type": "多选",
+    "content": "There are three ways of classifying English consonants. They are ______.",
+    "options": [
+      "A. manner of articulation",
+      "B. voicing",
+      "C. place of articulation",
+      "D. obstruction"
+    ],
+    "answer": "ABC"
+  },
+  {
+    "type": "单选",
+    "content": "The main difference between /m/ and /n/ lies in the _______.",
+    "options": [
+      "A. manner of articulation",
+      "B. length",
+      "C. place of articulation",
+      "D. voicing"
+    ],
+    "answer": "C"
+  },
+  {
+    "type": "多选",
+    "content": "Which of the following pairs differ in the place of articulation?",
+    "options": [
+      "A. /k/ and /t/",
+      "B. /θ/ and /ð/",
+      "C. /ʃ/ and /ʒ/",
+      "D. /m/ and /n/"
+    ],
+    "answer": "AD"
+  },
+  {
+    "type": "单选",
+    "content": "/s/ and /θ/ can be distinguished by the _______.",
+    "options": [
+      "A. aspiration of articulation",
+      "B. place of articulation",
+      "C. vibration of the vocal cord",
+      "D. the manner of articulation"
+    ],
+    "answer": "B"
+  },
+  {
+    "type": "单选",
+    "content": "Syllabically, although a diphthong is a combination of two vowel sounds, and the tongue glides in the production of it, it is perceived as one phoneme, not two. Thus, diphthongs are treated as having one __________ only.",
+    "options": [
+      "A. vowel",
+      "B. phoneme",
+      "C. syllable",
+      "D. stress"
+    ],
+    "answer": "C"
   }
 ]

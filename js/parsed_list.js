@@ -1,144 +1,199 @@
-// 历史题库页面JS逻辑，原本在HTML内联
-async function renderHistory() {
-    let history = [];
-    try {
-        // 从后端获取历史题库索引
-        const resp = await fetch('http://127.0.0.1:5000/api/history_questions');
-        const data = await resp.json();
-        if (data.success && Array.isArray(data.history)) {
-            history = data.history;
-        }
-    } catch(e) {
-        history = [];
-    }
-    const list = document.getElementById('historyList');
+document.addEventListener('DOMContentLoaded', function() {
+    const historyGrid = document.getElementById('historyGrid');
     const emptyTip = document.getElementById('emptyTip');
-    list.innerHTML = '';
-    if (!history.length) {
-        emptyTip.style.display = '';
-        return;
+    const searchQueryInput = document.getElementById('searchQuery');
+    const sortOrderSelect = document.getElementById('sortOrder');
+    const previewModal = document.getElementById('previewModal');
+    const previewContent = document.getElementById('previewContent');
+    const closePreviewBtn = document.querySelector('#previewModal .close-button');
+    const backHomeBtn = document.querySelector('.back-home-btn');
+
+    let allHistory = []; // Store all fetched history
+
+    async function fetchAndRenderHistory() {
+        try {
+            const resp = await fetch('http://127.0.0.1:5000/api/history_questions');
+            const data = await resp.json();
+            if (data.success && Array.isArray(data.history)) {
+                allHistory = data.history;
+            } else {
+                allHistory = [];
+            }
+        } catch(e) {
+            console.error('Error fetching history questions:', e);
+            allHistory = [];
+        }
+        renderFilteredAndSortedHistory();
     }
-    emptyTip.style.display = 'none';
-    history.forEach((item, idx) => {
-        const li = document.createElement('li');
-        li.innerHTML = `
-            <div class="history-info-row">
-                <span class="history-title">${item.origin_name || item.title || '题库'+(idx+1)}</span>
-                <span class="history-meta">${item.time || ''}</span>
-            </div>
-            <div class="history-extra">
-                <span>文件名：${item.origin_name || item.title || '题库'+(idx+1)}</span>
-            </div>
-            <div class="history-btn-row">
-                <button class="quiz-btn" data-idx="${idx}">刷本题库</button>
-                <button class="preview-btn" data-idx="${idx}">预览</button>
-                <button class="del-btn" data-idx="${idx}">删除</button>
-            </div>
-        `;
-        list.appendChild(li);
-    });
-    // 刷本题库
-    list.querySelectorAll('.quiz-btn').forEach(btn => {
-        btn.onclick = function() {
-            const idx = parseInt(this.getAttribute('data-idx'));
-            if (history[idx]) {
-                const file = history[idx].file;
+
+    function renderFilteredAndSortedHistory() {
+        let currentHistory = [...allHistory]; // Create a mutable copy
+
+        // 1. Filter based on search query
+        const query = searchQueryInput.value.toLowerCase();
+        if (query) {
+            currentHistory = currentHistory.filter(item =>
+                (item.origin_name && item.origin_name.toLowerCase().includes(query)) ||
+                (item.title && item.title.toLowerCase().includes(query)) ||
+                (item.file && item.file.toLowerCase().includes(query))
+            );
+        }
+
+        // 2. Sort based on sort order
+        const sortOrder = sortOrderSelect.value;
+        currentHistory.sort((a, b) => {
+            const dateA = new Date(a.time);
+            const dateB = new Date(b.time);
+            if (sortOrder === 'newest') {
+                return dateB - dateA;
+            } else {
+                return dateA - dateB;
+            }
+        });
+
+        historyGrid.innerHTML = '';
+        if (!currentHistory.length) {
+            emptyTip.style.display = 'block';
+            return;
+        }
+        emptyTip.style.display = 'none';
+
+        currentHistory.forEach((item, idx) => {
+            const card = document.createElement('div');
+            card.className = 'history-card';
+            card.innerHTML = `
+                <div class="card-info">
+                    <h3>${item.origin_name || item.title || '未命名题库'}</h3>
+                    <p class="file-name">文件名: ${item.file}</p>
+                    <p class="upload-time">上传时间: ${item.time || '未知'}</p>
+                </div>
+                <div class="card-actions">
+                    <button class="action-btn study-btn" data-file="${item.file}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+                        刷题
+                    </button>
+                    <button class="action-btn preview-btn" data-file="${item.file}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        预览
+                    </button>
+                    <button class="action-btn delete-btn" data-file="${item.file}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                        删除
+                    </button>
+                </div>
+            `;
+            historyGrid.appendChild(card);
+        });
+
+        // Attach event listeners to new buttons
+        attachEventListeners();
+    }
+
+    function attachEventListeners() {
+        historyGrid.querySelectorAll('.study-btn').forEach(btn => {
+            btn.onclick = async function() {
+                const file = this.getAttribute('data-file');
                 if (!file) {
                     alert('找不到题库文件名，无法刷题');
                     return;
                 }
-                // 从后端拉取题库内容，存入sessionStorage，跳转刷题页
-                fetch(`http://127.0.0.1:5000/data/parsed/${file}`)
-                    .then(resp => resp.json())
-                    .then(questions => {
-                        console.log('fetch questions:', questions);
-                        sessionStorage.setItem('quiz_questions', JSON.stringify(questions));
-                        sessionStorage.setItem('quiz_title', history[idx].origin_name || history[idx].title || '题库');
-                        console.log('sessionStorage.quiz_questions:', sessionStorage.getItem('quiz_questions'));
-                        window.location.href = 'quiz.html';
-                    })
-                    .catch((e) => {
-                        alert('题库文件读取失败');
-                        console.error(e);
-                    });
-            }
-        };
-    });
-    // 预览
-    list.querySelectorAll('.preview-btn').forEach(btn => {
-        btn.onclick = function() {
-            const idx = parseInt(this.getAttribute('data-idx'));
-            if (history[idx]) {
-                const file = history[idx].file;
+                try {
+                    const resp = await fetch(`http://127.0.0.1:5000/data/parsed/${file}`);
+                    const questions = await resp.json();
+                    sessionStorage.setItem('quiz_questions', JSON.stringify(questions));
+                    const item = allHistory.find(h => h.file === file);
+                    sessionStorage.setItem('quiz_title', item ? (item.origin_name || item.title || '题库') : '题库');
+                    window.location.href = 'quiz.html';
+                } catch (e) {
+                    alert('题库文件读取失败');
+                    console.error(e);
+                }
+            };
+        });
+
+        historyGrid.querySelectorAll('.preview-btn').forEach(btn => {
+            btn.onclick = async function() {
+                const file = this.getAttribute('data-file');
                 if (!file) {
                     alert('找不到题库文件名，无法预览');
                     return;
                 }
-                fetch(`http://127.0.0.1:5000/data/parsed/${file}`)
-                    .then(resp => resp.json())
-                    .then(questions => {
-                        const contentDiv = document.getElementById('previewContent');
-                        contentDiv.innerHTML = questions.map((q, i) => {
-                            let opts = '';
-                            if (Array.isArray(q.options)) {
-                                opts = q.options.map((opt, idx) => `<div class="preview-q-opts">${opt}</div>`).join('');
-                            }
-                            let ans = '';
-                            if (Array.isArray(q.answer)) {
-                                ans = q.answer.join(', ');
-                            } else if (typeof q.answer === 'string') {
-                                ans = q.answer;
-                            }
-                            return `<div class="preview-question">
-                                <div class="preview-q-title">题目${i+1}（${q.type || '未知类型'}）：${q.content || q.text || ''}</div>
-                                ${opts ? '选项：<br>' + opts : ''}
-                                <div class="preview-q-ans">答案：${ans || '无'}</div>
-                            </div>`;
-                        }).join('');
-                        document.getElementById('previewModal').style.display = 'flex';
-                        // 隐藏返回主页按钮
-                        var backBtn = document.querySelector('.back-home-btn');
-                        if (backBtn) backBtn.style.display = 'none';
-                    })
-                    .catch(() => {
-                        alert('题库文件读取失败');
-                    });
-            }
-        };
-    });
-    // 删除
-    list.querySelectorAll('.del-btn').forEach(btn => {
-        btn.onclick = async function() {
-            const idx = parseInt(this.getAttribute('data-idx'));
-            if (!history[idx]) return;
-            if (!confirm('确定要删除该题库吗？')) return;
-            const file = history[idx].file;
-            if (!file) {
-                alert('找不到题库文件名，无法删除');
-                return;
-            }
-            try {
-                const resp = await fetch('http://127.0.0.1:5000/api/delete_history', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ file })
-                });
-                const data = await resp.json();
-                if (data.success) {
-                    renderHistory();
-                } else {
-                    alert('删除失败：' + (data.error || '未知错误'));
+                try {
+                    const resp = await fetch(`http://127.0.0.1:5000/data/parsed/${file}`);
+                    const questions = await resp.json();
+
+                    previewContent.innerHTML = questions.map((q, i) => {
+                        let opts = '';
+                        if (Array.isArray(q.options)) {
+                            opts = q.options.map((opt, idx) => `<div class="preview-q-opts">${String.fromCharCode(65 + idx)}. ${opt}</div>`).join('');
+                        }
+                        let ans = '';
+                        if (Array.isArray(q.answer)) {
+                            ans = q.answer.join(', ');
+                        } else if (typeof q.answer === 'string') {
+                            ans = q.answer;
+                        }
+                        return `<div class="preview-question">
+                            <div class="preview-q-title">题目${i+1}（${q.type || '未知类型'}）：${q.content || q.text || ''}</div>
+                            ${opts ? '选项：<br>' + opts : ''}
+                            <div class="preview-q-ans">答案：${ans || '无'}</div>
+                        </div>`;
+                    }).join('');
+                    previewModal.style.display = 'flex';
+                    if (backHomeBtn) backHomeBtn.style.display = 'none';
+                } catch (e) {
+                    alert('题库文件读取失败');
+                    console.error(e);
                 }
-            } catch (e) {
-                alert('请求后端删除失败');
-            }
-        };
+            };
+        });
+
+        historyGrid.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.onclick = async function() {
+                const file = this.getAttribute('data-file');
+                if (!file) {
+                    alert('找不到题库文件名，无法删除');
+                    return;
+                }
+                if (!confirm('确定要删除该题库吗？')) return;
+
+                try {
+                    const resp = await fetch('http://127.0.0.1:5000/api/delete_history', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ file })
+                    });
+                    const data = await resp.json();
+                    if (data.success) {
+                        fetchAndRenderHistory(); // Re-fetch and re-render after deletion
+                    } else {
+                        alert('删除失败：' + (data.error || '未知错误'));
+                    }
+                } catch (e) {
+                    alert('请求后端删除失败');
+                    console.error(e);
+                }
+            };
+        });
+    }
+
+    // Event listeners for filter and sort controls
+    searchQueryInput.addEventListener('input', renderFilteredAndSortedHistory);
+    sortOrderSelect.addEventListener('change', renderFilteredAndSortedHistory);
+
+    // Close preview modal
+    closePreviewBtn.addEventListener('click', function() {
+        previewModal.style.display = 'none';
+        if (backHomeBtn) backHomeBtn.style.display = 'flex'; // Restore display for flex
     });
-}
-renderHistory();
-document.getElementById('closePreviewBtn').onclick = function() {
-    document.getElementById('previewModal').style.display = 'none';
-    // 恢复返回主页按钮
-    var backBtn = document.querySelector('.back-home-btn');
-    if (backBtn) backBtn.style.display = '';
-};
+
+    window.addEventListener('click', function(event) {
+        if (event.target == previewModal) {
+            previewModal.style.display = 'none';
+            if (backHomeBtn) backHomeBtn.style.display = 'flex'; // Restore display for flex
+        }
+    });
+
+    // Initial fetch and render
+    fetchAndRenderHistory();
+});

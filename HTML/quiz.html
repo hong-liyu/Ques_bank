@@ -8,21 +8,58 @@
     <link rel="stylesheet" href="../css/style.css"> <!-- 引入通用样式 -->
 </head>
 <body>
-    <div class="container"> <!-- 页面主容器，居中显示内容 -->
-        <!-- 左上角返回主页按钮 -->
-        <a href="index.html" class="back-home-btn" title="返回主页">
-            <svg viewBox="0 0 24 24">
-                <path d="M15 6L9 12L15 18" fill="none" stroke="#3a7afe" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-        </a>
-        <header style="position:relative;"> <!-- 页眉区域 -->
-            <h1 style="display:inline-block;">刷题页</h1> <!-- 页面主标题 -->
-            <!-- 选择框放在container内右上角，绝对定位 -->
-            <select id="quizSelector" style="position:absolute;right:32px;top:38px;font-size:15px;padding:4px 10px;border-radius:6px;border:1.5px solid #cfd8dc;background:#f8fbff;"></select>
+    <div class="app-container">
+        <header class="app-header">
+            <a href="parsed_list.html" class="back-home-btn" title="返回题库列表">
+                <svg viewBox="0 0 24 24">
+                    <path d="M15 6L9 12L15 18" fill="none" stroke="#333333" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </a>
+            <h1 id="quizTitleHeader">刷题页</h1>
         </header>
-        <main id="quizMain"></main> <!-- 题目和答题内容会通过JS动态插入到这里 -->
+
+        <div class="main-layout">
+            <main class="question-column">
+                <div class="question-card">
+                    <div class="progress-section">
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" id="progressBar"></div>
+                        </div>
+                        <span class="progress-text" id="progressText">Question 1 of 15</span>
+                    </div>
+
+                    <div class="question-area">
+                        <div class="question-content" id="questionContent"></div>
+                        <button class="favorite-btn" id="favoriteBtn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="options-area" id="optionsArea">
+                        <!-- Options will be dynamically loaded here -->
+                    </div>
+
+                    <div class="feedback-area" id="feedbackArea">
+                        <!-- Feedback messages will appear here -->
+                    </div>
+
+                    <div class="navigation-buttons">
+                        <button id="nextQuestionBtn" class="action-btn next-btn" style="display:none;">下一题</button>
+                    </div>
+                </div>
+            </main>
+
+            <aside class="navigator-sidebar">
+                <h2>题目导航</h2>
+                <div class="navigator-grid" id="navigatorGrid">
+                    <!-- Navigator items will be dynamically loaded here -->
+                </div>
+            </aside>
+        </div>
     </div>
-    <script src="../js/quiz.js"></script> <!-- 引入刷题页面的JS逻辑 -->
     <script src="../js/favorite.js"></script>
+    <script src="../js/quiz.js"></script>
 </body>
 </html>
