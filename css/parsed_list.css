@@ -1,0 +1,191 @@
+/* 历史题库页面专用样式，提升列表展示效果 */
+.container {
+    max-width: 580px;
+    margin: 48px auto;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(124,60,237,0.12), 0 4px 12px rgba(124,60,237,0.08);
+    padding: 0 0 24px 0;
+    font-family: "Inter", "微软雅黑", Arial, sans-serif;
+    position: relative;
+}
+header {
+    padding: 32px 32px 0 32px;
+    text-align: center;
+}
+main {
+    padding: 0 32px;
+}
+.history-list {
+    margin-top: 18px;
+    padding-left: 0;
+    list-style: none;
+}
+.history-list li {
+    background: #fdfdff;
+    border: 1px solid #e0e6ed;
+    border-radius: 12px;
+    margin-bottom: 18px;
+    padding: 20px 24px 16px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    box-shadow: 0 2px 10px rgba(124,60,237,0.05);
+    transition: all 0.25s ease;
+    position: relative;
+}
+.history-list li:hover {
+    box-shadow: 0 8px 28px rgba(124,60,237,0.15);
+    border: 1px solid #7C3AED;
+    transform: translateY(-3px);
+}
+.history-info-row {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 2px;
+}
+.history-title {
+    font-size: 18px;
+    color: #1F2937;
+    font-weight: bold;
+    word-break: break-all;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.history-meta {
+    font-size: 14px;
+    color: #888;
+    margin-left: 8px;
+    white-space: nowrap;
+}
+.history-extra {
+    font-size: 13px;
+    color: #999;
+    margin-top: 2px;
+    margin-bottom: 2px;
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+}
+.history-btn-row {
+    display: flex;
+    gap: 14px;
+    margin-top: 2px;
+    width: 100%;
+    justify-content: flex-start;
+}
+.quiz-btn, .preview-btn, .del-btn {
+    min-width: 90px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    font-size: 15px;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    box-shadow: 0 2px 8px rgba(124,60,237,0.1);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    justify-content: center;
+    text-align: center;
+    font-weight: 500;
+}
+.quiz-btn { background: #7C3AED; }
+.quiz-btn:hover { background: #6D28D9; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(124,60,237,0.15); }
+.preview-btn { background: #22C55E; }
+.preview-btn:hover { background: #16A34A; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(34,197,94,0.15); }
+.del-btn { background: #EF4444; }
+.del-btn:hover { background: #DC2626; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(239,68,68,0.15); }
+.empty-tip {
+    color: #EF4444;
+    text-align: center;
+    margin-top: 48px;
+    font-size: 17px;
+    letter-spacing: 1px;
+}
+#previewModal > div {
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 12px 48px rgba(124,60,237,0.18), 0 6px 18px rgba(124,60,237,0.08);
+    padding: 36px 28px 22px 28px;
+    max-width: 90vw;
+    max-height: 85vh;
+    overflow: auto;
+}
+#previewModal h2 {
+    font-size: 22px;
+    color: #1F2937;
+    margin-top: 0;
+    margin-bottom: 20px;
+    letter-spacing: 0.8px;
+}
+#previewContent {
+    font-size: 16px;
+    line-height: 1.9;
+    color: #333;
+}
+#previewModal .preview-question {
+    border-bottom: 1px solid #f0f0f0;
+    padding: 16px 0 12px 0;
+    margin-bottom: 0;
+}
+#previewModal .preview-question:last-child {
+    border-bottom: none;
+}
+#previewModal .preview-q-title {
+    font-weight: 600;
+    color: #1F2937;
+    font-size: 17px;
+    margin-bottom: 6px;
+}
+#previewModal .preview-q-opts {
+    margin-left: 18px;
+    margin-bottom: 4px;
+    color: #444;
+}
+#previewModal .preview-q-ans {
+    color: #22C55E;
+    font-size: 14.5px;
+    margin-left: 18px;
+}
+#closePreviewBtn {
+    position: sticky;
+    top: 10px; /* 上移到最顶部 */
+    right: 10px;
+    z-index: 10;
+    background: rgba(0,0,0,0.05);
+    border: none;
+    font-size: 26px;
+    color: #7b7b7b;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    float: right;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+#closePreviewBtn:hover {
+    color: #EF4444;
+    background: rgba(239,68,68,0.15);
+    box-shadow: 0 4px 12px rgba(239,68,68,0.15);
+    transform: scale(1.1);
+}
+@media (max-width: 600px) {
+    .container {
+        max-width: 98vw;
+        padding: 0 0 12px 0;
+    }
+    header, main {
+        padding: 0 4vw;
+    }
+    .history-list li {
+        padding: 14px 6vw 12px 6vw;
+    }
+}

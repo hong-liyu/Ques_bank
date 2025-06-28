@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>题库上传 - DeepSeek AI解析</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/upload.css">
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-home-btn" title="返回主页">
+            <svg viewBox="0 0 24 24">
+                <path d="M15 6L9 12L15 18" fill="none" stroke="#3a7afe" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </a>
+        <header>
+            <h1>题库解析</h1>
+        </header>
+        <main>
+            <form id="uploadForm" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="questionFile">选择题库文件</label>
+                    <input type="file" id="questionFile" name="questionFile" accept=".docx" required>
+                </div>
+                <div class="form-group">
+                    <label for="customPrompt">自定义提示词（可选）</label>
+                    <textarea id="customPrompt" rows="3" placeholder="如需自定义AI解析指令，可在此输入"></textarea>
+                </div>
+                <div class="btn-row">
+                    <button type="submit" class="login-btn">上传</button>
+                </div>
+                <div id="uploadMsg" class="login-msg"></div>
+                <pre id="parseResult" style="margin-top:16px;white-space:pre-wrap;"></pre>
+                <button id="toQuizBtn" class="toQuizBtn" style="display:none;margin-top:12px;">去刷题</button>
+            </form>
+        </main>
+    </div>
+    <script src="../js/upload.js"></script>
+</body>
+</html>

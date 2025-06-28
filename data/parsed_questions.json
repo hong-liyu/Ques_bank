@@ -1,0 +1,37 @@
+[
+  {
+    "type": "favorite",
+    "file": "favorites.json",
+    "origin_name": "收藏",
+    "time": "2025-04-30 10:38:01",
+    "model": "deepseek-chat"
+  },
+  {
+    "type": "ai",
+    "file": "parsed_5a37ac45-d9ba-4a28-bce8-0186bcdc15c5.json",
+    "origin_name": "语音基础",
+    "time": "2025-06-27 16:28:34",
+    "model": "deepseek-chat"
+  },
+  {
+    "type": "ai",
+    "file": "parsed_1f0f5daf-53db-46d8-ab25-d5f8a3938503.json",
+    "origin_name": "辅音与元音",
+    "time": "2025-06-27 16:37:48",
+    "model": "deepseek-chat"
+  },
+  {
+    "type": "ai",
+    "file": "parsed_f09f74d6-ee54-4088-b4e3-e0f969b6417f.json",
+    "origin_name": "连读与语调",
+    "time": "2025-06-27 16:49:07",
+    "model": "deepseek-chat"
+  },
+  {
+    "type": "ai",
+    "file": "parsed_0fb3bd22-a00d-402e-be13-84c75274bfe9.json",
+    "origin_name": "音节结构与单词重音",
+    "time": "2025-06-27 16:53:47",
+    "model": "deepseek-chat"
+  }
+]

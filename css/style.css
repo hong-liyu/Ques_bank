@@ -1,0 +1,134 @@
+/* 基础布局和样式 */
+body {
+    margin: 0; /* 去除页面默认外边距 */
+    padding: 0; /* 去除页面默认内边距 */
+    font-family: 'Inter', 'Segoe UI', 'Microsoft YaHei', Arial, sans-serif; /* 设置全局字体，优先使用微软雅黑和无衬线字体 */
+    background: #F9FAFB; /* 设置页面背景色为浅灰蓝色 */
+    color: #333; /* 设置全局字体颜色为深灰色，便于阅读 */
+}
+
+/* 页面主容器样式，常用于包裹主要内容区域 */
+.container {
+    max-width: 600px; /* 最大宽度500px，适应大部分屏幕 */
+    margin: 40px auto; /* 上下40px间距，左右居中 */
+    background: #fff; /* 背景为白色 */
+    border-radius: 16px; /* 圆角12px，美观柔和 */
+    box-shadow: 0 6px 24px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.03); /* 添加淡淡的阴影，提升立体感 */
+    padding: 32px 24px 16px 24px; /* 内边距，上32px，左右24px，下16px */
+    position: relative;
+}
+
+/* 返回主页按钮样式 */
+.back-home-btn {
+    position: absolute;
+    left: 20px;
+    top: 20px;
+    z-index: 900;
+    padding: 10px;
+    background: rgba(0,0,0,0.03);
+    border: none;
+    text-decoration: none;
+    font-size: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    transition: all 0.2s ease;
+    border-radius: 50%;
+    color: #7C3AED;
+}
+.back-home-btn:hover {
+    background: rgba(0,0,0,0.08);
+    transform: scale(1.08);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.back-home-btn svg {
+    width: 28px;
+    height: 28px;
+    display: block;
+    fill: #7C3AED;
+    transition: fill 0.18s;
+}
+.back-home-btn:hover svg {
+    fill: #6D28D9;
+}
+@media (max-width: 600px) {
+    .back-home-btn {
+        left: 12px;
+        top: 12px;
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+    }
+    .back-home-btn svg {
+        width: 20px;
+        height: 20px;
+    }
+}
+
+/* 页眉样式，通常包含标题和副标题 */
+header {
+    text-align: center; /* 内容居中 */
+    margin-bottom: 24px; /* 与下方内容间隔24px */
+}
+header h1 {
+    margin: 0 0 8px 0; /* 下方8px间距，去除其他方向间距 */
+    font-size: 2.4em; /* 标题字号较大 */
+    color: #1F2937; /* 标题颜色为深色 */
+    letter-spacing: 1px; /* 字母间距2px，更加醒目 */
+}
+header p {
+    color: #666; /* 副标题颜色为灰色 */
+    font-size: 1em; /* 正常字号 */
+}
+
+/* 主导航栏样式，常用于首页导航按钮 */
+.main-nav ul {
+    list-style: none; /* 去除列表默认样式 */
+    padding: 0; /* 去除内边距 */
+    display: flex; /* 使用flex布局，横向排列 */
+    justify-content: space-around; /* 子项均匀分布 */
+    margin: 0 0 24px 0; /* 下方24px间距 */
+}
+.main-nav a {
+    display: block; /* 块级显示，方便设置宽高 */
+    padding: 12px 28px; /* 内边距，按钮更大更易点 */
+    background: #7C3AED; /* 按钮背景紫色 */
+    color: #fff; /* 按钮文字白色 */
+    border-radius: 8px; /* 圆角6px */
+    text-decoration: none; /* 去除下划线 */
+    font-weight: 600; /* 字体加粗 */
+    transition: all 0.3s ease; /* 背景色渐变过渡 */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+.main-nav a:hover {
+    background: #6D28D9; /* 悬停时按钮变深紫色 */
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* 简介区域样式，常用于功能说明或提示 */
+.intro {
+    background: #F9FAFB; /* 浅蓝背景 */
+    border-radius: 10px; /* 圆角8px */
+    padding: 20px 18px; /* 内边距 */
+    margin-bottom: 24px; /* 下方间距 */
+    border-left: 4px solid #7C3AED;
+}
+.intro h2 {
+    margin-top: 0; /* 去除顶部间距 */
+    color: #1F2937; /* 标题颜色为深色 */
+    font-size: 1.3em; /* 稍大字号 */
+}
+.intro ul {
+    margin: 0; /* 去除外边距 */
+    padding-left: 20px; /* 左侧缩进 */
+    color: #555; /* 列表文字颜色 */
+    font-size: 1.05em; /* 正常字号 */
+}
+
+/* 页脚样式，常用于版权或返回链接 */
+footer {
+    text-align: center; /* 内容居中 */
+    color: #aaa; /* 字体浅灰色 */
+    font-size: 0.95em; /* 稍小字号 */
+    margin-top: 24px; /* 上方间距 */
+    padding-bottom: 8px; /* 底部内边距 */
+}

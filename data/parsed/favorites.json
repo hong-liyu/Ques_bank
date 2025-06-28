@@ -1,0 +1,53 @@
+[
+  {
+    "type": "单选",
+    "content": "Triphthongs are now commonly perceived as ________, thus, treated as having _______ syllables.",
+    "options": [
+      "A. two phonemes consisting of a diphthong + monophthong; two",
+      "B. two phonemes consisting of a monophthong + schwa; three",
+      "C. three monophthongs; three",
+      "D. two phonemes consisting of a diphthong + schwa; two"
+    ],
+    "answer": "D"
+  },
+  {
+    "type": "判断",
+    "content": "[l] and [ɫ] are the allophones of /l/...",
+    "options": [],
+    "answer": "True"
+  },
+  {
+    "type": "判断",
+    "content": "A lingua franca is always an official language of the countries where it is used.",
+    "options": [],
+    "answer": "False"
+  },
+  {
+    "type": "判断",
+    "content": "Both broad transcription and narrow transcription are used to transcribe or document utterances in ordinary English learning.",
+    "options": [],
+    "answer": "False"
+  },
+  {
+    "type": "单选",
+    "content": "__________ consonants are consonants which form the nucleus of a syllable that does not contain a vowel.",
+    "options": [
+      "A. Lateral",
+      "B. Syllabic",
+      "C. Approximant",
+      "D. Nasal"
+    ],
+    "answer": "B"
+  },
+  {
+    "type": "多选",
+    "content": "Which of the following is an open-syllable word?",
+    "options": [
+      "A. spy",
+      "B. spike",
+      "C. bath",
+      "D. occur"
+    ],
+    "answer": "AB"
+  }
+]

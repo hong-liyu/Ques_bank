@@ -1,0 +1,123 @@
+/* 上传页专用样式，适合文件上传表单，便于初学者学习参考 */
+
+/* 表单分组，每个输入项单独一行 */
+.form-group {
+    margin-bottom: 20px; /* 下方间距20px */
+}
+.form-group label {
+    display: block; /* 独占一行 */
+    margin-bottom: 10px; /* 下方间距10px */
+    font-weight: 600; /* 加粗字体 */
+    color: #1F2937;
+}
+.form-group input[type="file"] {
+    width: 100%; /* 输入框宽度100% */
+    padding: 12px 15px; /* 内边距10px */
+    border: 1px solid #e0e6ed; /* 浅灰色边框 */
+    border-radius: 8px; /* 圆角4px */
+    background: #fdfdff;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    transition: all 0.2s ease;
+}
+    border-color: #7C3AED;
+    box-shadow: 0 0 0 3px rgba(124,60,237,0.2);
+    outline: none;
+
+/* 上传按钮样式，复用登录按钮风格 */
+.login-btn {
+    flex: 1;
+    padding: 14px 0; /* 上下内边距调整为14px */
+    background: #7C3AED; /* 蓝色背景 */
+    color: #fff; /* 白色文字 */
+    border: none; /* 无边框 */
+    border-radius: 8px; /* 圆角4px */
+    font-size: 18px; /* 字体大小调整为18px */
+    cursor: pointer; /* 鼠标悬停变小手 */
+    margin-top: 12px; /* 上方间距8px */
+    transition: all 0.25s ease; /* 背景色渐变 */
+    box-shadow: 0 4px 12px rgba(124,60,237,0.1);
+    font-weight: 600; /* 字体加粗 */
+}
+.login-btn:hover {
+    background: #6D28D9; /* 悬停时变深蓝色 */
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(124,60,237,0.15);
+}
+
+/* 反馈信息样式，显示上传结果或错误 */
+.login-msg {
+    margin-top: 16px; /* 上方间距16px */
+    min-height: 24px; /* 最小高度24px，避免闪烁 */
+    color: #EF4444; /* 红色字体，突出提示 */
+    text-align: center; /* 居中显示 */
+    font-size: 15px; /* 正常字号 */
+}
+
+#customPrompt {
+    width: 100%;
+    min-height: 70px;
+    max-height: 200px;
+    padding: 12px 15px;
+    border: 1px solid #e0e6ed;
+    border-radius: 8px;
+    font-size: 15.5px;
+    font-family: inherit;
+    resize: vertical;
+    background: #fdfdff;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+    margin-top: 8px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+#customPrompt:focus {
+    border-color: #7C3AED;
+    box-shadow: 0 0 0 3px rgba(124,60,237,0.2);
+    outline: none;
+}
+.btn-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+.back-home-btn {
+    position: absolute;
+    left: 20px;
+    top: 20px;
+    z-index: 900;
+    padding: 10px;
+    background: rgba(0,0,0,0.03);
+    border: none;
+    text-decoration: none;
+    font-size: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    transition: all 0.2s ease;
+    border-radius: 50%;
+    color: #7C3AED;
+}
+.back-home-btn:hover {
+    background: rgba(0,0,0,0.08);
+    transform: scale(1.08);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+#toQuizBtn {
+    display: none;
+    margin-top: 24px; /* 调整顶部外边距 */
+    width: 100%; /* 确保全宽 */
+    text-align: center;
+    background: #7C3AED;
+    color: #fff;
+    font-size: 18px;
+    font-weight: 600; /* 字体加粗 */
+    border: none;
+    border-radius: 8px;
+    padding: 14px 0; /* 调整内边距 */
+    box-shadow: 0 6px 20px rgba(124,60,237,0.18);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    letter-spacing: 1.5px;
+}
+#toQuizBtn:hover {
+    background: #6D28D9;
+    box-shadow: 0 10px 36px rgba(124,60,237,0.25);
+    transform: translateY(-3px) scale(1.02);
+}

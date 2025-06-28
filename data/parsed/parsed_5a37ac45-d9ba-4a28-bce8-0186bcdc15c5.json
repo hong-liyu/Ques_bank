@@ -1,0 +1,192 @@
+[
+  {
+    "type": "单选",
+    "content": "Which of the following languages belongs to the Indo-European family?",
+    "options": [
+      "A. Chinese",
+      "B. Greek",
+      "C. Tibetan",
+      "D. Korean"
+    ],
+    "answer": "B"
+  },
+  {
+    "type": "单选",
+    "content": "Which of the following is the second largest language family in the world?",
+    "options": [
+      "A. The Altaic family",
+      "B. The Indo-European family",
+      "C. The Afro-Asian family",
+      "D. The Sino-Tibetan family"
+    ],
+    "answer": "D"
+  },
+  {
+    "type": "单选",
+    "content": "Which language branch does English belong to?",
+    "options": [
+      "A. The West Germanic branch",
+      "B. The Baltic branch",
+      "C. The Latin branch",
+      "D. The Slavic branch"
+    ],
+    "answer": "A"
+  },
+  {
+    "type": "单选",
+    "content": "Which language has the closest relationship with English in terms of origin?",
+    "options": [
+      "A. French",
+      "B. Spanish",
+      "C. Dutch",
+      "D. Norwegian"
+    ],
+    "answer": "C"
+  },
+  {
+    "type": "单选",
+    "content": "As the most convenient tool of human communication, in what way can the communicative function of language come true?",
+    "options": [
+      "A. In written form",
+      "B. In oral form",
+      "C. With body language",
+      "D. With imagination"
+    ],
+    "answer": "B"
+  },
+  {
+    "type": "单选",
+    "content": "RP, short for _______ Pronunciation, is the instantly recognizable accent often described as ‘typically British’.",
+    "options": [
+      "A. Respectable",
+      "B. Renowned",
+      "C. Respected",
+      "D. Received"
+    ],
+    "answer": "D"
+  },
+  {
+    "type": "单选",
+    "content": "The organs that take part in the production of speech sounds are called _____.",
+    "options": [
+      "A. articulators",
+      "B. speech production",
+      "C. nasal cavity",
+      "D. pharyngeal cavity"
+    ],
+    "answer": "A"
+  },
+  {
+    "type": "单选",
+    "content": "Professor A.C. Gimson once noted... The statement underlines _______.",
+    "options": [
+      "A. the importance of pronunciation",
+      "B. the importance of grammar",
+      "C. the importance of vocabulary",
+      "D. the equal importance of pronunciation, vocabulary and grammar"
+    ],
+    "answer": "A"
+  },
+  {
+    "type": "单选",
+    "content": "Using the diacritics provided by the IPA, _______ transcription captures as many aspects of a specific pronunciation as possible.",
+    "options": [
+      "A. conventional",
+      "B. phonetic",
+      "C. broad",
+      "D. narrow"
+    ],
+    "answer": "D"
+  },
+  {
+    "type": "单选",
+    "content": "English phonemes are divided into vowels and consonants. The distinction between the two lies in __________.",
+    "options": [
+      "A. the manner of articulation",
+      "B. the obstruction of airstream",
+      "C. the vibration of vocal cords",
+      "D. the place of articulation"
+    ],
+    "answer": "B"
+  },
+  {
+    "type": "多选",
+    "content": "What are the fundamental elements of a language?",
+    "options": [
+      "A. Pronunciation",
+      "B. Spelling",
+      "C. Vocabulary",
+      "D. Grammar"
+    ],
+    "answer": "ACD"
+  },
+  {
+    "type": "多选",
+    "content": "Which of the following expressions equal(s) to lingua franca?",
+    "options": [
+      "A. Common language",
+      "B. Vehicular language",
+      "C. Trade language",
+      "D. Bridge language"
+    ],
+    "answer": "ABCD"
+  },
+  {
+    "type": "多选",
+    "content": "What is the most commonly used model accent for learners of English as a foreign or second language?",
+    "options": [
+      "A. No model at all",
+      "B. RP",
+      "C. Their own English varieties",
+      "D. GA"
+    ],
+    "answer": "BD"
+  },
+  {
+    "type": "多选",
+    "content": "The pronunciation of a language consists of three basic elements: _________.",
+    "options": [
+      "A. pronunciation of phonemes",
+      "B. stresses",
+      "C. rhythm",
+      "D. intonation"
+    ],
+    "answer": "ACD"
+  },
+  {
+    "type": "判断",
+    "content": "Languages only exist in the community of humans.",
+    "options": [],
+    "answer": "True"
+  },
+  {
+    "type": "判断",
+    "content": "It is possible to communicate effectively among speakers of different English varieties.",
+    "options": [],
+    "answer": "True"
+  },
+  {
+    "type": "判断",
+    "content": "Both RP and GA are widely used by well-educated people and on national radios and TV networks.",
+    "options": [],
+    "answer": "True"
+  },
+  {
+    "type": "判断",
+    "content": "Both broad transcription and narrow transcription are used to transcribe or document utterances in ordinary English learning.",
+    "options": [],
+    "answer": "False"
+  },
+  {
+    "type": "判断",
+    "content": "Broad transcription describes only the most noticeable phonetic features of an utterance.",
+    "options": [],
+    "answer": "True"
+  },
+  {
+    "type": "判断",
+    "content": "A lingua franca is always an official language of the countries where it is used.",
+    "options": [],
+    "answer": "False"
+  }
+]

@@ -1,0 +1,28 @@
+<!-- 刷题页面主文件 -->
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8"> <!-- 设置网页字符编码为UTF-8，支持中文显示 -->
+    <title>刷题页面</title> <!-- 网页标题 -->
+    <link rel="stylesheet" href="../css/quiz.css"> <!-- 引入刷题页面专用样式 -->
+    <link rel="stylesheet" href="../css/style.css"> <!-- 引入通用样式 -->
+</head>
+<body>
+    <div class="container"> <!-- 页面主容器，居中显示内容 -->
+        <!-- 左上角返回主页按钮 -->
+        <a href="index.html" class="back-home-btn" title="返回主页">
+            <svg viewBox="0 0 24 24">
+                <path d="M15 6L9 12L15 18" fill="none" stroke="#3a7afe" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </a>
+        <header style="position:relative;"> <!-- 页眉区域 -->
+            <h1 style="display:inline-block;">刷题页</h1> <!-- 页面主标题 -->
+            <!-- 选择框放在container内右上角，绝对定位 -->
+            <select id="quizSelector" style="position:absolute;right:32px;top:38px;font-size:15px;padding:4px 10px;border-radius:6px;border:1.5px solid #cfd8dc;background:#f8fbff;"></select>
+        </header>
+        <main id="quizMain"></main> <!-- 题目和答题内容会通过JS动态插入到这里 -->
+    </div>
+    <script src="../js/quiz.js"></script> <!-- 引入刷题页面的JS逻辑 -->
+    <script src="../js/favorite.js"></script>
+</body>
+</html>

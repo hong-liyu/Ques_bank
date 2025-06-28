@@ -1,0 +1,270 @@
+/* 页面结构样式 */
+/* header：页面头部，内边距和居中 */
+header {
+    padding: 38px 32px 0 32px;
+    text-align: center;
+}
+/* header h1：主标题样式，颜色、字号、字间距、加粗、下边距 */
+header h1 {
+    color: #1F2937;
+    font-size: 2.5em;
+    letter-spacing: 1px;
+    font-weight: bold;
+    margin-bottom: 0;
+}
+/* main：主体内容区域，左右内边距 */
+main {
+    padding: 0 32px;
+}
+/* .preview-btn-top：顶部预览按钮，居中、圆角、背景色、悬停效果等 */
+.preview-btn-top {
+    display: block;
+    margin: 0 auto 24px auto;
+    padding: 10px 32px;
+    font-size: 16.5px;
+    border-radius: 8px;
+    border: none;
+    background: #7C3AED;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 12px rgba(124,60,237,0.1);
+}
+.preview-btn-top:hover {
+    background: #6D28D9;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(124,60,237,0.15);
+}
+/* quiz-container 样式合并，最大宽度680px，圆角、阴影、垂直居中等 */
+.quiz-container {
+    max-width: 620px;
+    margin: 0 auto;
+    padding: 36px 32px 28px 32px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(124,60,237,0.12), 0 4px 12px rgba(124,60,237,0.08);
+    font-family: "Inter", "微软雅黑", Arial, sans-serif;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    min-height: 300px;  
+}
+/* #question：题目文本，字号、加粗、颜色、居中、自动换行、行高等 */
+#question {
+    font-size: 21px;
+    font-weight: 600;
+    margin-bottom: 24px;
+    color: #1F2937;
+    width: 100%;
+    text-align: center;
+    word-break: break-all;
+    line-height: 1.8;
+    margin-top: 10px;
+}
+/* #optionsForm：选项表单，垂直排列，间距 */
+#optionsForm {
+    margin-bottom: 20px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+}
+
+/* 新增：判断题选项的左右排列样式 */
+#optionsForm.true-false-options {
+    flex-direction: row; /* 水平排列 */
+    justify-content: space-around; /* 左右分散对齐 */
+    gap: 20px; /* 按钮之间的间距 */
+}
+
+#optionsForm.true-false-options .option-label {
+    flex: 1; /* 让按钮平分空间 */
+    text-align: center; /* 文本居中 */
+    justify-content: center; /* 内容居中 */
+    padding: 18px 20px; /* 增加内边距，使其更像长方形 */
+    font-size: 18px; /* 调整字号 */
+    font-weight: bold; /* 加粗 */
+}
+
+/* .option-label：单个选项的样式，背景、边框、圆角、内边距、悬停/选中高亮等 */
+.option-label {
+    display: flex;
+    align-items: center;
+    background: #fff;
+    border: 1px solid #e0e6ed;
+    border-radius: 8px;
+    padding: 14px 20px;
+    font-size: 16.5px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    position: relative;
+    gap: 12px;
+    margin-bottom: 0;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+}
+/* 选项的单选/多选按钮，右侧间距，主题色 */
+.option-label input[type="radio"],
+.option-label input[type="checkbox"] {
+    margin-right: 10px;
+    accent-color: #7C3AED;
+    transform: scale(1.1);
+}
+/* 选项悬停或选中时高亮边框和背景 */
+.option-label:hover, .option-label.selected {
+    border: 1px solid #7C3AED;
+    background: #F3E8FF;
+    box-shadow: 0 4px 12px rgba(124,60,237,0.1);
+    transform: translateY(-2px);
+}
+/* .btn-row：按钮行，水平排列、间距、居中、上下边距 */
+.btn-row {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    width: 100%;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+/* 提交和下一题按钮，样式、圆角、悬停、禁用等 */
+#submitBtn, #nextBtn {
+    padding: 12px 36px;
+    font-size: 17.5px;
+    border: none;
+    border-radius: 8px;
+    background: #7C3AED;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 12px rgba(124,60,237,0.1);
+    font-weight: 500;
+}
+#submitBtn[disabled], #nextBtn[disabled] {
+    background: #B3D8FD;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+#submitBtn:hover:not([disabled]), #nextBtn:hover:not([disabled]) {
+    background: #6D28D9;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(124,60,237,0.15);
+}
+/* #result：结果显示区域，字号、加粗、居中、最小高度等 */
+#result {
+    margin-top: 22px;
+    font-size: 18px;
+    min-height: 24px;
+    font-weight: bold;
+    text-align: center;
+    letter-spacing: 1px;
+}
+/* 正确/错误结果的颜色 */
+.correct {
+    color: #22C55E;
+}
+.incorrect {
+    color: #EF4444;
+}
+/* 答题记录面板按钮样式，统一按钮宽高、内容居中、去除多余样式，防止答题后错位 */
+#answerRecordPanel button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    font-size: 16px;
+    line-height: 1;
+    border-radius: 10px;
+    border: none;
+    margin: 0 5px;
+    box-sizing: border-box;
+    background: #fff;
+    color: #222;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+#answerRecordPanel button.correct {
+    background: #e6ffe6 !important; /* 更柔和的绿色 */
+    color: #222;
+    box-shadow: 0 2px 8px rgba(46,204,113,0.1);
+}
+#answerRecordPanel button.incorrect {
+    background: #ffe6e6 !important; /* 更柔和的红色 */
+    color: #222;
+    box-shadow: 0 2px 8px rgba(231,76,60,0.1);
+}
+#answerRecordPanel button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+/* 保证答题记录面板按钮父容器水平排列且居中 */
+#recordList {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+}
+
+/* footer：底部居中，顶部外边距 */
+footer {
+    text-align: center;
+    margin-top: 32px;
+}
+/* footer a：底部链接样式，颜色、字号、下划线、字间距 */
+footer a {
+    color: #7C3AED;
+    font-size: 17px;
+    text-decoration: underline;
+    letter-spacing: 1px;
+}
+/* 响应式合并：小屏幕下的自适应布局和字号调整 */
+@media (max-width: 600px) {
+    .container {
+        max-width: 98vw;
+        padding: 0 0 12px 0;
+    }
+    header, main {
+        padding: 0 4vw;
+    }
+    .quiz-container {
+        max-width: 98vw;
+        padding: 18px 2vw 18px 2vw;
+    }
+    #progress {
+        right: 4vw;
+    }
+    #question {
+        font-size: 17px;
+        padding: 0 2vw;
+    }
+    .btn-row {
+        flex-direction: column;
+        gap: 10px;
+    }
+}
+
+/* 返回主页按钮样式 */
+.back-home-btn {
+    position: absolute;
+    left: 20px;
+    top: 20px;
+    z-index: 900;
+    padding: 10px;
+    background: rgba(0,0,0,0.03);
+    border: none;
+    text-decoration: none;
+    font-size: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    transition: all 0.2s ease;
+    border-radius: 50%;
+    color: #7C3AED;
+}
+.back-home-btn:hover {
+    background: rgba(0,0,0,0.08);
+    transform: scale(1.08);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}

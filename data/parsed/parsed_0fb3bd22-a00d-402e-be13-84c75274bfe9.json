@@ -1,0 +1,227 @@
+[
+  {
+    "type": "单选",
+    "content": "Syllables have a minimum of one structural part (as in the word air /eə/), and a maximum of _______ structural parts (as in the word texts /teksts/).",
+    "options": [
+      "A. two",
+      "B. three",
+      "C. four",
+      "D. five"
+    ],
+    "answer": "B"
+  },
+  {
+    "type": "单选",
+    "content": "__________ consonants are consonants which form the nucleus of a syllable that does not contain a vowel.",
+    "options": [
+      "A. Lateral",
+      "B. Syllabic",
+      "C. Approximant",
+      "D. Nasal"
+    ],
+    "answer": "B"
+  },
+  {
+    "type": "单选",
+    "content": "The V and CV syllables are referred to as a/an ______ syllable because they end with a vowel.",
+    "options": [
+      "A. open",
+      "B. r-syllable",
+      "C. closed",
+      "D. relative open"
+    ],
+    "answer": "A"
+  },
+  {
+    "type": "单选",
+    "content": "The longest possible initial consonant cluster may have ______ consonants in front of the vowel.",
+    "options": [
+      "A. one",
+      "B. two",
+      "C. three",
+      "D. four"
+    ],
+    "answer": "C"
+  },
+  {
+    "type": "单选",
+    "content": "The longest possible final consonant cluster may have ______ consonants after the vowel.",
+    "options": [
+      "A. one",
+      "B. two",
+      "C. three",
+      "D. four"
+    ],
+    "answer": "D"
+  },
+  {
+    "type": "单选",
+    "content": "_______ stress is the relative degree of force given to a certain syllable in a word of more than one syllable when it is pronounced in isolation, as if quoted from a dictionary.",
+    "options": [
+      "A. Tonic",
+      "B. Sentence",
+      "C. Nuclear",
+      "D. Word"
+    ],
+    "answer": "D"
+  },
+  {
+    "type": "单选",
+    "content": "With _____ clusters of three consonants, the first sound is always /s/, the second sound is a voiceless plosive /p, t, k/, and the third sound is one of the four approximants /l, r, w, j/.",
+    "options": [
+      "A. rhyme",
+      "B. onset",
+      "C. nucleus",
+      "D. coda"
+    ],
+    "answer": "B"
+  },
+  {
+    "type": "单选",
+    "content": "Syllabically, although a diphthong is a combination of two vowel sounds and is marked by a glide from the first vowel to the second, it is perceived as one phoneme, not two. Thus, diphthongs are treated as having one _____ only.",
+    "options": [
+      "A. syllable",
+      "B. stress",
+      "C. allophone",
+      "D. vowel"
+    ],
+    "answer": "A"
+  },
+  {
+    "type": "单选",
+    "content": "Which of the following has the right stress placement for “White House” in the “The president of the United States lives in the White House”?",
+    "options": [
+      "A. On either word",
+      "B. On White",
+      "C. On House",
+      "D. On both words"
+    ],
+    "answer": "B"
+  },
+  {
+    "type": "单选",
+    "content": "Which of the following words has the stress on the second syllable?",
+    "options": [
+      "A. record (n.)",
+      "B. present (v.)",
+      "C. import (n.)",
+      "D. produce (n.)"
+    ],
+    "answer": "B"
+  },
+  {
+    "type": "多选",
+    "content": "Which of the following has/have the right stress placement?",
+    "options": [
+      "A. phoTOgrapher",
+      "B. photoGRApher",
+      "C. photoGRAPH",
+      "D. PHOtograph"
+    ],
+    "answer": "AD"
+  },
+  {
+    "type": "多选",
+    "content": "Which of the following is an open-syllable word?",
+    "options": [
+      "A. spy",
+      "B. spike",
+      "C. bath",
+      "D. occur"
+    ],
+    "answer": "AB"
+  },
+  {
+    "type": "多选",
+    "content": "Which of the following describe(s) a stressed syllable correctly?",
+    "options": [
+      "A. Spoken more slowly",
+      "B. higher in pitch",
+      "C. longer in duration",
+      "D. louder in intensity"
+    ],
+    "answer": "BCD"
+  },
+  {
+    "type": "多选",
+    "content": "Which of the following are disyllabic words?",
+    "options": [
+      "A. Table",
+      "B. banana",
+      "C. fire",
+      "D. elephant"
+    ],
+    "answer": "AC"
+  },
+  {
+    "type": "多选",
+    "content": "In which cases is the stress usually located on the root or stem of the word?",
+    "options": [
+      "A. Prefixes usually do not affect the placement of the stress.",
+      "B. Suffixes may affect the placement of the stress.",
+      "C. Compound words usually stress the second component.",
+      "D. Monosyllabic words have stress on the only syllable."
+    ],
+    "answer": "ABD"
+  },
+  {
+    "type": "判断",
+    "content": "Syllables are units of language, smaller than a word but larger than a phoneme.",
+    "options": [],
+    "answer": "True"
+  },
+  {
+    "type": "判断",
+    "content": "The first part of a syllable of the CVC pattern is called the onset... The combination of the nucleus and coda is called the rhyme.",
+    "options": [],
+    "answer": "True"
+  },
+  {
+    "type": "判断",
+    "content": "Word stress in English is not as predictable as it is in other languages...",
+    "options": [],
+    "answer": "False"
+  },
+  {
+    "type": "判断",
+    "content": "Not all English vowel phonemes can occur in the CV syllable pattern, but all can appear in the CVC pattern.",
+    "options": [],
+    "answer": "True"
+  },
+  {
+    "type": "判断",
+    "content": "English has a complex system of consonant clusters...",
+    "options": [],
+    "answer": "True"
+  },
+  {
+    "type": "判断",
+    "content": "In polysyllabic words, if the primary stress falls on the third syllable or later, the secondary stress is usually marked...",
+    "options": [],
+    "answer": "True"
+  },
+  {
+    "type": "判断",
+    "content": "Monosyllabic words cannot be split into parts and written in two lines.",
+    "options": [],
+    "answer": "True"
+  },
+  {
+    "type": "判断",
+    "content": "Some words in English are shown in dictionaries as having three levels of stress: primary, secondary, unstressed.",
+    "options": [],
+    "answer": "True"
+  },
+  {
+    "type": "判断",
+    "content": "The major stress on two-syllable words is more likely to fall on the second syllable if the word is a noun or an adjective, and on the first syllable if the word is a verb.",
+    "options": [],
+    "answer": "False"
+  },
+  {
+    "type": "判断",
+    "content": "Every language is said to have syllables.",
+    "options": [],
+    "answer": "True"
+  }
+]

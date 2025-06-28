@@ -1,0 +1,43 @@
+<!-- 刷题系统首页，主导航和简介说明 -->
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8"> <!-- 设置网页字符编码为UTF-8，支持中文显示 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- 移动端适配 -->
+    <title>刷题系统-首页</title> <!-- 网页标题 -->
+    <!-- 引入全局样式 -->
+    <link rel="stylesheet" href="../css/style.css"> <!-- 全站通用样式表 -->
+</head>
+<body>
+    <div class="container"> <!-- 页面主容器，居中显示内容 -->
+        <!-- 页头：系统标题与欢迎语 -->
+        <header>
+            <h1>刷题系统</h1> <!-- 系统主标题 -->
+            <p>欢迎使用刷题与题库管理平台</p> <!-- 欢迎语/副标题 -->
+        </header>
+        <main>
+            <!-- 主导航：跳转到登录、上传、刷题页面 -->
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="upload.html">上传题库</a></li> <!-- 跳转到上传题库页 -->
+                    <li><a href="quiz.html">开始刷题</a></li> <!-- 跳转到刷题页 -->
+                    <li><a href="parsed_list.html">历史题库</a></li> <!-- 跳转到历史题库页 -->
+                </ul>
+            </nav>
+            <!-- 简介区：功能说明 -->
+            <section class="intro">
+                <h2>功能简介</h2>
+                <ul>
+                    <li>支持 <strong>.docx</strong> 题库上传与解析</li>
+                    <li>解析后题库自动存储到本地，可随时刷题</li>
+                    <li>支持单选、多选题型</li>
+                </ul>
+            </section>
+        </main>
+        <!-- 页脚：版权信息 -->
+        <footer>
+            <p>&copy; 2025 李芋头</p> <!-- 版权声明 -->
+        </footer>
+    </div>
+</body>
+</html>
