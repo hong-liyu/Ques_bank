@@ -1,159 +1,141 @@
-/* upload.css - 题库上传页面样式 */
+/* upload.css - 新版题库上传页面样式 */
 
-/* 引入思源黑体或Noto Sans SC */
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+/* 引入谷歌字体，如果 style.css 已引入，此行可省略 */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap');
 
-:root {
-    --primary-color: #7c3aed; /* Obsidian 紫色 */
-    --primary-dark: #6d28d9;
-    --background-light: #f8f8f8;
-    --text-dark: #333333;
-    --text-light: #ffffff;
-    --card-bg: #ffffff;
-    --border-light: #e0e0e0;
-    --shadow-light: rgba(0, 0, 0, 0.05);
-    --shadow-medium: rgba(0, 0, 0, 0.1);
-    --success-color: #28a745;
-    --error-color: #dc3545;
-}
+/* 移除了独立的 :root 变量定义，
+   因为我们现在假设 style.css 已经被加载，
+   可以直接使用 style.css 中定义的变量，如 var(--color-primary)。
+*/
 
 body {
-    font-family: 'Noto Sans SC', sans-serif; /* 使用思源黑体 */
-    background-color: var(--background-light);
-    color: var(--text-dark);
+    font-family: 'Noto Sans SC', sans-serif;
+    background-color: var(--color-bg); /* 使用主样式背景色 */
+    color: var(--color-text-medium);
     line-height: 1.6;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    box-sizing: border-box;
 }
 
-.container {
-    position: relative;
+/* --- 主要改动：页面布局调整 --- */
+.upload-container {
     width: 100%;
-    max-width: 600px; /* 限制容器最大宽度 */
-    padding: 20px;
+    max-width: 840px; /* 显著加宽容器 */
+    margin: 2em auto; /* 上下边距，自动水平居中 */
+    padding: 0 1em;
     box-sizing: border-box;
 }
 
-.card {
-    background-color: var(--card-bg);
-    border-radius: 12px;
-    box-shadow: 0 10px 30px var(--shadow-medium);
-    padding: 30px;
-    text-align: center;
-    transition: all 0.3s ease;
+.page-header {
+    display: flex;
+    align-items: center;
+    position: relative;
+    margin-bottom: 2em;
+    justify-content: center; /* 让标题居中 */
 }
 
-.card:hover {
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
-}
-
-header h1 {
-    color: var(--primary-color);
-    font-size: 2.2em;
-    margin-bottom: 25px;
+.page-header h1 {
+    color: var(--color-text-dark);
+    font-size: 2em; /* 调整标题大小 */
     font-weight: 700;
+    margin: 0;
 }
 
-/* 返回按钮 */
+/* 返回按钮新样式 */
 .back-home-btn {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    z-index: 1000;
-    padding: 10px;
-    background-color: var(--card-bg);
-    border: 1px solid var(--border-light);
-    border-radius: 8px;
+    position: absolute; /* 绝对定位于 header 内 */
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 0.6em;
+    background-color: var(--color-card-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
     text-decoration: none;
-    color: var(--text-dark);
-    font-size: 1em;
-    font-weight: 500;
-    box-shadow: 0 4px 15px var(--shadow-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
     transition: all 0.3s ease;
 }
 
 .back-home-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px var(--shadow-medium);
-    border-color: var(--primary-color);
+    transform: translateY(-50%) scale(1.05);
+    box-shadow: var(--shadow);
+    border-color: var(--color-primary-light);
 }
 
 .back-home-btn svg {
     width: 24px;
     height: 24px;
-    stroke: var(--text-dark);
-    transition: stroke 0.3s ease;
+    stroke: var(--color-text-medium);
 }
 
-.back-home-btn:hover svg {
-    stroke: var(--primary-color);
+/* 内容卡片 */
+.upload-card {
+    background-color: var(--color-card-bg);
+    border-radius: var(--border-radius); /* 使用主样式圆角 */
+    box-shadow: var(--shadow); /* 使用主样式阴影 */
+    padding: 2.5em 3em; /* 增加内边距 */
+    border: 1px solid var(--color-border);
 }
 
 /* 表单组 */
 .form-group {
-    margin-bottom: 25px;
+    margin-bottom: 2.5em; /* 增加组间距 */
     text-align: left;
 }
 
 .form-group label {
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 10px;
+    gap: 0.6em;
+    margin-bottom: 1em;
     font-weight: 600;
-    color: var(--text-dark);
-    font-size: 1.1em;
+    color: var(--color-text-dark);
+    font-size: 1.1rem;
 }
 
 .form-group label svg {
-    width: 20px;
-    height: 20px;
-    stroke: var(--primary-color);
+    width: 22px;
+    height: 22px;
+    stroke: var(--color-primary);
 }
 
 /* 拖拽上传区域 */
 .drop-area {
-    border: 2px dashed var(--border-light);
-    border-radius: 10px;
-    padding: 40px 20px;
+    border: 2px dashed var(--color-border);
+    border-radius: var(--border-radius);
+    padding: 3em 1.5em; /* 增加上下内边距，使其更高 */
     text-align: center;
     cursor: pointer;
     transition: all 0.3s ease;
-    background-color: #fdfdfd;
-    position: relative;
-    overflow: hidden;
+    background-color: #fafafa;
 }
 
 .drop-area:hover,
 .drop-area.drag-over {
-    border-color: var(--primary-color);
-    background-color: #f0f0ff;
-    box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.1);
+    border-color: var(--color-primary);
+    background-color: #f8f5ff;
 }
 
 .drop-area .upload-icon {
-    width: 50px;
-    height: 50px;
-    stroke: var(--primary-color);
-    margin-bottom: 15px;
-    transition: stroke 0.3s ease;
+    width: 48px;
+    height: 48px;
+    stroke: var(--color-primary);
+    stroke-width: 1.5;
+    margin-bottom: 1em;
 }
 
 .drop-area p {
     margin: 0;
-    color: #666;
-    font-size: 1.1em;
+    color: var(--color-text-light);
+    font-size: 1.1rem;
+    font-weight: 500;
 }
 
 .file-info {
-    margin-top: 15px;
-    font-size: 0.95em;
-    color: #555;
+    margin-top: 1em;
+    font-size: 0.9rem;
+    color: var(--color-text-medium);
     min-height: 20px;
     text-align: center;
 }
@@ -162,52 +144,47 @@ header h1 {
 #customPrompt {
     width: 100%;
     min-height: 100px;
-    padding: 15px;
-    border: 1px solid var(--border-light);
-    border-radius: 8px;
-    font-size: 1em;
+    padding: 1em;
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    font-size: 1rem;
     font-family: 'Noto Sans SC', sans-serif;
     resize: vertical;
-    background-color: var(--card-bg);
-    box-shadow: inset 0 1px 3px var(--shadow-light);
+    background-color: var(--color-card-bg);
     transition: all 0.3s ease;
     box-sizing: border-box;
 }
 
 #customPrompt:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2), inset 0 1px 3px var(--shadow-light);
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.2);
     outline: none;
 }
 
-/* 按钮行 */
-.btn-row {
-    margin-top: 30px;
-}
-
-.parse-btn {
+/* 按钮 */
+.parse-btn, #toQuizBtn {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    gap: 0.75em;
     width: 100%;
-    padding: 15px 25px;
-    background-color: var(--primary-color);
-    color: var(--text-light);
+    padding: 1em;
+    background: var(--color-primary);
+    color: #ffffff;
     border: none;
-    border-radius: 8px;
-    font-size: 1.2em;
+    border-radius: var(--border-radius);
+    font-size: 1.1rem;
     font-weight: 600;
     cursor: pointer;
-    box-shadow: 0 8px 20px rgba(124, 58, 237, 0.25);
+    box-shadow: 0 6px 15px rgba(109, 40, 217, 0.2);
     transition: all 0.3s ease;
     letter-spacing: 1px;
 }
 
-.parse-btn:hover:not(:disabled) {
-    background-color: var(--primary-dark);
+.parse-btn:hover:not(:disabled), #toQuizBtn:hover {
+    background-color: var(--color-primary-light);
     transform: translateY(-3px);
-    box-shadow: 0 12px 25px rgba(124, 58, 237, 0.35);
+    box-shadow: 0 10px 20px rgba(109, 40, 217, 0.3);
 }
 
 .parse-btn:disabled {
@@ -218,80 +195,12 @@ header h1 {
 }
 
 .parse-btn .btn-icon {
-    width: 24px;
-    height: 24px;
-    stroke: var(--text-light);
+    width: 22px;
+    height: 22px;
+    stroke: #ffffff;
 }
 
-/* 状态消息 */
-.status-message {
-    margin-top: 20px;
-    font-size: 1em;
-    min-height: 20px;
-    text-align: center;
-}
-
-.status-message.success {
-    color: var(--success-color);
-}
-
-.status-message.error {
-    color: var(--error-color);
-}
-
-/* 加载动画 */
-.loading-spinner {
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid var(--primary-color);
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    animation: spin 1s linear infinite;
-    margin: 20px auto;
-    display: none; /* 默认隐藏 */
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-/* 解析结果预格式化文本 */
-.parse-result {
-    background-color: #f0f0f0;
-    border-radius: 8px;
-    padding: 15px;
-    margin-top: 20px;
-    white-space: pre-wrap;
-    word-break: break-all;
-    text-align: left;
-    font-size: 0.9em;
-    color: #444;
-    max-height: 300px;
-    overflow-y: auto;
-    border: 1px solid var(--border-light);
-}
-
-/* 去刷题按钮 */
-#toQuizBtn {
-    display: none;
-    margin-top: 25px;
-    width: 100%;
-    padding: 15px 25px;
-    background-color: var(--primary-color);
-    color: var(--text-light);
-    border: none;
-    border-radius: 8px;
-    font-size: 1.2em;
-    font-weight: 600;
-    cursor: pointer;
-    box-shadow: 0 8px 20px rgba(124, 58, 237, 0.25);
-    transition: all 0.3s ease;
-    letter-spacing: 1px;
-}
-
-#toQuizBtn:hover {
-    background-color: var(--primary-dark);
-    transform: translateY(-3px);
-    box-shadow: 0 12px 25px rgba(124, 58, 237, 0.35);
+/* 状态消息和加载动画保持不变 */
+.status-message, .loading-spinner, .parse-result {
+    margin-top: 1.5em;
 }
