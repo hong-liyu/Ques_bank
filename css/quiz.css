@@ -270,6 +270,55 @@ body {
     color: var(--incorrect-color);
 }
 
+/* 填空题样式 */
+.fill-blank-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.fill-blank-input {
+    padding: 12px 16px;
+    font-size: 1em;
+    border: 2px solid var(--border-light);
+    border-radius: 8px;
+    background-color: var(--card-bg);
+    color: var(--text-dark);
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px var(--shadow-light);
+    font-family: 'Noto Sans SC', sans-serif;
+}
+
+.fill-blank-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1), 0 4px 12px var(--shadow-medium);
+}
+
+.fill-blank-input:disabled {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+    opacity: 0.8;
+}
+
+.fill-blank-submit {
+    padding: 12px 20px !important;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.fill-blank-submit:hover:not(:disabled) {
+    background-color: var(--primary-dark);
+    transform: translateY(-2px);
+}
+
+.fill-blank-submit:disabled {
+    opacity: 0.6;
+}
+
 .navigation-buttons {
     text-align: center;
     margin-top: auto; /* Push to bottom */
@@ -439,5 +488,274 @@ body {
         width: 35px;
         height: 35px;
         font-size: 0.8em;
+    }
+    
+    /* 移动设备上的填空题样式 */
+    .fill-blank-input {
+        padding: 10px 14px;
+        font-size: 1em;
+    }
+    .fill-blank-submit {
+        padding: 10px 16px !important;
+        font-size: 1em;
+    }
+}
+
+/* ===== Markdown 和代码高亮样式 ===== */
+
+/* 问题文本容器 */
+.question-text {
+    display: block;
+}
+
+.question-text p {
+    margin: 0.5em 0;
+    line-height: 1.6;
+}
+
+.question-text p:first-child {
+    margin-top: 0;
+}
+
+.question-text p:last-child {
+    margin-bottom: 0;
+}
+
+/* 代码块样式 - 让 highlight.js 主题完全控制背景色 */
+.question-text pre,
+.question-text code:not(.inline-code) {
+    display: block;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 1em 0;
+    overflow-x: auto;
+    border: 1px solid #e1e4e8;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.question-text pre {
+    padding: 0;
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+    margin: 1em 0;
+}
+
+.question-text pre code {
+    display: block;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 0;
+    overflow-x: auto;
+    border: 1px solid #e1e4e8;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Courier New', monospace;
+    font-size: 0.95em;
+    line-height: 1.5;
+    white-space: pre;
+    word-wrap: normal;
+}
+
+.question-text pre code.hljs {
+    border: 1px solid #e1e4e8;
+    padding: 16px;
+    border-radius: 8px;
+}
+
+/* 代码容器表头 - 已禁用，因为 data-language 属性未设置 */
+.question-text pre::before {
+    display: none;
+}
+
+/* 行号和语法高亮 - highlight.js 默认类 */
+.hljs {
+    /* 让 highlight.js 主题（github-light）完全控制背景色和文字颜色 */
+}
+
+.hljs-string {
+    color: #ce9178;
+}
+
+.hljs-number {
+    color: #b5cea8;
+}
+
+.hljs-literal {
+    color: #569cd6;
+}
+
+.hljs-attr {
+    color: #9cdcfe;
+}
+
+.hljs-title {
+    color: #dcdcaa;
+}
+
+.hljs-function .hljs-title {
+    color: #dcdcaa;
+}
+
+.hljs-keyword {
+    color: #569cd6;
+}
+
+.hljs-comment {
+    color: #6a9955;
+}
+
+/* 内联代码样式 */
+.inline-code {
+    background-color: #f5f5f5;
+    border: 1px solid #e0e0e0;
+    color: #d32f2f;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Courier New', monospace;
+    font-size: 0.9em;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.inline-code:hover {
+    background-color: #eeeeee;
+    border-color: #d32f2f;
+}
+
+/* 暗色主题内联代码（深色背景时） */
+.dark-mode .inline-code {
+    background-color: #2d2d2d;
+    border-color: #404040;
+    color: #ff6b6b;
+}
+
+.dark-mode .inline-code:hover {
+    background-color: #333333;
+    border-color: #ff6b6b;
+}
+
+/* 列表样式（Markdown 中的列表） */
+.question-text ul,
+.question-text ol {
+    margin: 1em 0;
+    padding-left: 2em;
+}
+
+.question-text li {
+    margin: 0.5em 0;
+    line-height: 1.6;
+}
+
+/* 强调文本 */
+.question-text strong,
+.question-text b {
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.question-text em,
+.question-text i {
+    font-style: italic;
+    color: var(--text-grey);
+}
+
+/* 水平分割线 */
+.question-text hr {
+    margin: 1.5em 0;
+    border: none;
+    border-top: 2px solid var(--border-light);
+    border-radius: 1px;
+}
+
+/* 引用块 */
+.question-text blockquote {
+    margin: 1em 0;
+    padding: 0 0 0 1em;
+    border-left: 4px solid var(--primary-color);
+    background-color: #f9f9f9;
+    padding: 0.5em 1em 0.5em 1em;
+    font-style: italic;
+    color: var(--text-grey);
+    border-radius: 0 4px 4px 0;
+}
+
+/* 表格样式（如果使用 Markdown 中的表格） */
+.question-text table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1em 0;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.question-text table th {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+}
+
+.question-text table td {
+    padding: 12px;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.question-text table tr:hover {
+    background-color: rgba(124, 58, 237, 0.05);
+}
+
+.question-text table tr:last-child td {
+    border-bottom: none;
+}
+
+/* 链接样式 */
+.question-text a {
+    color: var(--primary-color);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.question-text a:hover {
+    border-bottom-color: var(--primary-color);
+    color: var(--primary-dark);
+}
+
+/* 响应式代码块 */
+@media (max-width: 768px) {
+    .question-text pre code {
+        font-size: 0.85em;
+        padding: 12px;
+    }
+    
+    .question-text pre code,
+    .question-text pre {
+        margin: 0.8em 0;
+    }
+    
+    .inline-code {
+        padding: 3px 6px;
+        font-size: 0.85em;
+    }
+}
+
+/* 打印样式 */
+@media print {
+    .question-text pre code {
+        background-color: white;
+        color: black;
+        border: 1px solid #cccccc;
+    }
+    
+    .hljs,
+    .hljs-attr,
+    .hljs-string,
+    .hljs-number {
+        color: black;
+        background-color: white;
     }
 }

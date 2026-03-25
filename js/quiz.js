@@ -14,6 +14,57 @@ document.addEventListener('DOMContentLoaded', async function() {
     let answered = false;
     let answerRecord = []; // Stores true for correct, false for incorrect, null for unanswered
 
+    // ===== Markdown 和代码高亮配置 =====
+    // 初始化 marked 配置
+    function initMarkdown() {
+        if (typeof marked !== 'undefined' && typeof hljs !== 'undefined') {
+            // 配置 marked 选项
+            marked.setOptions({
+                breaks: true,
+                gfm: true,
+                pedantic: false,
+                async: false
+            });
+            
+            // 自定义渲染器
+            const renderer = {
+                code({text, lang, escaped}) {
+                    const highlightedCode = (lang && hljs.getLanguage(lang))
+                        ? hljs.highlight(text, { language: lang, ignoreIllegals: true }).value
+                        : hljs.highlightAuto(text).value;
+                    return `<pre><code class="hljs language-${lang || 'plaintext'}">${highlightedCode}</code></pre>`;
+                },
+                codespan({text}) {
+                    return `<code class="inline-code">${text}</code>`;
+                },
+                paragraph({text}) {
+                    return `<p>${text}</p>`;
+                }
+            };
+            
+            marked.use({ renderer });
+        }
+    }
+    
+    // 处理 Markdown 内容
+    function parseMarkdown(content) {
+        if (typeof marked === 'undefined') return content;
+        try {
+            let html = marked.parse(content);
+            // 清理多余的 <p> 标签包装（单行内容）
+            if (content && !content.includes('\n') && !content.match(/```|`/)) {
+                html = html.replace(/<p>(.*?)<\/p>/, '$1');
+            }
+            return html;
+        } catch (error) {
+            console.warn('Markdown 解析错误:', error);
+            return content;
+        }
+    }
+    
+    // 页面加载时初始化
+    initMarkdown();
+
     // Load favorite.js if not already loaded (though it should be in HTML)
     if (typeof getLocalFavorites === 'undefined') {
         const script = document.createElement('script');
@@ -47,7 +98,9 @@ document.addEventListener('DOMContentLoaded', async function() {
         updateNavigatorSidebar();
 
         const q = questions[idx];
-        questionContentDiv.innerHTML = `<span>${idx + 1}. ${q.content || q.text || ''}</span>`;
+        // 使用 Markdown 解析问题内容
+        const questionHTML = parseMarkdown(q.content || q.text || '');
+        questionContentDiv.innerHTML = `<span class="question-text">${idx + 1}. ${questionHTML}</span>`;
 
         // Update favorite button state
         updateFavoriteBtn(q);
@@ -56,7 +109,17 @@ document.addEventListener('DOMContentLoaded', async function() {
         if (q.type === '判断') {
             createOptionButton('True', '正确', q);
             createOptionButton('False', '错误', q);
-        } else if (Array.isArray(q.options)) {
+        } else if (q.type === '填空') {
+            // 填空题：有选项则显示选项，无选项则显示输入框
+            if (Array.isArray(q.options) && q.options.length > 0) {
+                q.options.forEach((opt, i) => {
+                    createOptionButton(i, `${opt}`, q);
+                });
+            } else {
+                // 无选项，显示输入框
+                createFillBlankInput(q);
+            }
+        } else if (Array.isArray(q.options) && q.options.length > 0) {
             q.options.forEach((opt, i) => {
                 createOptionButton(i, `${opt}`, q);
             });
@@ -81,6 +144,49 @@ document.addEventListener('DOMContentLoaded', async function() {
         optionsArea.appendChild(button);
     }
 
+    // 为填空题创建输入框
+    function createFillBlankInput(question) {
+        const inputContainer = document.createElement('div');
+        inputContainer.className = 'fill-blank-container';
+        
+        const label = document.createElement('label');
+        label.htmlFor = 'fillBlankInput';
+        label.textContent = '请输入答案：';
+        label.style.cssText = 'display:block;margin-bottom:0.8em;font-weight:600;color:#374151;';
+        
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.id = 'fillBlankInput';
+        input.className = 'fill-blank-input';
+        input.placeholder = '输入您的答案...';
+        input.style.cssText = 'width:100%;padding:0.8em;border:2px solid #e5e7eb;border-radius:0.5em;font-size:1em;box-sizing:border-box;';
+        
+        const submitBtn = document.createElement('button');
+        submitBtn.type = 'button';
+        submitBtn.className = 'option-btn fill-blank-submit';
+        submitBtn.textContent = '提交答案';
+        submitBtn.style.cssText = 'margin-top:1em;width:100%;';
+        submitBtn.onclick = (e) => {
+            e.preventDefault();
+            handleFillBlankAnswer(input.value, question, submitBtn);
+        };
+        
+        // 支持按回车键提交
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                submitBtn.click();
+            }
+        });
+        
+        inputContainer.appendChild(label);
+        inputContainer.appendChild(input);
+        inputContainer.appendChild(submitBtn);
+        optionsArea.appendChild(inputContainer);
+        
+        // 页面加载后自动焦点到输入框
+        setTimeout(() => input.focus(), 100);
+    }
+
     function handleAnswer(selectedButton, question) {
         if (answered) return; // Prevent multiple answers
         answered = true;
@@ -101,6 +207,11 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
             const ansArr = String(question.answer).split('').map(ch => ch.charCodeAt(0) - 65);
             isCorrect = ansArr.length === selectedOptions.length && ansArr.every(idx => selectedOptions.includes(idx));
+        } else if (question.type === '填空') {
+            // 填空题：比对答案（支持多个正确答案用|分割）
+            const userAnswer = String(selectedValue).trim();
+            const correctAnswers = String(question.answer).split('|').map(a => a.trim());
+            isCorrect = correctAnswers.some(ans => userAnswer.toLowerCase() === ans.toLowerCase());
         } else { // Single choice
             isCorrect = parseInt(selectedValue) === (String(question.answer).charCodeAt(0) - 65);
         }
@@ -109,6 +220,48 @@ document.addEventListener('DOMContentLoaded', async function() {
         showFeedback(question, isCorrect, selectedButton);
         updateNavigatorSidebar();
 
+        // Delay before showing next question button
+        setTimeout(() => {
+            nextQuestionBtn.style.display = (currentQuestionIndex < questions.length - 1) ? 'inline-block' : 'none';
+        }, 1500); // 1.5 seconds delay
+    }
+
+    // 处理填空题答案
+    function handleFillBlankAnswer(userAnswer, question, submitBtn) {
+        if (answered) return; // Prevent multiple answers
+        if (!userAnswer || !userAnswer.trim()) {
+            alert('请输入答案');
+            return;
+        }
+
+        answered = true;
+        
+        // 禁用输入框和提交按钮
+        const input = document.getElementById('fillBlankInput');
+        input.disabled = true;
+        submitBtn.disabled = true;
+        
+        // 比对答案（支持多个正确答案用|分割）
+        const trimmedAnswer = userAnswer.trim();
+        const correctAnswers = String(question.answer).split('|').map(a => a.trim());
+        const isCorrect = correctAnswers.some(ans => trimmedAnswer.toLowerCase() === ans.toLowerCase());
+        
+        answerRecord[currentQuestionIndex] = isCorrect;
+        
+        // 显示反馈
+        if (isCorrect) {
+            feedbackArea.innerHTML = '<span class="correct-feedback">回答正确！</span>';
+            input.style.borderColor = '#10b981'; // 绿色边框
+            submitBtn.classList.add('correct-answer');
+        } else {
+            const ansText = correctAnswers.join(' 或 ');
+            feedbackArea.innerHTML = `<span class="incorrect-feedback">回答错误！<br>正确答案：${ansText}</span>`;
+            input.style.borderColor = '#ef4444'; // 红色边框
+            submitBtn.classList.add('incorrect-answer');
+        }
+        
+        updateNavigatorSidebar();
+        
         // Delay before showing next question button
         setTimeout(() => {
             nextQuestionBtn.style.display = (currentQuestionIndex < questions.length - 1) ? 'inline-block' : 'none';
@@ -129,7 +282,12 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
         } else {
             let ansText = '';
-            if (typeof question.answer === 'string') {
+            if (question.type === '填空') {
+                // 填空题：显示所有可接受的答案
+                if (typeof question.answer === 'string') {
+                    ansText = question.answer.split('|').map(a => a.trim()).join(' 或 ');
+                }
+            } else if (typeof question.answer === 'string') {
                 ansText = question.answer;
             } else if (Array.isArray(question.answer)) {
                 ansText = question.answer.map(a => typeof a === 'number' ? String.fromCharCode(65 + a) : a).join(', ');
@@ -141,7 +299,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 selectedButton.innerHTML += ' <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
             }
 
-            // Highlight correct answer
+            // Highlight correct answer for multiple choice questions
             if (question.type === '判断') {
                 const correctBtn = optionsArea.querySelector(`[data-value="${String(question.answer)}"]`);
                 if (correctBtn) {
@@ -157,6 +315,9 @@ document.addEventListener('DOMContentLoaded', async function() {
                         correctBtn.innerHTML += ' <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
                     }
                 });
+            } else if (question.type === '填空') {
+                // 填空题有选项时，高亮正确选项
+                // (但 handleFillBlankAnswer 已经在显示时处理了)
             } else { // Single choice
                 const correctIdx = String(question.answer).charCodeAt(0) - 65;
                 const correctBtn = optionsArea.querySelector(`[data-value="${correctIdx}"]`);
@@ -172,6 +333,11 @@ document.addEventListener('DOMContentLoaded', async function() {
         optionsArea.querySelectorAll('.option-btn').forEach(btn => {
             btn.disabled = true;
         });
+        // 禁用填空题输入框
+        const fillInput = document.getElementById('fillBlankInput');
+        if (fillInput) {
+            fillInput.disabled = true;
+        }
     }
 
     function updateFavoriteBtn(q) {
@@ -231,6 +397,17 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Keyboard shortcuts
     document.onkeydown = function(e) {
         if (!questions.length) return;
+        
+        // 如果焦点在输入框、textarea或contentEditable元素内，不触发快捷键
+        const activeElement = document.activeElement;
+        if (activeElement && (
+            activeElement.tagName === 'INPUT' || 
+            activeElement.tagName === 'TEXTAREA' || 
+            activeElement.contentEditable === 'true'
+        )) {
+            return;
+        }
+        
         const q = questions[currentQuestionIndex];
         const key = e.key.toUpperCase();
 

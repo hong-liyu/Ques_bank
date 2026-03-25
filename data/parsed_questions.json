@@ -1,37 +1,23 @@
 [
   {
-    "type": "favorite",
-    "file": "favorites.json",
-    "origin_name": "收藏",
-    "time": "2025-04-30 10:38:01",
+    "type": "ai",
+    "file": "parsed_790de53f-5c65-43b5-a181-2dad16c1aab0.json",
+    "origin_name": "第1章 C++概述_考试宝导入.docx",
+    "time": "2026-03-25 21:40:04",
     "model": "deepseek-chat"
   },
   {
-    "type": "ai",
-    "file": "parsed_5a37ac45-d9ba-4a28-bce8-0186bcdc15c5.json",
-    "origin_name": "语音基础",
-    "time": "2025-06-27 16:28:34",
-    "model": "deepseek-chat"
+    "type": "manual",
+    "file": "markdown_demo.json",
+    "origin_name": "Markdown + 代码高亮演示题库",
+    "time": "2026-03-25 测试",
+    "model": "manual"
   },
   {
     "type": "ai",
-    "file": "parsed_1f0f5daf-53db-46d8-ab25-d5f8a3938503.json",
-    "origin_name": "辅音与元音",
-    "time": "2025-06-27 16:37:48",
-    "model": "deepseek-chat"
-  },
-  {
-    "type": "ai",
-    "file": "parsed_f09f74d6-ee54-4088-b4e3-e0f969b6417f.json",
-    "origin_name": "连读与语调",
-    "time": "2025-06-27 16:49:07",
-    "model": "deepseek-chat"
-  },
-  {
-    "type": "ai",
-    "file": "parsed_0fb3bd22-a00d-402e-be13-84c75274bfe9.json",
-    "origin_name": "音节结构与单词重音",
-    "time": "2025-06-27 16:53:47",
+    "file": "parsed_c3c83ab0-d088-44d5-9048-0f8d4dc660db.json",
+    "origin_name": "第2章 数据类型、运算符和表达式_考试宝导入 (1).docx",
+    "time": "2026-03-25 22:40:30",
     "model": "deepseek-chat"
   }
 ]

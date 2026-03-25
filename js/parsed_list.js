@@ -10,12 +10,40 @@ document.addEventListener('DOMContentLoaded', function() {
 
     let allHistory = []; // Store all fetched history
 
+    // 添加刷新按钮到过滤控件中
+    function addRefreshButton() {
+        const filterControls = document.querySelector('.filter-controls');
+        if (filterControls && !document.getElementById('refreshBtn')) {
+            const refreshBtn = document.createElement('button');
+            refreshBtn.id = 'refreshBtn';
+            refreshBtn.type = 'button';
+            refreshBtn.className = 'action-btn';
+            refreshBtn.style.cssText = 'background:#059669;color:white;border:none;padding:0.8em 1.2em;border-radius:0.5em;cursor:pointer;';
+            refreshBtn.innerHTML = '🔄 刷新列表';
+            refreshBtn.title = '刷新题库列表，同步最新数据';
+            refreshBtn.onclick = function() {
+                this.disabled = true;
+                this.innerHTML = '刷新中...';
+                fetchAndRenderHistory().then(() => {
+                    this.disabled = false;
+                    this.innerHTML = '🔄 刷新列表';
+                }).catch(() => {
+                    this.disabled = false;
+                    this.innerHTML = '🔄 刷新列表';
+                });
+            };
+            filterControls.appendChild(refreshBtn);
+        }
+    }
+
     async function fetchAndRenderHistory() {
         try {
-            const resp = await fetch('http://127.0.0.1:5000/api/history_questions');
+            // 添加时间戳防止浏览器缓存
+            const resp = await fetch('/api/history_questions?t=' + Date.now());
             const data = await resp.json();
             if (data.success && Array.isArray(data.history)) {
                 allHistory = data.history;
+                console.log(`成功获取 ${allHistory.length} 个题库记录`);
             } else {
                 allHistory = [];
             }
@@ -98,7 +126,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
                 try {
-                    const resp = await fetch(`http://127.0.0.1:5000/data/parsed/${file}`);
+                    const resp = await fetch(`/data/parsed/${file}`);
                     const questions = await resp.json();
                     sessionStorage.setItem('quiz_questions', JSON.stringify(questions));
                     const item = allHistory.find(h => h.file === file);
@@ -119,7 +147,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
                 try {
-                    const resp = await fetch(`http://127.0.0.1:5000/data/parsed/${file}`);
+                    const resp = await fetch(`/data/parsed/${file}`);
                     const questions = await resp.json();
 
                     previewContent.innerHTML = questions.map((q, i) => {
@@ -158,7 +186,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!confirm('确定要删除该题库吗？')) return;
 
                 try {
-                    const resp = await fetch('http://127.0.0.1:5000/api/delete_history', {
+                    const resp = await fetch('/api/delete_history', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ file })
@@ -195,5 +223,10 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Initial fetch and render
+    addRefreshButton();
     fetchAndRenderHistory();
+
+    // 可选：每60秒自动刷新一次（确保数据同步）
+    // 注：可根据需要调整时间间隔或注释掉此行
+    setInterval(fetchAndRenderHistory, 60000);  // 60秒刷新一次
 });

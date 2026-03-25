@@ -71,7 +71,13 @@ def extract_json_from_text(text):
     except Exception as e:
         raise RuntimeError(f"JSON 提取失败：{e}")
     
-def call_deepseek_api(prompt, api_key, model="deepseek-chat", api_base="https://api.deepseek.com/v1", task_id=None):
+def call_deepseek_api(prompt, api_key, model="deepseek-chat", api_base="https://api.deepseek.com/v1", task_id=None, max_tokens=6144):
+    """调用 DeepSeek API 解析题目
+    
+    参数:
+      max_tokens: 最大生成 token 数，默认 6144（从 2048 升级）
+                  含代码段的题库建议使用 6144-8192
+    """
     url = f"{api_base}/chat/completions"
     headers = {
         "Authorization": f"Bearer {api_key}",
@@ -81,7 +87,7 @@ def call_deepseek_api(prompt, api_key, model="deepseek-chat", api_base="https://
         "model": model,
         "messages": [{"role": "user", "content": prompt}],
         "temperature": 0.2,
-        "max_tokens": 2048
+        "max_tokens": max_tokens  # 参数化而非硬编码
     }
 
     task_prefix = f"任务[{task_id}]" if task_id else "AI解析"
@@ -133,8 +139,15 @@ def call_deepseek_api(prompt, api_key, model="deepseek-chat", api_base="https://
         for q in questions:
             # 确保 q 是字典再处理
             if isinstance(q, dict):
+                # 改进：支持多答案格式（用 | 分隔符）
                 if isinstance(q.get("answer"), list):
-                    q["answer"] = "".join(q["answer"])
+                    # 列表转字符串：多答案用 | 分隔
+                    # 例如：["答案1", "答案2"] → "答案1|答案2"
+                    answer_list = [str(a).strip() for a in q["answer"] if a]
+                    q["answer"] = "|".join(answer_list) if answer_list else ""
+                elif isinstance(q.get("answer"), str):
+                    # 保持原字符串，可能已含 | 分隔符
+                    q["answer"] = q["answer"].strip()
                 processed_questions.append(q)
         # 新增：如果全部被过滤掉，记录AI原始返回内容
         if not processed_questions:
@@ -223,10 +236,21 @@ def parse_file_with_ai(file_bytes, file_extension, model="deepseek-chat", custom
 
     if abort_flag and abort_flag.is_set():
         raise Exception("任务被中断")
-    # 直接将全部内容交给AI，不再本地分块
+    
+    # 合并题目内容并进行长度检查
     full_content = "\n".join(filtered_lines)
-    logger.info(f"{task_prefix} 直接将全部题目内容交给AI：")
-    logger.info(full_content)
+    content_length = len(full_content)
+    estimated_tokens = content_length // 3  # 粗略估算：1 token ≈ 3 汉字/字符
+    
+    logger.info(f"{task_prefix} 题目内容统计：{content_length} 字符，估约 {estimated_tokens} tokens")
+    
+    # 警告过大的内容（接近 max_tokens 限制）
+    if estimated_tokens > 4096:
+        logger.warning(f"{task_prefix} ⚠️ 警告：题目内容较大（{estimated_tokens} tokens），建议：")
+        logger.warning(f"{task_prefix}    1) 分次上传（拆分文件）")
+        logger.warning(f"{task_prefix}    2) 或在调用时增加 max_tokens 参数到 8192")
+    
+    logger.info(f"{task_prefix} 将题目内容交给 AI 解析（无本地分块）")
 
     def build_prompt(content):
         if custom_prompt:
@@ -234,13 +258,57 @@ def parse_file_with_ai(file_bytes, file_extension, model="deepseek-chat", custom
             if "{content}" not in custom_prompt:
                 prompt += "\n" + content
         else:
-            prompt = f"""你是一个结构化抽取助手。请将以下题目解析为 JSON 数组格式，每题包含：
-        - "type"（题型：单选/多选/判断/填空）
-        - "content"（题干）
-        - "options"（选项，如无则为 [] 空数组）
-        - "answer"（答案：单选为选项字母；多选为选项字母拼接的字符串；判断题为 "True" 或 "False"；填空题为答案数组）
-只返回 JSON 数组，数组内每个元素必须是题目对象，不要添加任何解释性文字、注释、字符串或 markdown 代码块。
+            # v2.0 版本提示词：专业级结构化提示，含完整的代码排版规范
+            prompt = f"""你是一个专业的结构化题目抽取助手。请将以下题目解析为 JSON 数组。
+
+## 输出格式
+
+返回一个 JSON 数组，每题包含字段：
+- "type"：题型（单选/多选/判断/填空）
+- "content"：题干。若含代码，**必须按下述规范使用 Markdown**
+- "options"：选项列表，无则为 []
+- "answer"：答案文本
+
+## 【代码块 Markdown 规范】
+
+**格式**：
+```[语言标签]
+代码内容
+```
+
+**示例**：
+```cpp
+#include <iostream>
+using namespace std;
+int main() {{
+    cout << "Hello" << endl;
+    return 0;
+}}
+```
+
+**代码排版要求**（重点）：
+1. 使用三反引号 + 语言标签（cpp, python, java, javascript, sql, html, css, bash, shell, json, xml, yaml, plaintext 等）
+2. 严格保留原始的缩进、换行和代码格式
+3. 代码块内部必须保持紧凑：勿在代码块开头、结尾或两行代码之间添加额外空白行
+4. 保持原代码风格：运算符周围的空格（如 `cout << x << y;`）要保留，勿修改
+5. 预期效果：渲染后代码块整洁紧凑，无多余留白，易于阅读
+
+## 答案格式
+
+- **单选**：单个字母，如 `"A"`
+- **多选**：用 | 分隔，如 `"A|B"` 或 `"A|C|D"`
+- **判断**：`"True"` 或 `"False"`
+- **填空**：答案文本。多答案用 | 分隔，如 `"答案1|答案2|答案3"`
+
+## 关键要求
+
+1. 只返回 JSON 数组，无额外文本、markdown 代码块、解释或注释
+2. 代码块在 content 中用 Markdown 格式，不放在 options 中
+3. 严格 JSON 格式：正确的引号、逗号、方括号、花括号
+4. 保留原始格式：题干的换行、缩进、特殊字符都要保留
+
 题目内容如下：
+
 {content}
 """
         return prompt
@@ -255,12 +323,19 @@ def parse_file_with_ai(file_bytes, file_extension, model="deepseek-chat", custom
     try:
         if abort_flag and abort_flag.is_set():
             raise Exception("任务被中断")
+        
+        # 根据内容大小动态调整 max_tokens
+        # 基础值：6144 tokens。内容越大，max_tokens 越需要增加
+        dynamic_max_tokens = max(6144, estimated_tokens + 1024)
+        logger.info(f"{task_prefix} 使用动态 max_tokens: {dynamic_max_tokens}（基础 6144 + 预留 1024）")
+        
         res = call_deepseek_api(
             prompt,
             real_api_key,
             model,
             real_api_base,
-            task_id
+            task_id,
+            max_tokens=dynamic_max_tokens  # 参数化，而非硬编码的 2048
         )
         if abort_flag and abort_flag.is_set():
             raise Exception("任务被中断")

@@ -25,8 +25,9 @@ CORS(app)
 progress_dict = {}
 abort_flags = {}  # 新增：任务中断标志
 
-# 历史题库持久化相关配置
-DATA_DIR = './data'
+# 历史题库持久化相关配置 - 使用绝对路径避免后台线程路径问题
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DATA_DIR = os.path.join(BASE_DIR, 'data')
 HISTORY_FILE = os.path.join(DATA_DIR, 'parsed_questions.json')
 PARSED_DIR = os.path.join(DATA_DIR, 'parsed')
 
@@ -45,8 +46,11 @@ def load_history():
 def save_history(history):
     os.makedirs(DATA_DIR, exist_ok=True)
     try:
-        with open(HISTORY_FILE, 'w', encoding='utf-8') as f:
+        file_path = os.path.join(DATA_DIR, 'parsed_questions.json')
+        logger.info(f"保存历史题库到: {os.path.abspath(file_path)}")
+        with open(file_path, 'w', encoding='utf-8') as f:
             json.dump(history, f, ensure_ascii=False, indent=2)
+        logger.info(f"历史题库保存成功，共 {len(history)} 条记录")
     except Exception as e:
         logger.error(f"保存历史题库失败: {e}")
 
@@ -56,17 +60,43 @@ def save_parsed_questions(questions):
     file_id = str(uuid.uuid4())
     file_name = f'parsed_{file_id}.json'
     file_path = os.path.join(PARSED_DIR, file_name)
-    with open(file_path, 'w', encoding='utf-8') as f:
-        json.dump(questions, f, ensure_ascii=False, indent=2)
+    logger.info(f"保存解析结果到: {os.path.abspath(file_path)}")
+    try:
+        with open(file_path, 'w', encoding='utf-8') as f:
+            json.dump(questions, f, ensure_ascii=False, indent=2)
+        logger.info(f"解析结果保存成功，文件: {file_name}，题目数: {len(questions)}")
+    except Exception as e:
+        logger.error(f"保存解析结果失败: {e}")
+        raise
     return file_name
 
 # ========== 新增：历史题库接口 ==========
 @app.route('/api/history_questions')
 def history_questions():
     """
-    获取所有历史题库
+    获取所有历史题库，并验证文件是否真实存在
+    自动删除指向不存在文件的记录（清理孤立记录）
     """
-    return jsonify(success=True, history=load_history())
+    try:
+        history = load_history()
+        # 验证每个记录的文件是否存在
+        valid_history = []
+        for record in history:
+            file_path = os.path.join(PARSED_DIR, record.get('file', ''))
+            if os.path.exists(file_path):
+                valid_history.append(record)
+            else:
+                logger.warning(f"历史记录指向不存在的文件，已移除: {record.get('file')}")
+        
+        # 如果有删除的记录，更新历史文件
+        if len(valid_history) < len(history):
+            logger.info(f"清理孤立记录: 删除 {len(history) - len(valid_history)} 条")
+            save_history(valid_history)
+        
+        return jsonify(success=True, history=valid_history)
+    except Exception as e:
+        logger.error(f"获取历史题库失败: {e}")
+        return jsonify(success=False, error=str(e)), 500
 
 @app.route('/api/upload_question', methods=['POST'])
 def upload_question():
@@ -76,7 +106,7 @@ def upload_question():
     try:
         logger.info("收到文件，开始解析 docx ...")
         doc = Document(file)
-        lines = [p.text.strip() for p in doc in doc.paragraphs if p.text.strip()]
+        lines = [p.text.strip() for p in doc.paragraphs if p.text.strip()]
         questions = []
         q_pattern = r'^\s*(\d+)[\.\)、)]\s*'
         current, current_num = "", None
@@ -153,14 +183,26 @@ def ai_upload_question():
 
 @app.route('/data/parsed/<path:filename>')
 def serve_parsed_file(filename):
-    import os
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    parsed_dir = os.path.join(base_dir, 'data', 'parsed')
-    print('base_dir:', base_dir)
-    print('parsed_dir:', parsed_dir)
-    print('请求文件:', filename)
-    print('文件是否存在:', os.path.exists(os.path.join(parsed_dir, filename)))
-    return send_from_directory(parsed_dir, filename)
+    """
+    提供解析后的题库JSON文件
+    """
+    try:
+        file_path = os.path.join(PARSED_DIR, filename)
+        
+        # 安全检查：确保请求的文件在允许的目录内
+        if not os.path.abspath(file_path).startswith(os.path.abspath(PARSED_DIR)):
+            logger.warning(f"非法访问: {file_path}")
+            return jsonify(success=False, error='非法访问'), 403
+        
+        if not os.path.exists(file_path):
+            logger.warning(f"请求的文件不存在: {file_path}")
+            return jsonify(success=False, error='文件不存在'), 404
+        
+        logger.info(f"提供文件: {file_path}")
+        return send_from_directory(PARSED_DIR, filename)
+    except Exception as e:
+        logger.error(f"提供文件失败: {e}")
+        return jsonify(success=False, error=str(e)), 500
 
 @app.route('/api/ai_upload_progress')
 def ai_upload_progress():
@@ -203,16 +245,25 @@ def delete_history():
     return jsonify(success=True)
 
 # ========== 收藏题目接口 ==========
-@app.route('/api/favorite_question', methods=['POST', 'DELETE'])
+@app.route('/api/favorite_question', methods=['GET', 'POST', 'DELETE'])
 def favorite_question():
     """
+    GET: 获取所有收藏的题目
     POST: 收藏单个题目，保存到 favorites.json，避免重复收藏。
     DELETE: 取消收藏（同步删除 favorites.json 中对应题目）。
     """
-    DATA_DIR = './data/parsed'
-    FAVORITES_FILE = os.path.join(DATA_DIR, 'favorites.json')
-    os.makedirs(DATA_DIR, exist_ok=True)
+    FAVORITES_FILE = os.path.join(PARSED_DIR, 'favorites.json')
+    os.makedirs(PARSED_DIR, exist_ok=True)
     try:
+        if request.method == 'GET':
+            # 直接读取并返回 favorites.json 中的所有收藏
+            if os.path.exists(FAVORITES_FILE):
+                with open(FAVORITES_FILE, 'r', encoding='utf-8') as f:
+                    favorites = json.load(f)
+            else:
+                favorites = []
+            return jsonify(success=True, favorites=favorites)
+        
         question = request.get_json()
         if not question:
             return jsonify(success=False, error='缺少题目信息')
