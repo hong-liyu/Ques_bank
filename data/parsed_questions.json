@@ -2,22 +2,22 @@
   {
     "type": "ai",
     "file": "parsed_790de53f-5c65-43b5-a181-2dad16c1aab0.json",
-    "origin_name": "第1章 C++概述_考试宝导入.docx",
+    "origin_name": "第1章 C++概述.docx",
     "time": "2026-03-25 21:40:04",
     "model": "deepseek-chat"
   },
   {
-    "type": "manual",
-    "file": "markdown_demo.json",
-    "origin_name": "Markdown + 代码高亮演示题库",
-    "time": "2026-03-25 测试",
-    "model": "manual"
+    "type": "ai",
+    "file": "parsed_c3c83ab0-d088-44d5-9048-0f8d4dc660db.json",
+    "origin_name": "第2章 数据类型、运算符和表达式 .docx",
+    "time": "2026-03-25 22:40:30",
+    "model": "deepseek-chat"
   },
   {
     "type": "ai",
-    "file": "parsed_c3c83ab0-d088-44d5-9048-0f8d4dc660db.json",
-    "origin_name": "第2章 数据类型、运算符和表达式_考试宝导入 (1).docx",
-    "time": "2026-03-25 22:40:30",
+    "file": "parsed_658e15cc-6bc1-49cc-8825-7880693fc140.json",
+    "origin_name": "第3章 C++输入输出.docx",
+    "time": "2026-03-25 23:14:09",
     "model": "deepseek-chat"
   }
 ]

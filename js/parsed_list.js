@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', function() {
             card.innerHTML = `
                 <div class="card-info">
                     <h3>${item.origin_name || item.title || '未命名题库'}</h3>
-                    <p class="file-name">文件名: ${item.file}</p>
+                    <p class="file-name" style="display:none;">文件名: ${item.file}</p>
                     <p class="upload-time">上传时间: ${item.time || '未知'}</p>
                 </div>
                 <div class="card-actions">
@@ -103,6 +103,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     <button class="action-btn preview-btn" data-file="${item.file}">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                         预览
+                    </button>
+                    <button class="action-btn rename-btn" data-file="${item.file}" data-name="${item.origin_name || item.title || '未命名题库'}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+                        重命名
                     </button>
                     <button class="action-btn delete-btn" data-file="${item.file}">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
@@ -199,6 +203,51 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 } catch (e) {
                     alert('请求后端删除失败');
+                    console.error(e);
+                }
+            };
+        });
+
+        // Rename button event handlers
+        historyGrid.querySelectorAll('.rename-btn').forEach(btn => {
+            btn.onclick = async function() {
+                const file = this.getAttribute('data-file');
+                const currentName = this.getAttribute('data-name');
+                
+                if (!file) {
+                    alert('找不到题库文件，无法重命名');
+                    return;
+                }
+
+                // Prompt user for new name
+                const newName = prompt('请输入新的题库名称:', currentName);
+                if (!newName || newName.trim() === '') {
+                    return; // User cancelled or entered empty string
+                }
+
+                const trimmedName = newName.trim();
+                if (trimmedName === currentName) {
+                    return; // No change needed
+                }
+
+                try {
+                    const resp = await fetch('/api/rename_question', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            old_file: file, 
+                            new_name: trimmedName 
+                        })
+                    });
+                    const data = await resp.json();
+                    if (data.success) {
+                        alert('重命名成功！');
+                        fetchAndRenderHistory(); // Re-fetch and re-render after rename
+                    } else {
+                        alert('重命名失败：' + (data.error || '未知错误'));
+                    }
+                } catch (e) {
+                    alert('请求后端重命名失败');
                     console.error(e);
                 }
             };

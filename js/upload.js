@@ -9,6 +9,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const customPrompt = document.getElementById('customPrompt');
     const parseBtn = document.getElementById('parseBtn');
 
+    // 初始化：隐藏 JSON 预览区域
+    parseResult.style.display = 'none';
+
     let selectedFile = null;
     let currentTaskId = null;
     let lastParsedQuestions = []; // 存储最后一次解析的题目
@@ -72,6 +75,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         loadingSpinner.style.display = 'block';
+        parseResult.style.display = 'none';
         parseResult.textContent = '';
         uploadStatus.textContent = '正在上传并解析...';
         uploadStatus.style.color = '#3b82f6';
@@ -126,7 +130,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                             loadingSpinner.style.display = 'none';
                             uploadStatus.textContent = `解析完成！共 ${lastParsedQuestions.length} 题`;
                             uploadStatus.style.color = '#059669';
-                            parseResult.textContent = JSON.stringify(lastParsedQuestions, null, 2);
+                            // 隐藏 JSON 预览，只保留去刷题按钮
+                            parseResult.style.display = 'none';
                             
                             // 保存到 sessionStorage 便于后续跳转
                             sessionStorage.setItem('quiz_questions', JSON.stringify(lastParsedQuestions));
@@ -153,6 +158,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             loadingSpinner.style.display = 'none';
             uploadStatus.textContent = `错误: ${error.message}`;
             uploadStatus.style.color = '#e74c3c';
+            parseResult.style.display = 'none';
             parseResult.textContent = '';
         } finally {
             parseBtn.disabled = false;

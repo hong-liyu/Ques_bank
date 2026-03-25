@@ -244,6 +244,42 @@ def delete_history():
         logger.error(f"删除题库文件失败: {e}")
     return jsonify(success=True)
 
+@app.route('/api/rename_question', methods=['POST'])
+def rename_question():
+    """重命名题库文件，更新索引中的 origin_name"""
+    data = request.get_json()
+    old_file = data.get('old_file')
+    new_name = data.get('new_name')
+    
+    if not old_file or not new_name:
+        return jsonify(success=False, error='缺少参数：old_file 或 new_name')
+    
+    new_name = new_name.strip()
+    if not new_name:
+        return jsonify(success=False, error='新名称不能为空')
+    
+    history = load_history()
+    
+    # 查找对应的记录
+    item_found = False
+    for item in history:
+        if item.get('file') == old_file:
+            item['origin_name'] = new_name  # 更新名称
+            item_found = True
+            break
+    
+    if not item_found:
+        return jsonify(success=False, error='未找到对应的题库记录')
+    
+    # 保存更新后的历史记录
+    try:
+        save_history(history)
+        logger.info(f"成功重命名题库: {old_file} -> {new_name}")
+        return jsonify(success=True, message='重命名成功')
+    except Exception as e:
+        logger.error(f"保存重命名失败: {e}")
+        return jsonify(success=False, error=f'保存失败: {str(e)}')
+
 # ========== 收藏题目接口 ==========
 @app.route('/api/favorite_question', methods=['GET', 'POST', 'DELETE'])
 def favorite_question():
