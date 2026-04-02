@@ -3,4 +3,6 @@
 
 # 题库文件
 data/
+api/data/
 
+web-artifacts-builder

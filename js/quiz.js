@@ -72,6 +72,52 @@ document.addEventListener('DOMContentLoaded', async function() {
         document.head.appendChild(script);
     }
 
+    // ========== 数据加载逻辑 (突破 sessionStorage 限制) ==========
+    async function loadQuizData() {
+        // 先检查 URL 是否传入了 file 参数
+        const urlParams = new URLSearchParams(window.location.search);
+        const fileName = urlParams.get('file');
+        const titleFromUrl = urlParams.get('title');
+
+        if (fileName) {
+            try {
+                // 如果是从 URL 传入的具体文件，则通过 fetch 异步获取，不再受限 sessionStorage 容量
+                const response = await fetch(`/data/parsed/${fileName}`);
+                if (!response.ok) throw new Error('无法拉取题库数据');
+                questions = await response.json();
+                quizTitleHeader.textContent = titleFromUrl || '大文件题库';
+            } catch (err) {
+                console.error(err);
+                if (typeof showToast === 'function') showToast('题库加载失败，请返回重试', 'error');
+                else alert('题库加载失败!');
+                return;
+            }
+        } else {
+            // 后备方案（兼容旧逻辑）：从 sessionStorage 加载
+            const stored = sessionStorage.getItem('quiz_questions');
+            const storedTitle = sessionStorage.getItem('quiz_title');
+            if (stored) {
+                try {
+                    questions = JSON.parse(stored);
+                    quizTitleHeader.textContent = storedTitle || '本地题库';
+                } catch (e) {
+                    if (typeof showToast === 'function') showToast('解析缓存数据失败', 'error');
+                }
+            }
+        }
+
+        if (!questions || questions.length === 0) {
+            questionContentDiv.innerHTML = '<p style="color:red;">未找到题目数据，请先上传解析或通过历史题库进入。</p>';
+            optionsArea.innerHTML = '';
+            return;
+        }
+
+        // 初始化答题记录
+        answerRecord = new Array(questions.length).fill(null);
+        updateNavigatorSidebar();
+        renderQuestion(0);
+    }
+
     function shuffleArray(arr) {
         for (let i = arr.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -468,6 +514,9 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
         }
     };
+
+    loadQuizData();
+    return;
 
     // Initial load logic
     const storedQuestions = sessionStorage.getItem('quiz_questions');

@@ -150,22 +150,32 @@ def ai_upload_question():
     model = request.form.get('model', 'deepseek-chat')
     file_bytes = file.read()
     task_id = str(uuid.uuid4())
-    progress_dict[task_id] = {'status': 'pending'}
+    progress_dict[task_id] = {'status': 'pending', 'percent': 0, 'msg': '准备上传...'}
     abort_flags[task_id] = threading.Event()  # 新增：为任务创建中断标志
     logger.info(f"创建AI解析任务：{task_id}，模型：{model}，文件类型：{file_extension}")
 
     def run_parse():
         import io
         try:
-            # 新增：传递abort_flag给AI解析
+            def progress_callback(percent, msg):
+                progress_dict[task_id]['percent'] = percent
+                progress_dict[task_id]['msg'] = msg
+                logger.info(f"任务[{task_id}] 进度：{percent}% - {msg}")
+
+            # 新增：传递abort_flag给AI解析与进度回调
             questions = parse_file_with_ai(io.BytesIO(file_bytes), file_extension, model=model, custom_prompt=custom_prompt, api_key=DEEPSEEK_API_KEY,
-    api_base=DEEPSEEK_API_BASE, abort_flag=abort_flags[task_id])
+    api_base=DEEPSEEK_API_BASE, abort_flag=abort_flags[task_id], progress_callback=progress_callback)
+            
+            if progress_callback: progress_callback(95, '保存并序列化解析结果...')
+            
             for q in questions:
                 if q.get("type") == "单选" and isinstance(q.get("answer"), str) and len(q.get("answer")) > 1:
                     q["type"] = "多选"
                 if q.get("type") == "单选" and q.get("options") and len(q["options"]) > 2 and isinstance(q["answer"], str) and len(q["answer"]) > 1:
                     q["type"] = "多选"
-            progress_dict[task_id] = {'status': 'done', 'result': questions}
+            
+            progress_dict[task_id] = {'status': 'done', 'result': questions, 'percent': 100, 'msg': '解析完成'}
+            
             # 保存到单独文件
             file_name = save_parsed_questions(questions)
             # 保存索引到历史题库，增加origin_name
@@ -173,7 +183,7 @@ def ai_upload_question():
             history.append({'type': 'ai', 'file': file_name, 'origin_name': filename, 'time': time.strftime('%Y-%m-%d %H:%M:%S'), 'model': model})
             save_history(history)
         except Exception as e:
-            progress_dict[task_id] = {'status': 'error', 'error': str(e)}
+            progress_dict[task_id] = {'status': 'error', 'error': str(e), 'percent': 0, 'msg': '出现错误'}
         finally:
             abort_flags.pop(task_id, None)  # 任务结束后清理标志
     thread = threading.Thread(target=run_parse)

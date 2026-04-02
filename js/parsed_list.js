@@ -126,20 +126,17 @@ document.addEventListener('DOMContentLoaded', function() {
             btn.onclick = async function() {
                 const file = this.getAttribute('data-file');
                 if (!file) {
-                    alert('找不到题库文件名，无法刷题');
+                    if (typeof showToast === 'function') showToast('找不到题库文件名，无法刷题', 'error');
+                    else alert('找不到题库文件名，无法刷题');
                     return;
                 }
-                try {
-                    const resp = await fetch(`/data/parsed/${file}`);
-                    const questions = await resp.json();
-                    sessionStorage.setItem('quiz_questions', JSON.stringify(questions));
-                    const item = allHistory.find(h => h.file === file);
-                    sessionStorage.setItem('quiz_title', item ? (item.origin_name || item.title || '题库') : '题库');
-                    window.location.href = 'quiz.html';
-                } catch (e) {
-                    alert('题库文件读取失败');
-                    console.error(e);
-                }
+                
+                const item = allHistory.find(h => h.file === file);
+                const title = item ? (item.origin_name || item.title || '题库') : '题库';
+                
+                // 【优化内存限制】不再使用 sessionStorage 直接存储超大 JSON
+                // 而是通过 URL 参数传递文件名到 quiz.html，由其自主 fetch
+                window.location.href = `quiz.html?file=${encodeURIComponent(file)}&title=${encodeURIComponent(title)}`;
             };
         });
 
@@ -147,7 +144,8 @@ document.addEventListener('DOMContentLoaded', function() {
             btn.onclick = async function() {
                 const file = this.getAttribute('data-file');
                 if (!file) {
-                    alert('找不到题库文件名，无法预览');
+                    if (typeof showToast === 'function') showToast('找不到题库文件名，无法预览', 'error');
+                    else alert('找不到题库文件名，无法预览');
                     return;
                 }
                 try {
@@ -174,7 +172,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     previewModal.style.display = 'flex';
                     if (backHomeBtn) backHomeBtn.style.display = 'none';
                 } catch (e) {
-                    alert('题库文件读取失败');
+                    if (typeof showToast === 'function') showToast('题库文件读取失败', 'error');
+                    else alert('题库文件读取失败');
                     console.error(e);
                 }
             };
@@ -184,10 +183,19 @@ document.addEventListener('DOMContentLoaded', function() {
             btn.onclick = async function() {
                 const file = this.getAttribute('data-file');
                 if (!file) {
-                    alert('找不到题库文件名，无法删除');
+                    if (typeof showToast === 'function') showToast('找不到题库文件名，无法删除', 'error');
                     return;
                 }
-                if (!confirm('确定要删除该题库吗？')) return;
+                
+                const confirmed = typeof showConfirmDialog === 'function' ? 
+                    await showConfirmDialog({
+                        title: '删除确认',
+                        message: '确定要永久删除该题库及解析出的文件吗？<br>此操作无法撤销。',
+                        confirmText: '删除',
+                        type: 'danger'
+                    }) : confirm('确定要删除该题库吗？');
+                
+                if (!confirmed) return;
 
                 try {
                     const resp = await fetch('/api/delete_history', {
@@ -197,12 +205,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     });
                     const data = await resp.json();
                     if (data.success) {
+                        if (typeof showToast === 'function') showToast('删除成功', 'success');
                         fetchAndRenderHistory(); // Re-fetch and re-render after deletion
                     } else {
-                        alert('删除失败：' + (data.error || '未知错误'));
+                        if (typeof showToast === 'function') showToast('删除失败：' + (data.error || '未知错误'), 'error');
                     }
                 } catch (e) {
-                    alert('请求后端删除失败');
+                    if (typeof showToast === 'function') showToast('请求后端删除失败', 'error');
                     console.error(e);
                 }
             };
@@ -215,12 +224,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 const currentName = this.getAttribute('data-name');
                 
                 if (!file) {
-                    alert('找不到题库文件，无法重命名');
+                    if (typeof showToast === 'function') showToast('找不到题库文件，无法重命名', 'error');
                     return;
                 }
 
                 // Prompt user for new name
-                const newName = prompt('请输入新的题库名称:', currentName);
+                const newName = typeof showPromptDialog === 'function' ? 
+                    await showPromptDialog({
+                        title: '重命名题库',
+                        defaultValue: currentName,
+                        placeholder: '请输入新名称...'
+                    }) : prompt('请输入新的题库名称:', currentName);
+
                 if (!newName || newName.trim() === '') {
                     return; // User cancelled or entered empty string
                 }
@@ -241,13 +256,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     });
                     const data = await resp.json();
                     if (data.success) {
-                        alert('重命名成功！');
+                        if (typeof showToast === 'function') showToast('重命名成功！', 'success');
                         fetchAndRenderHistory(); // Re-fetch and re-render after rename
                     } else {
-                        alert('重命名失败：' + (data.error || '未知错误'));
+                        if (typeof showToast === 'function') showToast('重命名失败：' + (data.error || '未知错误'), 'error');
                     }
                 } catch (e) {
-                    alert('请求后端重命名失败');
+                    if (typeof showToast === 'function') showToast('请求后端重命名失败', 'error');
                     console.error(e);
                 }
             };

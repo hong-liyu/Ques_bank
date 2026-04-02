@@ -165,7 +165,7 @@ def call_deepseek_api(prompt, api_key, model="deepseek-chat", api_base="https://
             "error": str(e)
         }]
 
-def parse_file_with_ai(file_bytes, file_extension, model="deepseek-chat", custom_prompt="", api_key=None, api_base=None, task_id=None, abort_flag=None):
+def parse_file_with_ai(file_bytes, file_extension, model="deepseek-chat", custom_prompt="", api_key=None, api_base=None, task_id=None, abort_flag=None, progress_callback=None):
     """
     使用AI解析文件中的题目
     支持外部中断（abort_flag: threading.Event）
@@ -175,6 +175,7 @@ def parse_file_with_ai(file_bytes, file_extension, model="deepseek-chat", custom
     if abort_flag and abort_flag.is_set():
         raise Exception("任务被中断")
 
+    if progress_callback: progress_callback(5, '正在提取文件文本...')
     full_content = ""
     if file_extension == ".docx":
         doc = Document(file_bytes)
@@ -237,6 +238,8 @@ def parse_file_with_ai(file_bytes, file_extension, model="deepseek-chat", custom
     if abort_flag and abort_flag.is_set():
         raise Exception("任务被中断")
     
+    if progress_callback: progress_callback(15, '正在过滤非相关内容与整理排版...')
+
     # 合并题目内容并进行长度检查
     full_content = "\n".join(filtered_lines)
     content_length = len(full_content)
@@ -250,6 +253,7 @@ def parse_file_with_ai(file_bytes, file_extension, model="deepseek-chat", custom
         logger.warning(f"{task_prefix}    1) 分次上传（拆分文件）")
         logger.warning(f"{task_prefix}    2) 或在调用时增加 max_tokens 参数到 8192")
     
+    if progress_callback: progress_callback(30, '正在请求 AI 进行解析... (可能需要10-60秒，请耐心等待)')
     logger.info(f"{task_prefix} 将题目内容交给 AI 解析（无本地分块）")
 
     def build_prompt(content):
@@ -329,6 +333,7 @@ int main() {{
         dynamic_max_tokens = max(6144, estimated_tokens + 1024)
         logger.info(f"{task_prefix} 使用动态 max_tokens: {dynamic_max_tokens}（基础 6144 + 预留 1024）")
         
+        # 为了展示进度，传入 progress_callback（可在call_deepseek_api内部做更细粒度进度，但目前可保持简单）
         res = call_deepseek_api(
             prompt,
             real_api_key,
@@ -337,6 +342,9 @@ int main() {{
             task_id,
             max_tokens=dynamic_max_tokens  # 参数化，而非硬编码的 2048
         )
+        
+        if progress_callback: progress_callback(90, '正在将 AI 提取的数据整理为标准格式...')
+
         if abort_flag and abort_flag.is_set():
             raise Exception("任务被中断")
         logger.info(f"{task_prefix} AI原始返回内容：{res}")

@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="../css/upload.css">
 </head>
 <body>
-<body>
     <div class="upload-container">
         
         <header class="page-header">
@@ -33,7 +32,7 @@
                                 <line x1="12" y1="3" x2="12" y2="15"></line>
                             </svg>
                             <p>拖拽文件到此处，或点击选择</p>
-                            <input type="file" id="questionFile" name="questionFile" accept=".docx" required style="display: none;">
+                            <input type="file" id="questionFile" name="questionFile" accept=".docx,.pdf,.txt" required style="display: none;">
                         </div>
                         <div class="file-info" id="fileInfo"></div>
                     </div>
@@ -56,12 +55,26 @@
                         </button>
                     </div>
                     <div id="uploadStatus" class="status-message"></div>
+                    
+                    <!-- 新增进度条组件 -->
+                    <div class="progress-container" id="progressContainer" style="display:none;">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                        <div class="progress-text">
+                            <span id="progressPercent" style="font-weight: bold; color: var(--primary-color);">0%</span>
+                            <span id="progressMsg" style="margin-left: 10px; color: var(--text-grey); font-size: 0.9em;">准备上传...</span>
+                        </div>
+                    </div>
+
                     <div class="loading-spinner" id="loadingSpinner" style="display:none;"></div>
                     <pre id="parseResult" class="parse-result"></pre>
                     <button type="button" id="toQuizBtn" style="display:none;">去刷题</button> </form>
             </main>
         </div>
     </div>
+    <script src="../js/dialog_toast.js"></script>
     <script src="../js/upload.js"></script>
+    <script src="../js/theme_toggle.js"></script>
 </body>
 </html>

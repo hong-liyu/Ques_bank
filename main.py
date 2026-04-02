@@ -1,12 +1,20 @@
-import webview
+import os
 import subprocess
+import sys
 import threading
 import time
-import os
+
+try:
+    import webview
+except ImportError as exc:
+    raise SystemExit(
+        "pywebview 未安装，请先执行 `pip install -r requirements.txt` 后再运行 main.py"
+    ) from exc
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def start_backend():
     # 启动后端服务
-    subprocess.Popen(['python', 'api/app.py'])
+    subprocess.Popen([sys.executable, os.path.join(BASE_DIR, 'api', 'app.py')], cwd=BASE_DIR)
 
 if __name__ == '__main__':
     # 启动后端
