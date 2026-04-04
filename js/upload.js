@@ -8,6 +8,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const toQuizBtn = document.getElementById('toQuizBtn');
     const customPrompt = document.getElementById('customPrompt');
     const parseBtn = document.getElementById('parseBtn');
+    const customPromptToggle = document.getElementById('customPromptToggle');
+    const customPromptPanel = document.getElementById('customPromptPanel');
+    const nameModal = document.getElementById('nameConfirmModal');
+    const nameModalInput = document.getElementById('customNameInput');
+    const nameModalConfirm = document.getElementById('nameModalConfirm');
+    const nameModalCancel = document.getElementById('nameModalCancel');
+    const nameModalClose = document.getElementById('nameModalClose');
 
     // 进度条相关元素
     const progressContainer = document.getElementById('progressContainer');
@@ -18,9 +25,43 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 初始化：隐藏 JSON 预览区域
     parseResult.style.display = 'none';
 
+    if (customPromptToggle && customPromptPanel) {
+        customPromptToggle.addEventListener('click', () => {
+            const isOpen = customPromptPanel.classList.toggle('is-open');
+            customPromptToggle.setAttribute('aria-expanded', isOpen.toString());
+            if (isOpen && customPrompt) {
+                customPrompt.focus();
+            }
+        });
+    }
+
+    function setNameModalOpen(isOpen) {
+        if (!nameModal) return;
+        nameModal.classList.toggle('is-open', isOpen);
+        nameModal.setAttribute('aria-hidden', (!isOpen).toString());
+    }
+
+    function openNameModal(defaultName) {
+        if (!nameModal || !nameModalInput) return;
+        pendingDefaultName = defaultName;
+        nameModalInput.value = defaultName;
+        setNameModalOpen(true);
+        setTimeout(() => nameModalInput.focus(), 0);
+    }
+
+    if (nameModalCancel) {
+        nameModalCancel.addEventListener('click', () => setNameModalOpen(false));
+    }
+
+    if (nameModalClose) {
+        nameModalClose.addEventListener('click', () => setNameModalOpen(false));
+    }
+
     let selectedFile = null;
     let currentTaskId = null;
     let lastParsedQuestions = []; // 存储最后一次解析的题目
+    let currentDisplayName = '';
+    let pendingDefaultName = '';
 
     // 点击拖拽区域打开文件选择器
     dropArea.addEventListener('click', () => {
@@ -57,29 +98,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // 表单提交
-    uploadForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        if (!selectedFile) {
-            uploadStatus.textContent = '请先选择文件';
-            uploadStatus.style.color = '#e74c3c';
-            return;
-        }
-
-        // 检查文件类型和大小
-        if (!selectedFile.name.endsWith('.docx') && !selectedFile.name.endsWith('.pdf') && !selectedFile.name.endsWith('.txt')) {
-            uploadStatus.textContent = '仅支持 .docx, .pdf, .txt 文件';
-            uploadStatus.style.color = '#e74c3c';
-            return;
-        }
-
-        if (selectedFile.size > 50 * 1024 * 1024) { // 50MB 限制
-            uploadStatus.textContent = '文件过大（50MB以内）';
-            uploadStatus.style.color = '#e74c3c';
-            return;
-        }
-
+    async function startUpload(displayName) {
         loadingSpinner.style.display = 'block';
         parseResult.style.display = 'none';
         parseResult.textContent = '';
@@ -97,6 +116,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         formData.append('file', selectedFile);
         formData.append('questionFile', selectedFile);
         formData.append('custom_prompt', customPrompt.value);
+        formData.append('custom_name', displayName);
 
         try {
             // 发送上传请求
@@ -185,7 +205,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             // 但清理冗余项。
                             try {
                                 sessionStorage.setItem('quiz_questions', JSON.stringify(lastParsedQuestions));
-                                sessionStorage.setItem('quiz_title', selectedFile.name);
+                                sessionStorage.setItem('quiz_title', displayName || selectedFile.name);
                             } catch (err) {
                                 console.warn('文件可能过大，无法存入 sessionStorage，请在历史库中查看！', err);
                             }
@@ -221,13 +241,50 @@ document.addEventListener('DOMContentLoaded', async () => {
         } finally {
             parseBtn.disabled = false;
         }
+    }
+
+    // 表单提交
+    uploadForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        if (!selectedFile) {
+            uploadStatus.textContent = '请先选择文件';
+            uploadStatus.style.color = '#e74c3c';
+            return;
+        }
+
+        // 检查文件类型和大小
+        if (!selectedFile.name.endsWith('.docx') && !selectedFile.name.endsWith('.pdf') && !selectedFile.name.endsWith('.txt')) {
+            uploadStatus.textContent = '仅支持 .docx, .pdf, .txt 文件';
+            uploadStatus.style.color = '#e74c3c';
+            return;
+        }
+
+        if (selectedFile.size > 50 * 1024 * 1024) { // 50MB 限制
+            uploadStatus.textContent = '文件过大（50MB以内）';
+            uploadStatus.style.color = '#e74c3c';
+            return;
+        }
+
+        const defaultName = selectedFile.name.replace(/\.[^/.]+$/, '') || selectedFile.name;
+        openNameModal(defaultName);
     });
+
+    if (nameModalConfirm) {
+        nameModalConfirm.addEventListener('click', async () => {
+            if (parseBtn.disabled) return;
+            const trimmedName = (nameModalInput && nameModalInput.value || '').trim();
+            currentDisplayName = trimmedName || pendingDefaultName || (selectedFile ? selectedFile.name : '题库');
+            setNameModalOpen(false);
+            await startUpload(currentDisplayName);
+        });
+    }
 
     // 去刷题按钮
     toQuizBtn.addEventListener('click', () => {
         if (lastParsedQuestions.length > 0) {
             sessionStorage.setItem('quiz_questions', JSON.stringify(lastParsedQuestions));
-            sessionStorage.setItem('quiz_title', selectedFile.name);
+            sessionStorage.setItem('quiz_title', currentDisplayName || (selectedFile ? selectedFile.name : '题库'));
             window.location.href = 'quiz.html';
         }
     });

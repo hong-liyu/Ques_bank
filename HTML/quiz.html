@@ -13,8 +13,10 @@
     <!-- 页面样式 -->
     <link rel="stylesheet" href="../css/quiz.css"> <!-- 引入刷题页面专用样式 -->
     <link rel="stylesheet" href="../css/style.css"> <!-- 引入通用样式 -->
+    <link rel="stylesheet" href="../css/refactor_pages.css">
 </head>
-<body>
+<body class="refactor-page refactor-quiz">
+    <div class="grain" aria-hidden="true"></div>
     <div class="app-container">
         <header class="app-header">
             <a href="parsed_list.html" class="back-home-btn" title="返回题库列表">
@@ -64,6 +66,24 @@
                     <!-- Navigator items will be dynamically loaded here -->
                 </div>
             </aside>
+        </div>
+    </div>
+    <div class="quiz-picker-overlay" id="quizPickerModal" aria-hidden="true">
+        <div class="quiz-picker-card" role="dialog" aria-modal="true" aria-labelledby="quizPickerTitle">
+            <div class="quiz-picker-header">
+                <div>
+                    <p class="quiz-picker-kicker mono">Choose Bank</p>
+                    <h2 id="quizPickerTitle">选择题库</h2>
+                </div>
+                <button type="button" class="quiz-picker-close" id="quizPickerClose" aria-label="关闭">×</button>
+            </div>
+            <p class="quiz-picker-subtitle">请选择要进入的题库，系统会自动加载。</p>
+            <div class="quiz-picker-list" id="quizPickerList"></div>
+            <div class="quiz-picker-empty" id="quizPickerEmpty">暂无题库，请先上传。</div>
+            <div class="quiz-picker-footer">
+                <a class="quiz-picker-link" href="upload.html">去上传题库</a>
+                <a class="quiz-picker-link" href="parsed_list.html">查看历史题库</a>
+            </div>
         </div>
     </div>
     <script src="../js/dialog_toast.js"></script>

@@ -8,11 +8,60 @@ document.addEventListener('DOMContentLoaded', async function() {
     const feedbackArea = document.getElementById('feedbackArea');
     const nextQuestionBtn = document.getElementById('nextQuestionBtn');
     const navigatorGrid = document.getElementById('navigatorGrid');
+    const quizPickerModal = document.getElementById('quizPickerModal');
+    const quizPickerList = document.getElementById('quizPickerList');
+    const quizPickerEmpty = document.getElementById('quizPickerEmpty');
+    const quizPickerClose = document.getElementById('quizPickerClose');
 
     let questions = []; // Main questions array
     let currentQuestionIndex = 0;
     let answered = false;
     let answerRecord = []; // Stores true for correct, false for incorrect, null for unanswered
+
+    function setPickerVisible(isOpen) {
+        if (!quizPickerModal) return;
+        quizPickerModal.classList.toggle('is-open', isOpen);
+        quizPickerModal.setAttribute('aria-hidden', (!isOpen).toString());
+    }
+
+    async function openQuizPicker() {
+        if (!quizPickerModal || !quizPickerList || !quizPickerEmpty) return;
+        setPickerVisible(true);
+        quizPickerList.innerHTML = '';
+        quizPickerEmpty.style.display = 'none';
+
+        try {
+            const resp = await fetch('/api/history_questions?t=' + Date.now());
+            const data = await resp.json();
+            if (data.success && Array.isArray(data.history) && data.history.length) {
+                data.history.forEach((item) => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'quiz-picker-item';
+                    const title = item.origin_name || item.title || item.file || '未命名题库';
+                    const time = item.time || '未知时间';
+                    btn.innerHTML = `
+                        <span class="quiz-picker-item-title">${title}</span>
+                        <span class="quiz-picker-item-meta mono">${time}</span>
+                    `;
+                    btn.onclick = () => {
+                        const file = item.file;
+                        if (!file) return;
+                        window.location.href = `quiz.html?file=${encodeURIComponent(file)}&title=${encodeURIComponent(title)}`;
+                    };
+                    quizPickerList.appendChild(btn);
+                });
+            } else {
+                quizPickerEmpty.style.display = 'block';
+            }
+        } catch (e) {
+            quizPickerEmpty.style.display = 'block';
+        }
+    }
+
+    if (quizPickerClose) {
+        quizPickerClose.addEventListener('click', () => setPickerVisible(false));
+    }
 
     // ===== Markdown 和代码高亮配置 =====
     // 初始化 marked 配置
@@ -103,6 +152,9 @@ document.addEventListener('DOMContentLoaded', async function() {
                 } catch (e) {
                     if (typeof showToast === 'function') showToast('解析缓存数据失败', 'error');
                 }
+            } else {
+                await openQuizPicker();
+                return;
             }
         }
 

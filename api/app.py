@@ -103,6 +103,7 @@ def upload_question():
     file = request.files.get('file')
     if not file or not file.filename.endswith('.docx'):
         return jsonify(success=False, error='仅支持 docx 文件')
+    custom_name = request.form.get('custom_name', '').strip()
     try:
         logger.info("收到文件，开始解析 docx ...")
         doc = Document(file)
@@ -126,7 +127,8 @@ def upload_question():
         file_name = save_parsed_questions(result)
         # 保存索引到历史题库，增加origin_name
         history = load_history()
-        history.append({'type': 'local', 'file': file_name, 'origin_name': file.filename, 'time': time.strftime('%Y-%m-%d %H:%M:%S')})
+        origin_name = custom_name if custom_name else file.filename
+        history.append({'type': 'local', 'file': file_name, 'origin_name': origin_name, 'time': time.strftime('%Y-%m-%d %H:%M:%S')})
         save_history(history)
         return jsonify(success=True, questions=result)
     except Exception as e:
@@ -147,6 +149,7 @@ def ai_upload_question():
         return jsonify(success=False, error=f'不支持的文件类型: {file_extension}，目前仅支持 {", ".join(supported_extensions)}')
 
     custom_prompt = request.form.get('custom_prompt', '').strip()
+    custom_name = request.form.get('custom_name', '').strip()
     model = request.form.get('model', 'deepseek-chat')
     file_bytes = file.read()
     task_id = str(uuid.uuid4())
@@ -180,7 +183,8 @@ def ai_upload_question():
             file_name = save_parsed_questions(questions)
             # 保存索引到历史题库，增加origin_name
             history = load_history()
-            history.append({'type': 'ai', 'file': file_name, 'origin_name': filename, 'time': time.strftime('%Y-%m-%d %H:%M:%S'), 'model': model})
+            origin_name = custom_name if custom_name else filename
+            history.append({'type': 'ai', 'file': file_name, 'origin_name': origin_name, 'time': time.strftime('%Y-%m-%d %H:%M:%S'), 'model': model})
             save_history(history)
         except Exception as e:
             progress_dict[task_id] = {'status': 'error', 'error': str(e), 'percent': 0, 'msg': '出现错误'}

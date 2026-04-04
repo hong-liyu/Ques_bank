@@ -1,0 +1,927 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap');
+
+.refactor-page {
+    --bg: #f4f2ed;
+    --surface: rgba(255, 255, 255, 0.55);
+    --surface-muted: rgba(255, 255, 255, 0.35);
+    --border: rgba(255, 255, 255, 0.55);
+    --text: #1c1f23;
+    --muted: #5c646d;
+    --accent: #6b7a88;
+    --accent-strong: #1f262f;
+    --shadow-soft: 0 20px 50px rgba(18, 24, 30, 0.12);
+    --shadow-hover: 0 24px 60px rgba(18, 24, 30, 0.18);
+    --success: #1f7a4a;
+    --success-soft: rgba(31, 122, 74, 0.12);
+    --danger: #b42318;
+    --danger-soft: rgba(180, 35, 24, 0.12);
+    --warning: #c58f2a;
+    --glass-blur: 18px;
+    --glass-highlight: rgba(255, 255, 255, 0.7);
+    --natural-image: url("../assets/cover1.jpg");
+}
+
+[data-theme="dark"] .refactor-page {
+    --bg: #111316;
+    --surface: rgba(20, 24, 28, 0.65);
+    --surface-muted: rgba(20, 24, 28, 0.4);
+    --border: rgba(255, 255, 255, 0.12);
+    --text: #eef1f4;
+    --muted: #b3bac4;
+    --accent: #96abc3;
+    --accent-strong: #f2f4f7;
+    --shadow-soft: 0 22px 60px rgba(0, 0, 0, 0.55);
+    --shadow-hover: 0 26px 70px rgba(0, 0, 0, 0.65);
+    --success: #3ad07d;
+    --success-soft: rgba(58, 208, 125, 0.16);
+    --danger: #ff6b5e;
+    --danger-soft: rgba(255, 107, 94, 0.18);
+    --warning: #e6b24c;
+    --glass-highlight: rgba(255, 255, 255, 0.12);
+}
+
+body.refactor-page {
+    background: var(--bg);
+    color: var(--text);
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    position: relative;
+    font-family: "Manrope", "Segoe UI", system-ui, sans-serif;
+    display: block;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+}
+
+body.refactor-page::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background-color: var(--bg);
+    background-image:
+        radial-gradient(circle at 14% 12%, rgba(173, 196, 173, 0.58), transparent 58%),
+        radial-gradient(circle at 86% 10%, rgba(214, 198, 170, 0.56), transparent 58%),
+        radial-gradient(circle at 30% 82%, rgba(170, 190, 208, 0.42), transparent 60%),
+        radial-gradient(circle at 70% 64%, rgba(182, 203, 184, 0.36), transparent 56%),
+        linear-gradient(180deg, #f8f6f2 0%, #f1efe9 45%, #f8f7f3 100%),
+        var(--natural-image);
+    background-size: 140% 140%, 140% 140%, 160% 160%, 140% 140%, 100% 100%, cover;
+    background-position: 12% 12%, 88% 10%, 30% 82%, 70% 64%, center, center;
+    background-repeat: no-repeat;
+}
+
+[data-theme="dark"] body.refactor-page::before {
+    background-color: var(--bg);
+    background-image:
+        radial-gradient(circle at 14% 12%, rgba(74, 96, 116, 0.48), transparent 58%),
+        radial-gradient(circle at 86% 10%, rgba(96, 78, 62, 0.44), transparent 58%),
+        radial-gradient(circle at 26% 82%, rgba(70, 88, 106, 0.38), transparent 60%),
+        radial-gradient(circle at 70% 64%, rgba(90, 110, 96, 0.28), transparent 56%),
+        linear-gradient(180deg, #111316 0%, #14181d 45%, #0f1216 100%),
+        var(--natural-image);
+    background-size: 140% 140%, 140% 140%, 160% 160%, 140% 140%, 100% 100%, cover;
+    background-position: 12% 12%, 88% 10%, 28% 82%, 70% 64%, center, center;
+    background-repeat: no-repeat;
+}
+
+body.refactor-page::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background:
+        radial-gradient(circle at 18% 28%, rgba(255, 255, 255, 0.36), transparent 50%),
+        radial-gradient(circle at 82% 72%, rgba(255, 255, 255, 0.28), transparent 55%),
+        radial-gradient(circle at 48% 6%, rgba(255, 255, 255, 0.2), transparent 60%);
+    filter: blur(34px);
+    opacity: 0.78;
+}
+
+.refactor-page .grain {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.16;
+    mix-blend-mode: soft-light;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='120' height='120' filter='url(%23n)' opacity='0.65'/></svg>");
+}
+
+.refactor-page a {
+    color: inherit;
+}
+
+.refactor-page .mono {
+    font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    letter-spacing: 0.08em;
+}
+
+.refactor-page input,
+.refactor-page select,
+.refactor-page textarea {
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-family: inherit;
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+}
+
+.refactor-page input:focus,
+.refactor-page select:focus,
+.refactor-page textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(107, 122, 136, 0.2);
+}
+
+.refactor-page .back-home-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    box-shadow: none;
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+}
+
+.refactor-page .back-home-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-soft);
+}
+
+.refactor-page .back-home-btn svg {
+    stroke: var(--accent-strong);
+}
+
+.refactor-quiz .app-container {
+    background: transparent;
+    box-shadow: none;
+    border-radius: 0;
+    min-height: auto;
+    margin: 28px auto 40px;
+}
+
+.refactor-quiz .app-header {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: var(--shadow-soft);
+    margin: 24px 24px 14px;
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+}
+
+.refactor-quiz .main-layout {
+    gap: 18px;
+    padding: 0 24px 24px;
+}
+
+.refactor-quiz .app-header h1 {
+    color: var(--accent-strong);
+    font-family: "Space Grotesk", "Work Sans", sans-serif;
+}
+
+.refactor-quiz .question-column {
+    padding: 0;
+}
+
+.refactor-quiz .question-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: var(--shadow-soft);
+    padding: 28px 28px 32px;
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+}
+
+.refactor-quiz .progress-section {
+    text-align: left;
+}
+
+.refactor-quiz .progress-text {
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.refactor-quiz .progress-bar-container {
+    background: var(--surface-muted);
+}
+
+.refactor-quiz .progress-bar {
+    background-color: var(--accent-strong);
+}
+
+.refactor-quiz .question-content {
+    color: var(--text);
+}
+
+.refactor-quiz .favorite-btn svg {
+    stroke: var(--accent);
+}
+
+.refactor-quiz .option-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    box-shadow: none;
+    justify-content: flex-start;
+    text-align: left;
+}
+
+.refactor-quiz .option-btn:hover:not(:disabled) {
+    border-color: var(--accent-strong);
+    box-shadow: var(--shadow-soft);
+}
+
+.refactor-quiz .option-btn.selected {
+    border-color: var(--accent-strong);
+    box-shadow: 0 0 0 2px rgba(35, 42, 51, 0.15);
+}
+
+.refactor-quiz .option-btn.correct-answer {
+    background-color: var(--success-soft);
+    border-color: var(--success);
+    color: var(--text);
+    box-shadow: none;
+}
+
+.refactor-quiz .option-btn.incorrect-answer {
+    background-color: var(--danger-soft);
+    border-color: var(--danger);
+    color: var(--text);
+    box-shadow: none;
+}
+
+.refactor-quiz .action-btn.next-btn {
+    background-color: var(--accent-strong);
+    box-shadow: none;
+}
+
+.refactor-quiz .action-btn.next-btn:hover {
+    box-shadow: var(--shadow-hover);
+}
+
+.refactor-quiz .navigator-sidebar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    box-shadow: none;
+    border-radius: 16px;
+    margin: 0 24px 24px 0;
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+}
+
+.refactor-quiz .navigator-sidebar h2 {
+    color: var(--accent-strong);
+}
+
+.refactor-quiz .navigator-item {
+    background: var(--surface-muted);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 10px;
+}
+
+.refactor-quiz .navigator-item.current {
+    background: var(--accent-strong);
+    color: #f6f7f9;
+}
+
+.refactor-quiz .quiz-picker-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(11, 14, 18, 0.45);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    z-index: 30;
+}
+
+.refactor-quiz .quiz-picker-overlay.is-open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.refactor-quiz .quiz-picker-card {
+    width: min(620px, 92vw);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    box-shadow: var(--shadow-hover);
+    padding: 24px;
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+}
+
+.refactor-quiz .quiz-picker-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.refactor-quiz .quiz-picker-kicker {
+    margin: 0 0 6px;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--muted);
+}
+
+.refactor-quiz .quiz-picker-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: var(--accent-strong);
+}
+
+.refactor-quiz .quiz-picker-subtitle {
+    margin: 0 0 18px;
+    color: var(--muted);
+    font-size: 0.95rem;
+}
+
+.refactor-quiz .quiz-picker-close {
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 999px;
+    width: 34px;
+    height: 34px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: var(--text);
+}
+
+.refactor-quiz .quiz-picker-list {
+    display: grid;
+    gap: 12px;
+    max-height: 320px;
+    overflow-y: auto;
+    padding-right: 6px;
+}
+
+.refactor-quiz .quiz-picker-item {
+    border: 1px solid var(--border);
+    background: var(--surface-muted);
+    border-radius: 14px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+}
+
+.refactor-quiz .quiz-picker-item:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-soft);
+    border-color: rgba(255, 255, 255, 0.8);
+}
+
+.refactor-quiz .quiz-picker-item-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.refactor-quiz .quiz-picker-item-meta {
+    font-size: 0.75rem;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+}
+
+.refactor-quiz .quiz-picker-empty {
+    display: none;
+    margin-top: 12px;
+    color: var(--muted);
+    font-size: 0.95rem;
+    text-align: center;
+}
+
+.refactor-quiz .quiz-picker-footer {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+.refactor-quiz .quiz-picker-link {
+    border-radius: 999px;
+    padding: 8px 16px;
+    border: 1px solid var(--border);
+    text-decoration: none;
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.7);
+    font-size: 0.85rem;
+}
+
+.refactor-history .main-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 24px 56px;
+    position: relative;
+}
+
+.refactor-history .app-header h1 {
+    font-family: "Space Grotesk", "Work Sans", sans-serif;
+    color: var(--accent-strong);
+}
+
+.refactor-history .filter-controls {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 16px;
+    border-radius: 14px;
+    box-shadow: var(--shadow-soft);
+    gap: 12px;
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+}
+
+.refactor-history .history-grid {
+    gap: 18px;
+}
+
+.refactor-history .search-box input,
+.refactor-history .sort-dropdown select {
+    background: var(--surface-muted);
+    box-shadow: none;
+    border: 1px solid var(--border);
+}
+
+.refactor-history .history-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    box-shadow: none;
+    padding: 22px;
+    border-radius: 14px;
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+}
+
+.refactor-history .history-card::before {
+    display: none;
+}
+
+.refactor-history .history-card:hover {
+    box-shadow: var(--shadow-hover);
+    border-color: var(--accent);
+}
+
+.refactor-history .card-info h3 {
+    color: var(--text);
+}
+
+.refactor-history .card-info p,
+.refactor-history .card-info .upload-time {
+    color: var(--muted);
+}
+
+.refactor-history .action-btn {
+    background: var(--surface-muted);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 12px;
+    font-size: 0.85rem;
+}
+
+.refactor-history .action-btn.study-btn {
+    background: var(--accent-strong);
+    color: #f6f7f9;
+    border-color: transparent;
+    box-shadow: none;
+}
+
+.refactor-history .action-btn.preview-btn {
+    background: var(--surface);
+    border-color: var(--accent);
+    color: var(--text);
+}
+
+.refactor-history .action-btn.delete-btn {
+    background: var(--danger-soft);
+    border-color: var(--danger);
+    color: var(--danger);
+}
+
+.refactor-history .modal-content {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-hover);
+    border-radius: 16px;
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+}
+
+.refactor-upload .upload-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 32px 24px 56px;
+}
+
+.refactor-upload .page-header h1 {
+    font-family: "Manrope", "Segoe UI", system-ui, sans-serif;
+    color: var(--accent-strong);
+    font-size: 1.8rem;
+    margin: 0;
+}
+
+.refactor-upload .page-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.refactor-upload .header-text {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.refactor-upload .header-kicker {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--muted);
+    margin: 0;
+}
+
+.refactor-upload .upload-card {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+}
+
+.refactor-upload .upload-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+.refactor-upload .upload-side {
+    display: grid;
+    gap: 18px;
+    align-content: start;
+}
+
+.refactor-upload .upload-panel,
+.refactor-upload .side-card,
+.refactor-upload .progress-card,
+.refactor-upload .result-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: var(--shadow-soft);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+}
+
+.refactor-upload .side-card.compact {
+    padding: 20px;
+}
+
+.refactor-upload .panel-header {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 18px;
+}
+
+.refactor-upload .panel-header h2,
+.refactor-upload .side-card h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--accent-strong);
+}
+
+.refactor-upload .panel-header p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.92rem;
+    line-height: 1.6;
+}
+
+.refactor-upload .panel-kicker {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--muted);
+}
+
+.refactor-upload .drop-area {
+    background: var(--surface-muted);
+    border: 1px dashed var(--border);
+    border-radius: 18px;
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    text-align: center;
+    min-height: 220px;
+}
+
+.refactor-upload .drop-text {
+    display: grid;
+    gap: 6px;
+}
+
+.refactor-upload .drop-title {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 600;
+}
+
+.refactor-upload .drop-subtitle {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.refactor-upload .ghost-btn {
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.7);
+    color: var(--text);
+    padding: 10px 20px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.refactor-upload .ghost-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-soft);
+}
+
+.refactor-upload .file-info {
+    margin-top: 12px;
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.refactor-upload .section-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: var(--accent-strong);
+}
+
+.refactor-upload .prompt-toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.refactor-upload .prompt-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.7);
+    color: var(--text);
+    border-radius: 999px;
+    padding: 8px 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.refactor-upload .prompt-toggle:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-soft);
+}
+
+.refactor-upload .prompt-toggle-hint {
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
+.refactor-upload .prompt-panel {
+    display: none;
+    margin-top: 12px;
+}
+
+.refactor-upload .prompt-panel.is-open {
+    display: block;
+}
+
+.refactor-upload .field-note {
+    margin: 12px 0 0;
+    color: var(--muted);
+    font-size: 0.85rem;
+    line-height: 1.5;
+}
+
+.refactor-upload .info-list {
+    list-style: none;
+    padding: 0;
+    margin: 12px 0 0;
+    display: grid;
+    gap: 10px;
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.refactor-upload .info-list li::before {
+    content: "•";
+    color: var(--accent-strong);
+    margin-right: 8px;
+}
+
+.refactor-upload .upload-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.refactor-upload #uploadStatus {
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.refactor-upload .progress-card,
+.refactor-upload .result-card {
+    margin-bottom: 20px;
+}
+
+.refactor-upload .progress-text {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.85rem;
+    color: var(--muted);
+}
+
+.refactor-upload #progressPercent {
+    font-weight: 700;
+    color: var(--accent-strong);
+}
+
+.refactor-upload #progressMsg {
+    color: var(--muted);
+}
+
+.refactor-upload .drop-area {
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+}
+
+.refactor-upload .drop-area:hover {
+    border-color: var(--accent);
+}
+
+.refactor-upload .parse-btn {
+    background: var(--accent-strong);
+    border: none;
+    box-shadow: none;
+    border-radius: 999px;
+    padding: 12px 22px;
+}
+
+.refactor-upload .parse-btn:hover {
+    box-shadow: var(--shadow-hover);
+}
+
+.refactor-upload .status-message,
+.refactor-upload .progress-text,
+.refactor-upload #progressMsg {
+    color: var(--muted);
+}
+
+.refactor-upload .progress-bar {
+    background: var(--surface-muted);
+}
+
+.refactor-upload .progress-fill {
+    background: var(--accent-strong);
+}
+
+.refactor-upload .parse-result {
+    background: var(--surface-muted);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+}
+
+.refactor-upload #toQuizBtn {
+    background: var(--accent-strong);
+    color: #f6f7f9;
+    border-radius: 999px;
+    border: none;
+    padding: 12px 20px;
+    margin-top: 12px;
+}
+
+.refactor-upload .name-modal-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(10, 12, 16, 0.45);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    z-index: 40;
+}
+
+.refactor-upload .name-modal-overlay.is-open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.refactor-upload .name-modal-card {
+    width: min(520px, 92vw);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: var(--shadow-hover);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+}
+
+.refactor-upload .name-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.refactor-upload .name-modal-header h2 {
+    margin: 0;
+    font-size: 1.4rem;
+    color: var(--accent-strong);
+}
+
+.refactor-upload .name-modal-subtitle {
+    margin: 0 0 16px;
+    color: var(--muted);
+    font-size: 0.92rem;
+}
+
+.refactor-upload .name-modal-close {
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 999px;
+    width: 34px;
+    height: 34px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: var(--text);
+}
+
+.refactor-upload .name-modal-input {
+    width: 100%;
+    padding: 10px 12px;
+    margin-bottom: 16px;
+}
+
+.refactor-upload .name-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 960px) {
+    .refactor-upload .upload-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 900px) {
+    .refactor-quiz .app-header {
+        margin: 16px;
+    }
+
+    .refactor-quiz .question-column {
+        padding: 0 16px 24px;
+    }
+}
