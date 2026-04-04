@@ -30,6 +30,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_DIR = os.path.join(BASE_DIR, 'data')
 HISTORY_FILE = os.path.join(DATA_DIR, 'parsed_questions.json')
 PARSED_DIR = os.path.join(DATA_DIR, 'parsed')
+ASSETS_DIR = os.path.join(BASE_DIR, 'assets')
 
 # 工具函数：加载历史题库
 def load_history():
@@ -358,6 +359,10 @@ def serve_css(filename):
 @app.route('/js/<path:filename>')
 def serve_js(filename):
     return send_from_directory('../js', filename)
+
+@app.route('/assets/<path:filename>')
+def serve_assets(filename):
+    return send_from_directory(ASSETS_DIR, filename)
 
 @app.route('/')
 def index():

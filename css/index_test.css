@@ -14,7 +14,7 @@
     --shadow-hover: 0 28px 70px rgba(15, 22, 30, 0.18);
     --glass-blur: 18px;
     --glass-highlight: rgba(255, 255, 255, 0.75);
-    --natural-image: url("../assets/cover1.jpg");
+    --natural-image: url("/assets/cover1.jpg");
     color: var(--text);
     background: var(--bg);
     margin: 0;
@@ -45,30 +45,18 @@
     position: fixed;
     inset: 0;
     z-index: -1;
-    background-color: var(--bg);
-    background-image:
-        radial-gradient(circle at 12% 10%, rgba(173, 196, 173, 0.62), transparent 58%),
-        radial-gradient(circle at 88% 15%, rgba(214, 198, 170, 0.58), transparent 58%),
-        radial-gradient(circle at 24% 82%, rgba(170, 190, 208, 0.48), transparent 60%),
-        radial-gradient(circle at 72% 64%, rgba(182, 203, 184, 0.42), transparent 56%),
-        linear-gradient(180deg, #f8f6f2 0%, #f1efe9 45%, #f8f7f3 100%),
-        var(--natural-image);
-    background-size: 140% 140%, 140% 140%, 160% 160%, 140% 140%, 100% 100%, cover;
-    background-position: 10% 10%, 90% 12%, 20% 85%, 72% 60%, center, center;
+    background-color: transparent;
+    background-image: var(--natural-image);
+    background-size: cover;
+    background-position: center;
     background-repeat: no-repeat;
 }
 
 [data-theme="dark"] .index-page::before {
-    background-color: var(--bg);
-    background-image:
-        radial-gradient(circle at 12% 10%, rgba(74, 96, 116, 0.46), transparent 58%),
-        radial-gradient(circle at 88% 15%, rgba(96, 78, 62, 0.42), transparent 58%),
-        radial-gradient(circle at 22% 82%, rgba(70, 88, 106, 0.36), transparent 60%),
-        radial-gradient(circle at 70% 64%, rgba(90, 110, 96, 0.28), transparent 56%),
-        linear-gradient(180deg, #111316 0%, #14181d 45%, #0f1216 100%),
-        var(--natural-image);
-    background-size: 140% 140%, 140% 140%, 160% 160%, 140% 140%, 100% 100%, cover;
-    background-position: 10% 10%, 90% 12%, 22% 85%, 70% 60%, center, center;
+    background-color: transparent;
+    background-image: var(--natural-image);
+    background-size: cover;
+    background-position: center;
     background-repeat: no-repeat;
 }
 
@@ -77,12 +65,8 @@
     position: fixed;
     inset: 0;
     z-index: -1;
-    background:
-        radial-gradient(circle at 18% 28%, rgba(255, 255, 255, 0.38), transparent 50%),
-        radial-gradient(circle at 82% 72%, rgba(255, 255, 255, 0.3), transparent 55%),
-        radial-gradient(circle at 48% 6%, rgba(255, 255, 255, 0.22), transparent 60%);
-    filter: blur(34px);
-    opacity: 0.82;
+    background: none;
+    opacity: 0;
 }
 
 .index-page .grain {
@@ -116,7 +100,7 @@
     margin: 20px auto 0;
     border-radius: 18px;
     background: rgba(251, 251, 249, 0.9);
-    border: 1px solid var(--border);
+    border: 1px solid rgba(255, 255, 255, 0.35);
     box-shadow: var(--shadow-soft);
     backdrop-filter: blur(10px);
 }
@@ -215,7 +199,7 @@
     gap: 8px;
     padding: 8px 16px;
     border-radius: 999px;
-    border: 1px solid var(--border);
+    border: 1px solid rgba(255, 255, 255, 0.35);
     text-decoration: none;
     color: var(--text);
     font-size: 0.8rem;
@@ -258,6 +242,19 @@
     display: flex;
     flex-direction: column;
     gap: 18px;
+    position: relative;
+    z-index: 1;
+}
+
+.hero-text::before {
+    content: "";
+    position: absolute;
+    inset: -12px -18px -12px -12px;
+    background: linear-gradient(to right, rgba(0, 0, 0, 0.3), transparent);
+    border-radius: 24px;
+    opacity: 0.25;
+    z-index: -1;
+    pointer-events: none;
 }
 
 .eyebrow {
@@ -293,7 +290,7 @@
     justify-content: center;
     padding: 12px 20px;
     border-radius: 999px;
-    border: 1px solid var(--border);
+    border: 1px solid rgba(255, 255, 255, 0.35);
     text-decoration: none;
     font-weight: 600;
     font-size: 0.9rem;
@@ -329,10 +326,10 @@
     padding: 12px 16px;
     border-radius: 12px;
     background: var(--surface);
-    border: 1px solid var(--border);
+    border: 1px solid rgba(255, 255, 255, 0.4);
     backdrop-filter: blur(var(--glass-blur));
     -webkit-backdrop-filter: blur(var(--glass-blur));
-    box-shadow: inset 0 1px 0 var(--glass-highlight);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
 }
 
 .meta-label {
@@ -357,10 +354,10 @@
 
 .panel-card {
     border-radius: var(--radius);
-    border: 1px solid var(--border);
+    border: 1px solid rgba(255, 255, 255, 0.4);
     background: var(--surface);
     padding: 20px;
-    box-shadow: var(--shadow-soft);
+    box-shadow: var(--shadow-soft), inset 0 0 0 1px rgba(255, 255, 255, 0.15);
     backdrop-filter: blur(var(--glass-blur));
     -webkit-backdrop-filter: blur(var(--glass-blur));
 }
@@ -387,6 +384,22 @@
     gap: 12px;
 }
 
+.panel-grid.flow-stack {
+    position: relative;
+    padding-left: 6px;
+}
+
+.panel-grid.flow-stack::before {
+    content: "";
+    position: absolute;
+    left: 18px;
+    top: 12px;
+    bottom: 12px;
+    width: 1px;
+    background: rgba(255, 255, 255, 0.4);
+    opacity: 0.8;
+}
+
 .panel-chip {
     box-shadow: inset 0 1px 0 var(--glass-highlight);
     backdrop-filter: blur(var(--glass-blur));
@@ -397,10 +410,33 @@
     padding: 14px 16px;
     border-radius: 12px;
     background: var(--surface-muted);
-    border: 1px solid var(--border);
-    display: flex;
-    justify-content: space-between;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    display: grid;
+    grid-template-columns: 32px 1fr;
     align-items: center;
+    gap: 12px;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+
+.chip-index {
+    width: 24px;
+    height: 24px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--accent-strong);
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+}
+
+.chip-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
 }
 
 .chip-title {
@@ -421,7 +457,7 @@
 
 .bento-card {
     border-radius: var(--radius);
-    border: 1px solid var(--border);
+    border: 1px solid rgba(255, 255, 255, 0.4);
     background: var(--surface);
     padding: 20px 22px;
     display: flex;
@@ -433,7 +469,7 @@
     color: inherit;
     backdrop-filter: blur(var(--glass-blur));
     -webkit-backdrop-filter: blur(var(--glass-blur));
-    box-shadow: inset 0 1px 0 var(--glass-highlight);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
 }
 
 .bento-card:hover {
@@ -465,9 +501,9 @@
     align-items: center;
     justify-content: center;
     border-radius: 10px;
-    border: 1px solid var(--border);
+    border: 1px solid rgba(255, 255, 255, 0.4);
     background: rgba(255, 255, 255, 0.7);
-    box-shadow: inset 0 1px 0 var(--glass-highlight);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
 }
 
 .card-icon svg {
@@ -522,16 +558,20 @@
     background: transparent;
     border: none;
     box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    min-height: auto;
 }
 
 .features-accordion {
-    border: 1px solid var(--border);
+    border: 1px solid rgba(255, 255, 255, 0.4);
     border-radius: var(--radius);
     background: var(--surface);
     overflow: hidden;
-    box-shadow: var(--shadow-soft);
+    box-shadow: var(--shadow-soft), inset 0 0 0 1px rgba(255, 255, 255, 0.12);
     backdrop-filter: blur(var(--glass-blur));
     -webkit-backdrop-filter: blur(var(--glass-blur));
+    width: 100%;
 }
 
 .features-accordion summary {
@@ -573,6 +613,33 @@
     gap: 12px;
     color: var(--muted);
     font-size: 0.95rem;
+}
+
+.top-nav,
+.nav-cta .cta-link,
+.meta-item,
+.panel-card,
+.panel-chip,
+.bento-card,
+.card-icon,
+.features-accordion {
+    position: relative;
+}
+
+.top-nav::after,
+.nav-cta .cta-link::after,
+.meta-item::after,
+.panel-card::after,
+.panel-chip::after,
+.bento-card::after,
+.card-icon::after,
+.features-accordion::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
 }
 
 .feature-icon {
@@ -669,3 +736,4 @@
         grid-column: span 12;
     }
 }
+
