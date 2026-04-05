@@ -1,6 +1,11 @@
 document.addEventListener('DOMContentLoaded', async () => {
     const dropArea = document.getElementById('dropArea');
     const fileInput = document.getElementById('questionFile');
+    const fileInfo = document.getElementById('fileInfo');
+    const renameInline = document.getElementById('renameInline');
+    const customNameInput = document.getElementById('customName');
+    const nameDuplicateHint = document.getElementById('nameDuplicateHint');
+
     const uploadForm = document.getElementById('uploadForm');
     const uploadStatus = document.getElementById('uploadStatus');
     const loadingSpinner = document.getElementById('loadingSpinner');
@@ -8,284 +13,298 @@ document.addEventListener('DOMContentLoaded', async () => {
     const toQuizBtn = document.getElementById('toQuizBtn');
     const customPrompt = document.getElementById('customPrompt');
     const parseBtn = document.getElementById('parseBtn');
-    const customPromptToggle = document.getElementById('customPromptToggle');
-    const customPromptPanel = document.getElementById('customPromptPanel');
-    const nameModal = document.getElementById('nameConfirmModal');
-    const nameModalInput = document.getElementById('customNameInput');
-    const nameModalConfirm = document.getElementById('nameModalConfirm');
-    const nameModalCancel = document.getElementById('nameModalCancel');
-    const nameModalClose = document.getElementById('nameModalClose');
 
-    // 进度条相关元素
     const progressContainer = document.getElementById('progressContainer');
     const progressFill = document.getElementById('progressFill');
     const progressPercent = document.getElementById('progressPercent');
     const progressMsg = document.getElementById('progressMsg');
 
-    // 初始化：隐藏 JSON 预览区域
-    parseResult.style.display = 'none';
+    let selectedFile = null;
+    let currentTaskId = null;
+    let lastParsedQuestions = [];
+    let currentDisplayName = '';
+    let existingNameSet = new Set();
 
-    if (customPromptToggle && customPromptPanel) {
-        customPromptToggle.addEventListener('click', () => {
-            const isOpen = customPromptPanel.classList.toggle('is-open');
-            customPromptToggle.setAttribute('aria-expanded', isOpen.toString());
-            if (isOpen && customPrompt) {
-                customPrompt.focus();
-            }
+    if (parseResult) parseResult.style.display = 'none';
+
+    function setStatus(message, color = '#3b82f6') {
+        if (!uploadStatus) return;
+        uploadStatus.textContent = message;
+        uploadStatus.style.color = color;
+    }
+
+    function formatFileSize(bytes) {
+        if (bytes < 1024) return `${bytes} B`;
+        if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+        return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    }
+
+    function normalizeComparableName(value) {
+        return String(value || '').trim().replace(/\s+/g, ' ').toLocaleLowerCase();
+    }
+
+    function getDefaultName(file) {
+        return (file && file.name ? file.name : '题库').replace(/\.[^/.]+$/, '').trim();
+    }
+
+    function normalizeName(inputValue) {
+        const fallback = selectedFile ? getDefaultName(selectedFile) : '题库';
+        const cleaned = String(inputValue || '').trim().replace(/\s+/g, ' ');
+        return (cleaned || fallback).slice(0, 40);
+    }
+
+    async function loadExistingNames() {
+        try {
+            const resp = await fetch(`/api/history_questions?t=${Date.now()}`);
+            const data = await resp.json();
+            if (!data.success || !Array.isArray(data.history)) return;
+
+            const names = [];
+            data.history.forEach((item) => {
+                if (!item) return;
+                names.push(item.origin_name || item.title || '');
+                if (item.file) names.push(String(item.file).replace(/\.[^/.]+$/, ''));
+            });
+
+            existingNameSet = new Set(
+                names.map((n) => normalizeComparableName(n)).filter(Boolean)
+            );
+        } catch (_error) {
+            existingNameSet = new Set();
+        }
+    }
+
+    function updateDuplicateHint() {
+        if (!customNameInput || !nameDuplicateHint) return;
+
+        const comparable = normalizeComparableName(customNameInput.value);
+        if (!comparable) {
+            nameDuplicateHint.hidden = true;
+            nameDuplicateHint.textContent = '';
+            return;
+        }
+
+        if (existingNameSet.has(comparable)) {
+            nameDuplicateHint.hidden = false;
+            nameDuplicateHint.textContent = '名称与历史题库重复，保存后在历史页可能出现同名项。';
+            nameDuplicateHint.classList.add('is-warning');
+        } else {
+            nameDuplicateHint.hidden = false;
+            nameDuplicateHint.textContent = '名称可用。';
+            nameDuplicateHint.classList.remove('is-warning');
+        }
+    }
+
+    function setSelectedFile(file) {
+        selectedFile = file;
+        if (!selectedFile) return;
+
+        const ext = (selectedFile.name.split('.').pop() || '').toLowerCase();
+        if (fileInfo) {
+            fileInfo.textContent = `已选择: ${selectedFile.name} · ${formatFileSize(selectedFile.size)} · ${ext.toUpperCase()}`;
+        }
+
+        if (renameInline && customNameInput) {
+            renameInline.hidden = false;
+            customNameInput.value = getDefaultName(selectedFile);
+            updateDuplicateHint();
+        }
+
+        setStatus(`已选择文件: ${selectedFile.name}`, '#059669');
+    }
+
+    if (customNameInput) {
+        customNameInput.addEventListener('input', updateDuplicateHint);
+        customNameInput.addEventListener('blur', () => {
+            customNameInput.value = normalizeName(customNameInput.value);
+            updateDuplicateHint();
         });
     }
 
-    function setNameModalOpen(isOpen) {
-        if (!nameModal) return;
-        nameModal.classList.toggle('is-open', isOpen);
-        nameModal.setAttribute('aria-hidden', (!isOpen).toString());
-    }
+    if (dropArea && fileInput) {
+        dropArea.addEventListener('click', () => fileInput.click());
 
-    function openNameModal(defaultName) {
-        if (!nameModal || !nameModalInput) return;
-        pendingDefaultName = defaultName;
-        nameModalInput.value = defaultName;
-        setNameModalOpen(true);
-        setTimeout(() => nameModalInput.focus(), 0);
-    }
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files && e.target.files.length > 0) {
+                setSelectedFile(e.target.files[0]);
+            }
+        });
 
-    if (nameModalCancel) {
-        nameModalCancel.addEventListener('click', () => setNameModalOpen(false));
-    }
+        dropArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropArea.classList.add('drag-over');
+        });
 
-    if (nameModalClose) {
-        nameModalClose.addEventListener('click', () => setNameModalOpen(false));
-    }
+        dropArea.addEventListener('dragleave', () => {
+            dropArea.classList.remove('drag-over');
+        });
 
-    let selectedFile = null;
-    let currentTaskId = null;
-    let lastParsedQuestions = []; // 存储最后一次解析的题目
-    let currentDisplayName = '';
-    let pendingDefaultName = '';
-
-    // 点击拖拽区域打开文件选择器
-    dropArea.addEventListener('click', () => {
-        fileInput.click();
-    });
-
-    // 文件选择事件
-    fileInput.addEventListener('change', (e) => {
-        if (e.target.files.length > 0) {
-            selectedFile = e.target.files[0];
-            uploadStatus.textContent = `已选择文件：${selectedFile.name}`;
-            uploadStatus.style.color = '#059669';
-        }
-    });
-
-    // 拖拽事件处理
-    dropArea.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        dropArea.classList.add('drag-over');
-    });
-
-    dropArea.addEventListener('dragleave', () => {
-        dropArea.classList.remove('drag-over');
-    });
-
-    dropArea.addEventListener('drop', (e) => {
-        e.preventDefault();
-        dropArea.classList.remove('drag-over');
-        if (e.dataTransfer.files.length > 0) {
-            selectedFile = e.dataTransfer.files[0];
+        dropArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropArea.classList.remove('drag-over');
+            if (!e.dataTransfer.files || !e.dataTransfer.files.length) return;
+            setSelectedFile(e.dataTransfer.files[0]);
             fileInput.files = e.dataTransfer.files;
-            uploadStatus.textContent = `已选择文件：${selectedFile.name}`;
-            uploadStatus.style.color = '#059669';
-        }
-    });
+        });
+    }
 
     async function startUpload(displayName) {
         loadingSpinner.style.display = 'block';
-        parseResult.style.display = 'none';
-        parseResult.textContent = '';
+
+        if (parseResult) {
+            parseResult.style.display = 'none';
+            parseResult.textContent = '';
+        }
+
         progressContainer.style.display = 'block';
         progressFill.style.width = '0%';
         progressPercent.textContent = '0%';
         progressMsg.textContent = '准备上传...';
 
-        uploadStatus.textContent = '正在上传...';
-        uploadStatus.style.color = '#3b82f6';
+        setStatus('正在上传...', '#3b82f6');
         parseBtn.disabled = true;
         toQuizBtn.style.display = 'none';
 
         const formData = new FormData();
         formData.append('file', selectedFile);
         formData.append('questionFile', selectedFile);
-        formData.append('custom_prompt', customPrompt.value);
+        formData.append('custom_prompt', customPrompt ? customPrompt.value : '');
         formData.append('custom_name', displayName);
 
         try {
-            // 发送上传请求
             const uploadResp = await fetch('/api/ai_upload_question', {
                 method: 'POST',
                 body: formData
             });
 
-            if (!uploadResp.ok) {
-                throw new Error(`上传失败: ${uploadResp.status}`);
-            }
+            if (!uploadResp.ok) throw new Error(`上传失败: ${uploadResp.status}`);
 
             const uploadData = await uploadResp.json();
-            if (!uploadData.success) {
-                throw new Error(uploadData.error || '上传失败');
-            }
+            if (!uploadData.success) throw new Error(uploadData.error || '上传失败');
 
             currentTaskId = uploadData.task_id;
-            uploadStatus.textContent = '任务已建立，排队中...';
+            setStatus('任务已创建，排队中...', '#3b82f6');
             progressFill.style.width = '5%';
             progressPercent.textContent = '5%';
             progressMsg.textContent = '排队中...';
 
-            // 轮询获取进度
-            const maxRetries = 180; // 适当放宽时间到大概3分钟
+            const maxRetries = 180;
             let retryCount = 0;
-            // Fake progress variables to animate smoothly between actual state updates
             let currentFakePercent = 5;
             let targetPercent = 5;
 
-            // Simple tweening function for smoothly animating percentage
             const tweenPercent = setInterval(() => {
-                if(currentFakePercent < targetPercent) {
-                    currentFakePercent++;
+                if (currentFakePercent < targetPercent) {
+                    currentFakePercent += 1;
                     progressFill.style.width = `${currentFakePercent}%`;
                     progressPercent.textContent = `${currentFakePercent}%`;
                 }
             }, 100);
 
-            const pollProgress = async () => {
-                while (retryCount < maxRetries) {
-                    try {
-                        const progressResp = await fetch(`/api/ai_upload_progress?task_id=${currentTaskId}`);
-                        const progressData = await progressResp.json();
+            while (retryCount < maxRetries) {
+                const progressResp = await fetch(`/api/ai_upload_progress?task_id=${currentTaskId}`);
+                const progressData = await progressResp.json();
 
-                        if (!progressData.success) {
-                            throw new Error('查询进度失败');
-                        }
-                        
-                        // Backend actually sets `percent` and `msg` now
-                        if(progressData.percent) {
-                            targetPercent = Math.max(targetPercent, progressData.percent);
-                        }
-                        if(progressData.msg) {
-                            progressMsg.textContent = progressData.msg;
-                        }
-
-                        if (progressData.status === 'pending') {
-                            // Automatically slowly increase fake target when stuck pending (up to 85% for deepseek parsing step)
-                            if (targetPercent === 30) {
-                                // Simulate ai parsing time
-                                targetPercent = Math.min(85, targetPercent + 2);
-                            }
-                            
-                            uploadStatus.textContent = `解析中... (${Math.floor(retryCount * 1.5)}s)`;
-                            await new Promise(resolve => setTimeout(resolve, 1500));
-                            retryCount++;
-                        } else if (progressData.status === 'done') {
-                            // 解析完成
-                            clearInterval(tweenPercent);
-                            progressFill.style.width = '100%';
-                            progressPercent.textContent = '100%';
-                            progressMsg.textContent = '解析完毕！';
-                            
-                            lastParsedQuestions = progressData.result || [];
-                            loadingSpinner.style.display = 'none';
-                            uploadStatus.textContent = `解析完成！共 ${lastParsedQuestions.length} 题`;
-                            uploadStatus.style.color = '#059669';
-                            // 隐藏 JSON 预览，只保留去刷题按钮
-                            parseResult.style.display = 'none';
-                            
-                            // 更新：如果题目数量少且不需要存大文件，可以直接继续传，
-                            // 但为了统一及规避内存满，我们建议尽量向前端暴露一个可以访问的文件路径
-                            // 因为 /api/ai_upload_question 只有 task_id 返回却没有具体的 filename 给前端...
-                            // 这里我们暂时仍将本次 AI 解析刚返回的结果作为备用回落存入 Session (因为前端直接拿到了 result array),
-                            // 但清理冗余项。
-                            try {
-                                sessionStorage.setItem('quiz_questions', JSON.stringify(lastParsedQuestions));
-                                sessionStorage.setItem('quiz_title', displayName || selectedFile.name);
-                            } catch (err) {
-                                console.warn('文件可能过大，无法存入 sessionStorage，请在历史库中查看！', err);
-                            }
-                            
-                            toQuizBtn.style.display = 'inline-flex';
-                            break;
-                        } else if (progressData.status === 'error') {
-                            throw new Error(progressData.error || 'AI解析出错');
-                        }
-                    } catch (e) {
-                        clearInterval(tweenPercent);
-                        console.error('轮询出错:', e);
-                        throw e;
-                    }
-                }
-
-                if (retryCount >= maxRetries) {
+                if (!progressData.success) {
                     clearInterval(tweenPercent);
-                    throw new Error('解析超时，请重试');
+                    throw new Error('查询进度失败');
                 }
-            };
 
-            await pollProgress();
+                if (typeof progressData.percent === 'number') {
+                    targetPercent = Math.max(targetPercent, progressData.percent);
+                }
+
+                if (progressData.msg) {
+                    progressMsg.textContent = progressData.msg;
+                }
+
+                if (progressData.status === 'pending') {
+                    if (targetPercent < 85) targetPercent = Math.min(85, targetPercent + 2);
+                    setStatus(`解析中... (${Math.floor(retryCount * 1.5)}s)`, '#3b82f6');
+                    await new Promise((resolve) => setTimeout(resolve, 1500));
+                    retryCount += 1;
+                    continue;
+                }
+
+                if (progressData.status === 'done') {
+                    clearInterval(tweenPercent);
+                    progressFill.style.width = '100%';
+                    progressPercent.textContent = '100%';
+                    progressMsg.textContent = '解析完成';
+
+                    lastParsedQuestions = progressData.result || [];
+                    loadingSpinner.style.display = 'none';
+                    setStatus(`解析完成，共 ${lastParsedQuestions.length} 题`, '#059669');
+
+                    try {
+                        sessionStorage.setItem('quiz_questions', JSON.stringify(lastParsedQuestions));
+                        sessionStorage.setItem('quiz_title', displayName || selectedFile.name);
+                    } catch (err) {
+                        console.warn('题目过大，无法写入 sessionStorage', err);
+                    }
+
+                    toQuizBtn.style.display = 'inline-flex';
+                    return;
+                }
+
+                if (progressData.status === 'error') {
+                    clearInterval(tweenPercent);
+                    throw new Error(progressData.error || 'AI解析出错');
+                }
+            }
+
+            throw new Error('解析超时，请重试');
         } catch (error) {
             loadingSpinner.style.display = 'none';
-            // Stop processing progress smoothly
-            progressFill.style.background = '#ef4444'; 
-            progressMsg.textContent = '任务中断或报错...';
-            uploadStatus.textContent = `错误: ${error.message}`;
-            uploadStatus.style.color = '#e74c3c';
-            parseResult.style.display = 'none';
-            parseResult.textContent = '';
+            progressFill.style.background = '#ef4444';
+            progressMsg.textContent = '任务中断或报错';
+            setStatus(`错误: ${error.message}`, '#e74c3c');
+
+            if (parseResult) {
+                parseResult.style.display = 'none';
+                parseResult.textContent = '';
+            }
         } finally {
             parseBtn.disabled = false;
         }
     }
 
-    // 表单提交
     uploadForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
         if (!selectedFile) {
-            uploadStatus.textContent = '请先选择文件';
-            uploadStatus.style.color = '#e74c3c';
+            setStatus('请先选择文件', '#e74c3c');
             return;
         }
 
-        // 检查文件类型和大小
-        if (!selectedFile.name.endsWith('.docx') && !selectedFile.name.endsWith('.pdf') && !selectedFile.name.endsWith('.txt')) {
-            uploadStatus.textContent = '仅支持 .docx, .pdf, .txt 文件';
-            uploadStatus.style.color = '#e74c3c';
+        const lowerName = selectedFile.name.toLowerCase();
+        const isAllowed = lowerName.endsWith('.docx') || lowerName.endsWith('.pdf') || lowerName.endsWith('.txt');
+        if (!isAllowed) {
+            setStatus('仅支持 .docx、.pdf、.txt 文件', '#e74c3c');
             return;
         }
 
-        if (selectedFile.size > 50 * 1024 * 1024) { // 50MB 限制
-            uploadStatus.textContent = '文件过大（50MB以内）';
-            uploadStatus.style.color = '#e74c3c';
+        if (selectedFile.size > 50 * 1024 * 1024) {
+            setStatus('文件过大，请控制在 50MB 以内', '#e74c3c');
             return;
         }
 
-        const defaultName = selectedFile.name.replace(/\.[^/.]+$/, '') || selectedFile.name;
-        openNameModal(defaultName);
+        currentDisplayName = normalizeName(customNameInput ? customNameInput.value : '');
+        if (customNameInput) {
+            customNameInput.value = currentDisplayName;
+            updateDuplicateHint();
+        }
+
+        await startUpload(currentDisplayName);
     });
 
-    if (nameModalConfirm) {
-        nameModalConfirm.addEventListener('click', async () => {
-            if (parseBtn.disabled) return;
-            const trimmedName = (nameModalInput && nameModalInput.value || '').trim();
-            currentDisplayName = trimmedName || pendingDefaultName || (selectedFile ? selectedFile.name : '题库');
-            setNameModalOpen(false);
-            await startUpload(currentDisplayName);
-        });
-    }
-
-    // 去刷题按钮
     toQuizBtn.addEventListener('click', () => {
-        if (lastParsedQuestions.length > 0) {
-            sessionStorage.setItem('quiz_questions', JSON.stringify(lastParsedQuestions));
-            sessionStorage.setItem('quiz_title', currentDisplayName || (selectedFile ? selectedFile.name : '题库'));
-            window.location.href = 'quiz.html';
-        }
+        if (!lastParsedQuestions.length) return;
+
+        sessionStorage.setItem('quiz_questions', JSON.stringify(lastParsedQuestions));
+        sessionStorage.setItem('quiz_title', currentDisplayName || (selectedFile ? selectedFile.name : '题库'));
+        window.location.href = 'quiz.html';
     });
+
+    await loadExistingNames();
 });

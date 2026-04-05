@@ -122,19 +122,29 @@ body.refactor-page::after {
 }
 
 .refactor-page .back-home-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+    padding: 0;
     background: var(--surface);
     border: 1px solid rgba(255, 255, 255, 0.35);
     box-shadow: none;
+    transform: none;
     backdrop-filter: blur(var(--glass-blur));
     -webkit-backdrop-filter: blur(var(--glass-blur));
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .refactor-page .back-home-btn:hover {
-    transform: translateY(-2px);
     box-shadow: var(--shadow-soft);
 }
 
 .refactor-page .back-home-btn svg {
+    width: 20px;
+    height: 20px;
     stroke: var(--accent-strong);
 }
 
@@ -143,10 +153,18 @@ body.refactor-page::after {
     box-shadow: none;
     border-radius: 0;
     min-height: auto;
+    width: min(1280px, calc(100vw - 32px));
     margin: 28px auto 40px;
+    overflow: visible;
 }
 
 .refactor-quiz .app-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    min-height: 68px;
+    padding: 18px 64px;
     background: var(--surface);
     border: 1px solid rgba(255, 255, 255, 0.4);
     border-radius: 16px;
@@ -157,16 +175,24 @@ body.refactor-page::after {
 }
 
 .refactor-quiz .main-layout {
+    display: flex;
+    align-items: flex-start;
     gap: 18px;
     padding: 0 24px 24px;
 }
 
 .refactor-quiz .app-header h1 {
+    margin: 0;
+    font-size: clamp(1.4rem, 2vw, 2.2rem);
+    line-height: 1.12;
+    text-align: center;
     color: var(--accent-strong);
     font-family: "Space Grotesk", "Work Sans", sans-serif;
 }
 
 .refactor-quiz .question-column {
+    flex: 1 1 0;
+    min-width: 0;
     padding: 0;
 }
 
@@ -178,43 +204,138 @@ body.refactor-page::after {
     padding: 28px 28px 32px;
     backdrop-filter: blur(var(--glass-blur));
     -webkit-backdrop-filter: blur(var(--glass-blur));
+    display: flex;
+    flex-direction: column;
+    min-height: min(760px, calc(100vh - 180px));
 }
 
 .refactor-quiz .progress-section {
     text-align: left;
+    margin-bottom: 22px;
 }
 
 .refactor-quiz .progress-text {
     font-size: 0.75rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
+    color: var(--muted);
 }
 
 .refactor-quiz .progress-bar-container {
     background: var(--surface-muted);
+    height: 10px;
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 10px;
+    box-shadow: inset 0 1px 2px rgba(18, 24, 30, 0.12);
 }
 
 .refactor-quiz .progress-bar {
     background-color: var(--accent-strong);
+    height: 100%;
+    border-radius: inherit;
+    transition: width 0.35s ease;
 }
 
 .refactor-quiz .question-content {
     color: var(--text);
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: clamp(1.15rem, 1.7vw, 1.55rem);
+    font-weight: 600;
+    line-height: 1.65;
+    max-height: min(52vh, 560px);
+    overflow-y: auto;
+    padding-right: 10px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(107, 122, 136, 0.38) transparent;
+}
+
+.refactor-quiz .question-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.refactor-quiz .question-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.refactor-quiz .question-content::-webkit-scrollbar-thumb {
+    background: rgba(107, 122, 136, 0.38);
+    border-radius: 999px;
+}
+
+.refactor-quiz .question-area {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 18px;
+    margin-bottom: 24px;
+}
+
+.refactor-quiz .favorite-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 46px;
+    height: 46px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    background: var(--surface-muted);
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background-color 0.18s ease;
 }
 
 .refactor-quiz .favorite-btn svg {
     stroke: var(--accent);
+    width: 22px;
+    height: 22px;
+    transition: stroke 0.18s ease, fill 0.18s ease;
+}
+
+.refactor-quiz .favorite-btn:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent);
+    box-shadow: var(--shadow-soft);
+}
+
+.refactor-quiz .favorite-btn.bookmarked {
+    background: rgba(214, 180, 71, 0.18);
+    border-color: rgba(214, 180, 71, 0.42);
+}
+
+.refactor-quiz .favorite-btn.bookmarked svg {
+    fill: #d6b447;
+    stroke: #d6b447;
+}
+
+.refactor-quiz .options-area {
+    display: grid;
+    gap: 14px;
+    margin-bottom: 20px;
 }
 
 .refactor-quiz .option-btn {
+    display: flex;
+    align-items: center;
     background: var(--surface);
     border: 1px solid rgba(255, 255, 255, 0.35);
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
     justify-content: flex-start;
     text-align: left;
+    gap: 12px;
+    width: 100%;
+    padding: 16px 18px;
+    border-radius: 14px;
+    color: var(--text);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background-color 0.18s ease;
 }
 
 .refactor-quiz .option-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
     border-color: var(--accent-strong);
     box-shadow: var(--shadow-soft);
 }
@@ -238,16 +359,157 @@ body.refactor-page::after {
     box-shadow: none;
 }
 
+.refactor-quiz .option-btn:disabled {
+    cursor: not-allowed;
+}
+
+.refactor-quiz .option-btn svg {
+    width: 18px;
+    height: 18px;
+    margin-left: auto;
+    flex: 0 0 auto;
+}
+
+.refactor-quiz .feedback-area {
+    min-height: 28px;
+    margin-bottom: 18px;
+    color: var(--muted);
+    font-size: 0.98rem;
+    line-height: 1.6;
+}
+
+.refactor-quiz .feedback-area .correct-feedback {
+    color: var(--success);
+    font-weight: 700;
+}
+
+.refactor-quiz .feedback-area .incorrect-feedback {
+    color: var(--danger);
+    font-weight: 700;
+}
+
+.refactor-quiz .navigation-buttons {
+    margin-top: auto;
+    display: flex;
+    justify-content: center;
+}
+
 .refactor-quiz .action-btn.next-btn {
     background-color: var(--accent-strong);
     box-shadow: none;
+    border: none;
+    border-radius: 999px;
+    color: #f6f7f9;
+    padding: 12px 22px;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
 }
 
 .refactor-quiz .action-btn.next-btn:hover {
+    transform: translateY(-2px);
     box-shadow: var(--shadow-hover);
 }
 
+.refactor-quiz .fill-blank-container {
+    display: grid;
+    gap: 12px;
+}
+
+.refactor-quiz .fill-blank-input {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    background: var(--surface);
+    color: var(--text);
+    font: inherit;
+}
+
+.refactor-quiz .fill-blank-submit {
+    justify-content: center;
+}
+
+.refactor-quiz .question-text {
+    display: block;
+}
+
+.refactor-quiz .question-text p {
+    margin: 0.55em 0;
+}
+
+.refactor-quiz .question-text p:first-child {
+    margin-top: 0;
+}
+
+.refactor-quiz .question-text p:last-child {
+    margin-bottom: 0;
+}
+
+.refactor-quiz .question-text pre {
+    margin: 1em 0;
+    overflow-x: auto;
+}
+
+.refactor-quiz .question-text pre code {
+    display: block;
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+.refactor-quiz .inline-code {
+    display: inline-block;
+    padding: 0.18em 0.48em;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.38);
+    color: #8c2f39;
+    font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+    font-size: 0.9em;
+}
+
+[data-theme="dark"] .refactor-quiz .inline-code {
+    background: rgba(16, 22, 29, 0.85);
+    border-color: rgba(255, 255, 255, 0.12);
+    color: #ffb7bf;
+}
+
+.refactor-quiz .question-text blockquote {
+    margin: 1em 0;
+    padding: 0.8em 1em;
+    border-left: 3px solid var(--accent);
+    color: var(--muted);
+    background: var(--surface-muted);
+    border-radius: 0 12px 12px 0;
+}
+
+.refactor-quiz .question-text a {
+    color: var(--accent-strong);
+}
+
+.refactor-quiz .question-text strong,
+.refactor-quiz .question-text b {
+    color: var(--accent-strong);
+}
+
+.refactor-quiz .navigator-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
 .refactor-quiz .navigator-sidebar {
+    flex: 0 0 292px;
+    align-self: flex-start;
+    position: sticky;
+    top: 24px;
+    max-height: calc(100vh - 140px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 20px;
     background: var(--surface);
     border: 1px solid rgba(255, 255, 255, 0.4);
     box-shadow: var(--shadow-soft), inset 0 0 0 1px rgba(255, 255, 255, 0.12);
@@ -258,20 +520,58 @@ body.refactor-page::after {
 }
 
 .refactor-quiz .navigator-sidebar h2 {
+    margin: 0 0 16px;
+    font-size: 1.08rem;
     color: var(--accent-strong);
 }
 
 .refactor-quiz .navigator-item {
+    width: 100%;
+    min-height: 56px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
     background: var(--surface-muted);
     border: 1px solid rgba(255, 255, 255, 0.35);
     color: var(--text);
-    border-radius: 10px;
+    border-radius: 999px;
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+    font-weight: 600;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background-color 0.18s ease;
+}
+
+.refactor-quiz .navigator-item:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent);
+    box-shadow: var(--shadow-soft);
 }
 
 .refactor-quiz .navigator-item.current {
     background: var(--accent-strong);
     color: #f6f7f9;
+}
+
+.refactor-quiz .navigator-item.correct {
+    background: var(--success-soft);
+    border-color: var(--success);
+    color: var(--success);
+}
+
+.refactor-quiz .navigator-item.incorrect {
+    background: var(--danger-soft);
+    border-color: var(--danger);
+    color: var(--danger);
+}
+
+.refactor-quiz .navigator-item.bookmarked::after {
+    content: "★";
+    position: absolute;
+    top: -5px;
+    right: 4px;
+    font-size: 0.72rem;
+    color: #d6b447;
 }
 
 .refactor-quiz .quiz-picker-overlay {
@@ -552,7 +852,7 @@ body.refactor-page::after {
 }
 
 .refactor-history .modal-content .preview-q-opts::before {
-    content: "�?;
+    content: "锟?;
     position: absolute;
     left: 0;
     color: var(--accent-strong);
@@ -588,6 +888,33 @@ body.refactor-page::after {
     max-width: 1100px;
     margin: 0 auto;
     padding: 32px 24px 56px;
+    --upload-cta-bg: #14344f;
+    --upload-cta-bg-hover: #1b415f;
+    --upload-cta-text: #edf6ff;
+    --upload-surface-strong: rgba(255, 255, 255, 0.78);
+    --upload-surface-soft: rgba(255, 255, 255, 0.5);
+    --upload-border-strong: rgba(255, 255, 255, 0.68);
+    --upload-focus-ring: rgba(20, 52, 79, 0.18);
+    --upload-icon: #415466;
+    --upload-icon-strong: #1f2933;
+    --upload-success: #1f7a4a;
+    --upload-warning: #9a6a1b;
+    --upload-danger: #b42318;
+}
+
+[data-theme="dark"] .refactor-upload .upload-container {
+    --upload-cta-bg: #edf1f5;
+    --upload-cta-bg-hover: #ffffff;
+    --upload-cta-text: #13202c;
+    --upload-surface-strong: rgba(16, 22, 29, 0.82);
+    --upload-surface-soft: rgba(16, 22, 29, 0.58);
+    --upload-border-strong: rgba(255, 255, 255, 0.16);
+    --upload-focus-ring: rgba(237, 241, 245, 0.16);
+    --upload-icon: #9eb0c2;
+    --upload-icon-strong: #f3f6fa;
+    --upload-success: #58d996;
+    --upload-warning: #f1bf56;
+    --upload-danger: #ff7a6e;
 }
 
 .refactor-upload .page-header h1 {
@@ -600,8 +927,18 @@ body.refactor-page::after {
 .refactor-upload .page-header {
     display: flex;
     align-items: center;
-    gap: 16px;
+    justify-content: center;
     margin-bottom: 24px;
+    position: relative;
+    min-height: 52px;
+    padding: 0 64px;
+}
+
+.refactor-upload .page-header .back-home-btn {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
 }
 
 .refactor-upload .header-text {
@@ -642,8 +979,8 @@ body.refactor-page::after {
 .refactor-upload .side-card,
 .refactor-upload .progress-card,
 .refactor-upload .result-card {
-    background: var(--surface);
-    border: 1px solid rgba(255, 255, 255, 0.4);
+    background: var(--upload-surface-soft);
+    border: 1px solid var(--upload-border-strong);
     border-radius: 20px;
     padding: 24px;
     box-shadow: var(--shadow-soft), inset 0 0 0 1px rgba(255, 255, 255, 0.12);
@@ -684,8 +1021,8 @@ body.refactor-page::after {
 }
 
 .refactor-upload .drop-area {
-    background: var(--surface-muted);
-    border: 1px dashed rgba(255, 255, 255, 0.4);
+    background: linear-gradient(180deg, var(--upload-surface-strong), rgba(255, 255, 255, 0.34));
+    border: 1px dashed var(--upload-border-strong);
     border-radius: 18px;
     padding: 28px;
     display: flex;
@@ -694,6 +1031,11 @@ body.refactor-page::after {
     gap: 16px;
     text-align: center;
     min-height: 220px;
+    transition: transform 0.22s ease, border-color 0.22s ease, background-color 0.22s ease, box-shadow 0.22s ease;
+}
+
+[data-theme="dark"] .refactor-upload .drop-area {
+    background: linear-gradient(180deg, var(--upload-surface-strong), rgba(16, 22, 29, 0.56));
 }
 
 .refactor-upload .drop-text {
@@ -701,10 +1043,19 @@ body.refactor-page::after {
     gap: 6px;
 }
 
+.refactor-upload .upload-icon {
+    width: 54px;
+    height: 54px;
+    stroke: var(--upload-icon);
+    stroke-width: 1.7;
+    transition: stroke 0.22s ease, transform 0.22s ease;
+}
+
 .refactor-upload .drop-title {
     margin: 0;
     font-size: 1.05rem;
     font-weight: 600;
+    color: var(--accent-strong);
 }
 
 .refactor-upload .drop-subtitle {
@@ -715,24 +1066,27 @@ body.refactor-page::after {
 
 .refactor-upload .ghost-btn {
     border-radius: 999px;
-    border: 1px solid rgba(255, 255, 255, 0.35);
-    background: rgba(255, 255, 255, 0.7);
-    color: var(--text);
+    border: 1px solid var(--upload-border-strong);
+    background: var(--upload-surface-strong);
+    color: var(--accent-strong);
     padding: 10px 20px;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
-    transition: all 0.2s ease;
+    box-shadow: 0 10px 24px rgba(15, 22, 30, 0.08);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background-color 0.18s ease;
 }
 
 .refactor-upload .ghost-btn:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow-soft);
+    border-color: rgba(31, 41, 51, 0.22);
 }
 
 .refactor-upload .file-info {
     margin-top: 12px;
-    color: var(--muted);
+    color: var(--accent-strong);
     font-size: 0.9rem;
+    font-weight: 600;
 }
 
 .refactor-upload .section-label {
@@ -803,7 +1157,7 @@ body.refactor-page::after {
 }
 
 .refactor-upload .info-list li::before {
-    content: "�?;
+    content: "锟?;
     color: var(--accent-strong);
     margin-right: 8px;
 }
@@ -848,20 +1202,55 @@ body.refactor-page::after {
     -webkit-backdrop-filter: blur(var(--glass-blur));
 }
 
-.refactor-upload .drop-area:hover {
-    border-color: var(--accent);
+.refactor-quiz .app-header .back-home-btn {
+    position: absolute;
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.refactor-upload .drop-area:hover,
+.refactor-upload .drop-area.drag-over {
+    border-color: var(--upload-icon-strong);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(237, 242, 247, 0.7));
+    box-shadow: var(--shadow-soft);
+    transform: translateY(-2px);
 }
 
 .refactor-upload .parse-btn {
-    background: var(--accent-strong);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75em;
+    background: var(--upload-cta-bg);
+    color: var(--upload-cta-text);
     border: none;
-    box-shadow: none;
+    box-shadow: 0 12px 26px rgba(12, 29, 46, 0.28);
     border-radius: 999px;
     padding: 12px 22px;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease, opacity 0.18s ease;
 }
 
 .refactor-upload .parse-btn:hover {
+    background: var(--upload-cta-bg-hover);
     box-shadow: var(--shadow-hover);
+    transform: translateY(-2px);
+}
+
+.refactor-upload .parse-btn .btn-icon {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+}
+
+.refactor-upload .parse-btn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
 }
 
 .refactor-upload .status-message,
@@ -871,29 +1260,57 @@ body.refactor-page::after {
 }
 
 .refactor-upload .progress-bar {
-    background: var(--surface-muted);
+    height: 12px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.4);
+    box-shadow: inset 0 1px 2px rgba(15, 22, 30, 0.12);
 }
 
 .refactor-upload .progress-fill {
-    background: var(--accent-strong);
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--upload-cta-bg), #385a78);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+
+[data-theme="dark"] .refactor-upload .progress-fill {
+    background: linear-gradient(90deg, #d6dde5, #ffffff);
 }
 
 .refactor-upload .parse-result {
-    background: var(--surface-muted);
-    border: 1px solid rgba(255, 255, 255, 0.35);
+    min-height: 88px;
+    padding: 14px 16px;
+    color: var(--text);
+    background: var(--upload-surface-soft);
+    border: 1px solid var(--upload-border-strong);
     border-radius: 12px;
     backdrop-filter: blur(var(--glass-blur));
     -webkit-backdrop-filter: blur(var(--glass-blur));
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+    white-space: pre-wrap;
+    word-break: break-word;
 }
 
 .refactor-upload #toQuizBtn {
-    background: var(--accent-strong);
-    color: #f6f7f9;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--upload-cta-bg);
+    color: var(--upload-cta-text);
     border-radius: 999px;
     border: none;
     padding: 12px 20px;
     margin-top: 12px;
+    font-weight: 700;
+    box-shadow: 0 12px 26px rgba(12, 29, 46, 0.28);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+}
+
+.refactor-upload #toQuizBtn:hover {
+    background: var(--upload-cta-bg-hover);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
 }
 
 .refactor-upload .name-modal-overlay {
@@ -1033,5 +1450,258 @@ body.refactor-page::after {
     .refactor-quiz .question-column {
         padding: 0 16px 24px;
     }
+
+    .refactor-quiz .main-layout {
+        flex-direction: column;
+    }
+
+    .refactor-quiz .navigator-sidebar {
+        position: static;
+        max-height: none;
+        overflow: visible;
+        margin: 0 16px 16px;
+        order: -1;
+        flex: 1 1 auto;
+        width: auto;
+    }
 }
 
+@media (max-width: 720px) {
+    .refactor-quiz .app-container {
+        width: min(100vw - 20px, 1280px);
+        margin: 16px auto 28px;
+    }
+
+    .refactor-quiz .app-header {
+        min-height: 0;
+        padding: 16px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .refactor-quiz .app-header .back-home-btn {
+        position: static;
+        transform: none;
+    }
+
+    .refactor-quiz .app-header h1 {
+        font-size: 1.35rem;
+        text-align: left;
+    }
+
+    .refactor-quiz .main-layout {
+        padding: 0 12px 24px;
+    }
+
+    .refactor-quiz .question-card {
+        padding: 20px;
+    }
+
+    .refactor-quiz .question-area {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .refactor-quiz .favorite-btn {
+        align-self: flex-end;
+    }
+
+    .refactor-quiz .question-content {
+        max-height: none;
+    }
+
+    .refactor-quiz .navigator-sidebar {
+        margin: 0 12px 20px;
+        padding: 16px;
+    }
+
+    .refactor-quiz .quiz-picker-card {
+        padding: 18px;
+        border-radius: 16px;
+    }
+
+    .refactor-history .main-container {
+        padding: 20px 16px 40px;
+    }
+
+    .refactor-history .filter-controls {
+        padding: 12px;
+    }
+
+    .refactor-history .history-card {
+        padding: 18px;
+    }
+
+    .refactor-history .modal-content {
+        padding: 20px;
+    }
+
+    .refactor-upload .upload-container {
+        padding: 20px 16px 40px;
+    }
+
+    .refactor-upload .page-header {
+        justify-content: center;
+        padding: 0 52px;
+        min-height: 46px;
+    }
+
+    .refactor-upload .page-header .back-home-btn {
+        left: 0;
+    }
+
+    .refactor-upload .upload-panel,
+    .refactor-upload .side-card,
+    .refactor-upload .progress-card,
+    .refactor-upload .result-card {
+        padding: 18px;
+        border-radius: 16px;
+    }
+
+    .refactor-upload .drop-area {
+        min-height: 180px;
+        padding: 20px;
+    }
+
+    .refactor-upload .prompt-toggle-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .refactor-upload .upload-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .refactor-upload .parse-btn,
+    .refactor-upload #toQuizBtn,
+    .refactor-upload .ghost-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .refactor-upload .name-modal-card {
+        padding: 18px;
+        border-radius: 16px;
+    }
+}
+
+
+/* Upload page: reduced mode */
+.refactor-upload .upload-grid.reduced {
+    grid-template-columns: 1fr;
+}
+
+.refactor-upload .prompt-details {
+    margin-top: 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.35);
+    padding-top: 12px;
+}
+
+.refactor-upload .prompt-details summary {
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 0.88rem;
+    font-weight: 600;
+    transition: color 0.18s ease;
+}
+
+.refactor-upload .prompt-details summary:hover {
+    color: var(--accent-strong);
+}
+
+.refactor-upload .prompt-details[open] summary {
+    color: var(--accent-strong);
+}
+
+.refactor-upload .prompt-details .prompt-panel {
+    margin-top: 10px;
+}
+
+.refactor-upload .upload-actions {
+    justify-content: space-between;
+}
+
+.refactor-upload #uploadStatus {
+    min-height: 22px;
+}
+
+.refactor-upload .file-info {
+    color: var(--accent-strong);
+    font-weight: 500;
+}
+
+.refactor-upload .rename-inline {
+    margin-top: 12px;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid var(--upload-border-strong);
+    background: var(--upload-surface-soft);
+}
+
+.refactor-upload .rename-inline input {
+    width: 100%;
+    padding: 10px 12px;
+}
+
+.refactor-upload .name-dup-hint {
+    margin: 8px 0 0;
+    font-size: 0.84rem;
+    color: var(--upload-success);
+}
+
+.refactor-upload .name-dup-hint.is-warning {
+    color: var(--upload-warning);
+}
+
+.refactor-upload .loading-spinner {
+    width: 32px;
+    height: 32px;
+    margin: 16px auto 0;
+    border-radius: 999px;
+    border: 3px solid rgba(255, 255, 255, 0.38);
+    border-top-color: var(--upload-icon-strong);
+    animation: refactor-upload-spin 0.8s linear infinite;
+}
+
+.refactor-upload .drop-area:hover .upload-icon,
+.refactor-upload .drop-area.drag-over .upload-icon {
+    stroke: var(--upload-icon-strong);
+    transform: translateY(-1px);
+}
+
+.refactor-upload input:focus,
+.refactor-upload textarea:focus,
+.refactor-upload .ghost-btn:focus-visible,
+.refactor-upload .parse-btn:focus-visible,
+.refactor-upload #toQuizBtn:focus-visible,
+.refactor-upload .prompt-details summary:focus-visible,
+.refactor-upload .drop-area:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--upload-focus-ring);
+}
+
+[data-theme="dark"] .refactor-upload .drop-area:hover,
+[data-theme="dark"] .refactor-upload .drop-area.drag-over {
+    background: linear-gradient(180deg, rgba(24, 31, 39, 0.88), rgba(16, 22, 29, 0.78));
+}
+
+[data-theme="dark"] .refactor-upload .ghost-btn:hover {
+    border-color: rgba(255, 255, 255, 0.22);
+}
+
+@keyframes refactor-upload-spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (max-width: 720px) {
+    .refactor-upload .prompt-details {
+        margin-top: 10px;
+    }
+}

@@ -59,17 +59,18 @@ body {
 }
 
 .app-header .back-home-btn {
-    position: static; /* Remove absolute positioning */
+    position: static; /* Keep inside header layout */
     padding: 8px;
     border-radius: 8px;
     background-color: transparent;
+    border: none;
     box-shadow: none;
     transition: all 0.3s ease;
 }
 
 .app-header .back-home-btn:hover {
     background-color: rgba(0, 0, 0, 0.05);
-    transform: translateY(-2px);
+    transform: none;
     box-shadow: 0 2px 8px var(--shadow-light);
 }
 

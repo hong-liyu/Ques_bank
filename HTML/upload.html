@@ -1,100 +1,87 @@
 <!DOCTYPE html>
-<html lang="zh-cn">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>题库上传 - DeepSeek AI解析</title>
+    <title>题库上传 - AI解析</title>
     <link rel="stylesheet" href="../css/style.css">
-    <link rel="stylesheet" href="../css/upload.css">
     <link rel="stylesheet" href="../css/refactor_pages.css">
 </head>
 <body class="refactor-page refactor-upload">
     <div class="grain" aria-hidden="true"></div>
     <div class="upload-container">
         <header class="page-header">
-            <a href="index.html" class="back-home-btn" title="返回主页">
-                <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <a href="index.html" class="back-home-btn" title="返回首页">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="M15 18L9 12L15 6"/>
                 </svg>
             </a>
             <div class="header-text">
                 <p class="header-kicker mono">AI Parsing</p>
-                <h1>题库解析</h1>
+                <h1>题库上传与解析</h1>
             </div>
         </header>
 
         <div class="upload-card">
             <main>
                 <form id="uploadForm" enctype="multipart/form-data">
-                    <div class="upload-grid">
+                    <div class="upload-grid reduced">
                         <section class="upload-panel">
                             <div class="panel-header">
-                                <span class="panel-kicker mono">Step 01</span>
+                                <span class="panel-kicker mono">Upload</span>
                                 <h2>上传题库文件</h2>
-                                <p>拖拽或选择文件，解析后会自动保存到本地题库。</p>
+                                <p>支持拖拽或点击选择文件，解析后可直接去刷题。</p>
                             </div>
+
                             <div class="drop-area" id="dropArea">
-                                <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                                     <polyline points="17 8 12 3 7 8"></polyline>
                                     <line x1="12" y1="3" x2="12" y2="15"></line>
                                 </svg>
                                 <div class="drop-text">
-                                    <p class="drop-title">拖拽文件到此处</p>
+                                    <p class="drop-title">拖拽文件到这里</p>
                                     <p class="drop-subtitle">支持 .docx / .pdf / .txt，最大 50MB</p>
                                 </div>
                                 <button type="button" class="ghost-btn">选择文件</button>
-                                <input type="file" id="questionFile" name="questionFile" accept=".docx,.pdf,.txt" required style="display: none;">
+                                <input type="file" id="questionFile" name="questionFile" accept=".docx,.pdf,.txt" required style="display:none;">
                             </div>
+
                             <div class="file-info" id="fileInfo"></div>
-                        </section>
 
-                        <aside class="upload-side">
-                            <div class="side-card">
-                                <span class="panel-kicker mono">Step 02</span>
-                                <div class="prompt-toggle-row">
-                                    <button type="button" class="prompt-toggle" id="customPromptToggle" aria-expanded="false">
-                                        <svg class="prompt-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
-                                            <line x1="4" y1="22" x2="4" y2="15"></line>
-                                        </svg>
-                                        自定义提示词（可选）
-                                    </button>
-                                    <span class="prompt-toggle-hint">点击展开</span>
-                                </div>
-                                <div class="prompt-panel" id="customPromptPanel">
+                            <div class="rename-inline" id="renameInline" hidden>
+                                <label for="customName" class="section-label">题库名称（用于历史题库）</label>
+                                <input type="text" id="customName" maxlength="40" placeholder="请输入题库名称">
+                                <p class="name-dup-hint" id="nameDuplicateHint" hidden></p>
+                                <p class="field-note">默认使用文件名（不含后缀），你可以在这里先改好再解析。</p>
+                            </div>
+
+                            <details class="prompt-details">
+                                <summary>高级选项：自定义提示词（可选）</summary>
+                                <div class="prompt-panel is-open" id="customPromptPanel">
                                     <label for="customPrompt" class="section-label">提示词内容</label>
-                                    <textarea id="customPrompt" rows="5" placeholder="如需自定义AI解析指令，可在此输入，例如：请将题目解析为单选题和多选题，并确保答案格式正确。"></textarea>
-                                    <p class="field-note">提示词用于控制解析格式，保持清晰简洁即可。</p>
+                                    <textarea id="customPrompt" rows="4" placeholder="例如：请将题目按单选、多选、判断、填空四类输出，并确保答案字段规范。"></textarea>
+                                    <p class="field-note">默认不填即可，系统会使用标准解析策略。</p>
                                 </div>
-                            </div>
-
-                            <div class="side-card compact">
-                                <h3>解析提示</h3>
-                                <ul class="info-list">
-                                    <li>解析完成后会自动生成题库记录</li>
-                                    <li>可在历史题库中预览与管理</li>
-                                    <li>支持收藏题与进度追踪</li>
-                                </ul>
-                            </div>
-                        </aside>
+                            </details>
+                        </section>
                     </div>
 
                     <div class="upload-actions">
                         <button type="submit" class="parse-btn" id="parseBtn">
-                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                 <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
                             </svg>
-                            智能解析
+                            开始解析
                         </button>
                         <div id="uploadStatus" class="status-message"></div>
                     </div>
 
                     <section class="progress-card">
                         <div class="panel-header">
-                            <span class="panel-kicker mono">Step 03</span>
+                            <span class="panel-kicker mono">Progress</span>
                             <h2>解析进度</h2>
-                            <p>解析过程中请保持页面开启，状态会实时更新。</p>
+                            <p>解析期间保持页面打开，状态会自动刷新。</p>
                         </div>
                         <div class="progress-container" id="progressContainer" style="display:none;">
                             <div class="progress-bar">
@@ -110,9 +97,9 @@
 
                     <section class="result-card">
                         <div class="panel-header">
-                            <span class="panel-kicker mono">Step 04</span>
-                            <h2>结果与下一步</h2>
-                            <p>解析完成后可直接进入刷题。</p>
+                            <span class="panel-kicker mono">Next</span>
+                            <h2>完成后下一步</h2>
+                            <p>解析成功后，直接进入刷题继续学习。</p>
                         </div>
                         <pre id="parseResult" class="parse-result"></pre>
                         <button type="button" id="toQuizBtn" style="display:none;">去刷题</button>
@@ -121,24 +108,7 @@
             </main>
         </div>
     </div>
-    <div class="name-modal-overlay" id="nameConfirmModal" aria-hidden="true">
-        <div class="name-modal-card" role="dialog" aria-modal="true" aria-labelledby="nameModalTitle">
-            <div class="name-modal-header">
-                <div>
-                    <p class="panel-kicker mono">Confirm</p>
-                    <h2 id="nameModalTitle">确认题库名称</h2>
-                </div>
-                <button type="button" class="name-modal-close" id="nameModalClose" aria-label="关闭">×</button>
-            </div>
-            <p class="name-modal-subtitle">解析完成后将以此名称存入历史题库。</p>
-            <label class="section-label" for="customNameInput">题库名称</label>
-            <input type="text" id="customNameInput" class="name-modal-input" placeholder="输入题库名称">
-            <div class="name-modal-actions">
-                <button type="button" class="ghost-btn" id="nameModalCancel">取消</button>
-                <button type="button" class="parse-btn" id="nameModalConfirm">确认并解析</button>
-            </div>
-        </div>
-    </div>
+
     <script src="../js/dialog_toast.js"></script>
     <script src="../js/upload.js"></script>
     <script src="../js/theme_toggle.js"></script>

@@ -1,27 +1,23 @@
-<!-- 刷题页面主文件 -->
 <!DOCTYPE html>
-<html lang="zh-cn">
+<html lang="zh-CN">
 <head>
-    <meta charset="UTF-8"> <!-- 设置网页字符编码为UTF-8，支持中文显示 -->
-    <title>刷题页面</title> <!-- 网页标题 -->
-    <!-- Markdown 解析库 -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>刷题页面</title>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <!-- 代码高亮库 - 使用浅色主题 (github-light) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="highlight-theme-light">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="highlight-theme-dark" disabled>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <!-- 页面样式 -->
-    <link rel="stylesheet" href="../css/quiz.css"> <!-- 引入刷题页面专用样式 -->
-    <link rel="stylesheet" href="../css/style.css"> <!-- 引入通用样式 -->
+    <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="../css/refactor_pages.css">
 </head>
 <body class="refactor-page refactor-quiz">
     <div class="grain" aria-hidden="true"></div>
     <div class="app-container">
         <header class="app-header">
-            <a href="parsed_list.html" class="back-home-btn" title="返回题库列表">
-                <svg viewBox="0 0 24 24">
-                    <path d="M15 6L9 12L15 18" fill="none" stroke="#333333" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <a href="index.html" class="back-home-btn" title="返回首页">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M15 6L9 12L15 18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
             </a>
             <h1 id="quizTitleHeader">刷题页</h1>
@@ -39,35 +35,29 @@
 
                     <div class="question-area">
                         <div class="question-content" id="questionContent"></div>
-                        <button class="favorite-btn" id="favoriteBtn">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <button class="favorite-btn" id="favoriteBtn" type="button" aria-label="收藏题目">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                 <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
                             </svg>
                         </button>
                     </div>
 
-                    <div class="options-area" id="optionsArea">
-                        <!-- Options will be dynamically loaded here -->
-                    </div>
-
-                    <div class="feedback-area" id="feedbackArea">
-                        <!-- Feedback messages will appear here -->
-                    </div>
+                    <div class="options-area" id="optionsArea"></div>
+                    <div class="feedback-area" id="feedbackArea"></div>
 
                     <div class="navigation-buttons">
-                        <button id="nextQuestionBtn" class="action-btn next-btn" style="display:none;">下一题</button>
+                        <button id="nextQuestionBtn" class="action-btn next-btn" type="button" style="display:none;">下一题</button>
                     </div>
                 </div>
             </main>
 
             <aside class="navigator-sidebar">
                 <h2>题目导航</h2>
-                <div class="navigator-grid" id="navigatorGrid">
-                    <!-- Navigator items will be dynamically loaded here -->
-                </div>
+                <div class="navigator-grid" id="navigatorGrid"></div>
             </aside>
         </div>
     </div>
+
     <div class="quiz-picker-overlay" id="quizPickerModal" aria-hidden="true">
         <div class="quiz-picker-card" role="dialog" aria-modal="true" aria-labelledby="quizPickerTitle">
             <div class="quiz-picker-header">
@@ -86,6 +76,7 @@
             </div>
         </div>
     </div>
+
     <script src="../js/dialog_toast.js"></script>
     <script src="../js/favorite.js"></script>
     <script src="../js/quiz.js"></script>

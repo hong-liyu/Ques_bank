@@ -52,7 +52,7 @@ body {
 
 .back-home-btn:hover {
     box-shadow: 0 8px 20px rgba(124, 58, 237, 0.25);
-    transform: translateY(-3px);
+    transform: none;
 }
 
 .back-home-btn svg {
