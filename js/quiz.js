@@ -1,5 +1,6 @@
-document.addEventListener('DOMContentLoaded', async function() {
+document.addEventListener('DOMContentLoaded', async function () {
     const quizTitleHeader = document.getElementById('quizTitleHeader');
+    const quizTitleStats = document.getElementById('quizTitleStats');
     const progressBar = document.getElementById('progressBar');
     const progressText = document.getElementById('progressText');
     const questionContentDiv = document.getElementById('questionContent');
@@ -12,225 +13,261 @@ document.addEventListener('DOMContentLoaded', async function() {
     const quizPickerList = document.getElementById('quizPickerList');
     const quizPickerEmpty = document.getElementById('quizPickerEmpty');
     const quizPickerClose = document.getElementById('quizPickerClose');
+    const favoriteModal = document.getElementById('favoriteModal');
+    const favoriteModalClose = document.getElementById('favoriteModalClose');
+    const favoriteFolderInput = document.getElementById('favoriteFolderInput');
+    const createFavoriteFolderBtn = document.getElementById('createFavoriteFolderBtn');
+    const favoriteFolderList = document.getElementById('favoriteFolderList');
+    const favoriteFolderEmpty = document.getElementById('favoriteFolderEmpty');
+    const quizCompleteModal = document.getElementById('quizCompleteModal');
+    const quizCompleteSummary = document.getElementById('quizCompleteSummary');
+    const quizCompleteAccuracy = document.getElementById('quizCompleteAccuracy');
+    const quizCompleteScore = document.getElementById('quizCompleteScore');
+    const quizCompleteRuns = document.getElementById('quizCompleteRuns');
+    const quizCompleteDuration = document.getElementById('quizCompleteDuration');
+    const reviewQuizBtn = document.getElementById('reviewQuizBtn');
 
-    let questions = []; // Main questions array
+    const FEEDBACK_DELAY_MS = 500;
+
+    let questions = [];
+    let historyItems = [];
     let currentQuestionIndex = 0;
     let answered = false;
-    let answerRecord = []; // Stores true for correct, false for incorrect, null for unanswered
+    let answerRecord = [];
+    let currentQuizFile = '';
+    let currentQuizTitle = '';
+    let currentQuizStats = null;
+    let completionSubmitted = false;
+    let sessionStartAt = null;
 
-    function setPickerVisible(isOpen) {
-        if (!quizPickerModal) return;
-        quizPickerModal.classList.toggle('is-open', isOpen);
-        quizPickerModal.setAttribute('aria-hidden', (!isOpen).toString());
+    function getDefaultStats() {
+        return {
+            completed_runs: 0,
+            total_answered: 0,
+            total_correct: 0,
+            last_completed_at: null
+        };
     }
 
-    async function openQuizPicker() {
-        if (!quizPickerModal || !quizPickerList || !quizPickerEmpty) return;
-        setPickerVisible(true);
-        quizPickerList.innerHTML = '';
-        quizPickerEmpty.style.display = 'none';
+    function normalizeStats(stats) {
+        const defaults = getDefaultStats();
+        const raw = stats || {};
+        return {
+            completed_runs: Number.isFinite(Number(raw.completed_runs)) ? Math.max(0, Number(raw.completed_runs)) : defaults.completed_runs,
+            total_answered: Number.isFinite(Number(raw.total_answered)) ? Math.max(0, Number(raw.total_answered)) : defaults.total_answered,
+            total_correct: Number.isFinite(Number(raw.total_correct)) ? Math.max(0, Number(raw.total_correct)) : defaults.total_correct,
+            last_completed_at: raw.last_completed_at || null
+        };
+    }
 
+    function formatAccuracy(stats) {
+        const normalized = normalizeStats(stats);
+        if (!normalized.total_answered) return '--';
+        return `${Math.round((normalized.total_correct / normalized.total_answered) * 100)}%`;
+    }
+
+    function formatDuration(totalSeconds) {
+        const seconds = Math.max(0, Math.round(Number(totalSeconds) || 0));
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const remainSeconds = seconds % 60;
+        if (hours > 0) return `${hours}时${minutes}分${remainSeconds}秒`;
+        if (minutes > 0) return `${minutes}分${remainSeconds}秒`;
+        return `${remainSeconds}秒`;
+    }
+
+    function renderTitleStats() {
+        if (!quizTitleStats) return;
+        const stats = normalizeStats(currentQuizStats);
+        quizTitleStats.innerHTML = `
+            <span class="quiz-stat-chip">已刷 ${stats.completed_runs} 次</span>
+            <span class="quiz-stat-chip">正确率 ${formatAccuracy(stats)}</span>
+        `;
+    }
+
+    function setOverlayVisible(element, isOpen, className = 'is-open') {
+        if (!element) return;
+        element.classList.toggle(className, isOpen);
+        element.setAttribute('aria-hidden', (!isOpen).toString());
+    }
+
+    function escapeHtml(value) {
+        return String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function getHistoryItem(file) {
+        return historyItems.find((item) => item.file === file) || null;
+    }
+
+    async function fetchHistoryItems() {
         try {
             const resp = await fetch('/api/history_questions?t=' + Date.now());
             const data = await resp.json();
-            if (data.success && Array.isArray(data.history) && data.history.length) {
-                data.history.forEach((item) => {
-                    const btn = document.createElement('button');
-                    btn.type = 'button';
-                    btn.className = 'quiz-picker-item';
-                    const title = item.origin_name || item.title || item.file || '未命名题库';
-                    const time = item.time || '未知时间';
-                    btn.innerHTML = `
-                        <span class="quiz-picker-item-title">${title}</span>
-                        <span class="quiz-picker-item-meta mono">${time}</span>
-                    `;
-                    btn.onclick = () => {
-                        const file = item.file;
-                        if (!file) return;
-                        window.location.href = `quiz.html?file=${encodeURIComponent(file)}&title=${encodeURIComponent(title)}`;
-                    };
-                    quizPickerList.appendChild(btn);
-                });
-            } else {
-                quizPickerEmpty.style.display = 'block';
-            }
-        } catch (e) {
-            quizPickerEmpty.style.display = 'block';
+            historyItems = data.success && Array.isArray(data.history) ? data.history : [];
+        } catch (error) {
+            historyItems = [];
         }
     }
 
-    if (quizPickerClose) {
-        quizPickerClose.addEventListener('click', () => setPickerVisible(false));
+    function renderPickerItems() {
+        if (!quizPickerList || !quizPickerEmpty) return;
+        quizPickerList.innerHTML = '';
+        quizPickerEmpty.style.display = historyItems.length ? 'none' : 'block';
+
+        historyItems.forEach((item) => {
+            const title = item.origin_name || item.title || item.file || '未命名题库';
+            const stats = normalizeStats(item.stats);
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'quiz-picker-item';
+            btn.innerHTML = `
+                <span class="quiz-picker-item-head">
+                    <span class="quiz-picker-item-title">${escapeHtml(title)}</span>
+                    <span class="quiz-picker-item-stats">
+                        <span class="quiz-stat-chip">已刷 ${stats.completed_runs} 次</span>
+                        <span class="quiz-stat-chip">正确率 ${formatAccuracy(stats)}</span>
+                    </span>
+                </span>
+                <span class="quiz-picker-item-meta mono">${escapeHtml(item.time || '未知时间')}</span>
+            `;
+            btn.onclick = () => {
+                if (!item.file) return;
+                window.location.href = `quiz.html?file=${encodeURIComponent(item.file)}&title=${encodeURIComponent(title)}`;
+            };
+            quizPickerList.appendChild(btn);
+        });
     }
 
-    // ===== Markdown 和代码高亮配置 =====
-    // 初始化 marked 配置
+    async function openQuizPicker() {
+        await fetchHistoryItems();
+        renderPickerItems();
+        setOverlayVisible(quizPickerModal, true);
+    }
+
     function initMarkdown() {
         if (typeof marked !== 'undefined' && typeof hljs !== 'undefined') {
-            // 配置 marked 选项
-            marked.setOptions({
-                breaks: true,
-                gfm: true,
-                pedantic: false,
-                async: false
-            });
-            
-            // 自定义渲染器
-            const renderer = {
-                code({text, lang, escaped}) {
-                    const highlightedCode = (lang && hljs.getLanguage(lang))
-                        ? hljs.highlight(text, { language: lang, ignoreIllegals: true }).value
-                        : hljs.highlightAuto(text).value;
-                    return `<pre><code class="hljs language-${lang || 'plaintext'}">${highlightedCode}</code></pre>`;
-                },
-                codespan({text}) {
-                    return `<code class="inline-code">${text}</code>`;
-                },
-                paragraph({text}) {
-                    return `<p>${text}</p>`;
+            marked.setOptions({ breaks: true, gfm: true, pedantic: false, async: false });
+            marked.use({
+                renderer: {
+                    code({ text, lang }) {
+                        const highlightedCode = (lang && hljs.getLanguage(lang))
+                            ? hljs.highlight(text, { language: lang, ignoreIllegals: true }).value
+                            : hljs.highlightAuto(text).value;
+                        return `<pre><code class="hljs language-${lang || 'plaintext'}">${highlightedCode}</code></pre>`;
+                    },
+                    codespan({ text }) {
+                        return `<code class="inline-code">${text}</code>`;
+                    },
+                    paragraph({ text }) {
+                        return `<p>${text}</p>`;
+                    }
                 }
-            };
-            
-            marked.use({ renderer });
+            });
         }
     }
-    
-    // 处理 Markdown 内容
+
     function parseMarkdown(content) {
         if (typeof marked === 'undefined') return content;
         try {
             let html = marked.parse(content);
-            // 清理多余的 <p> 标签包装（单行内容）
             if (content && !content.includes('\n') && !content.match(/```|`/)) {
                 html = html.replace(/<p>(.*?)<\/p>/, '$1');
             }
             return html;
         } catch (error) {
-            console.warn('Markdown 解析错误:', error);
+            console.warn('Markdown parse error:', error);
             return content;
         }
     }
-    
-    // 页面加载时初始化
-    initMarkdown();
 
-    // Load favorite.js if not already loaded (though it should be in HTML)
-    if (typeof getLocalFavorites === 'undefined') {
-        const script = document.createElement('script');
-        script.src = 'js/favorite.js';
-        document.head.appendChild(script);
+    function getQuestionPrompt(question) {
+        return question.content || question.text || '';
     }
 
-    // ========== 数据加载逻辑 (突破 sessionStorage 限制) ==========
+    function getQuestionAnswerText(question) {
+        if (question.type === '填空' && typeof question.answer === 'string') {
+            return question.answer.split('|').map((item) => item.trim()).join(' / ');
+        }
+        if (typeof question.answer === 'string') return question.answer;
+        if (Array.isArray(question.answer)) {
+            return question.answer.map((item) => typeof item === 'number' ? String.fromCharCode(65 + item) : item).join(', ');
+        }
+        return '无';
+    }
+
+    function getCurrentAnsweredCount() {
+        return answerRecord.filter((item) => item !== null).length;
+    }
+
+    function getCurrentCorrectCount() {
+        return answerRecord.filter(Boolean).length;
+    }
+
     async function loadQuizData() {
-        // 先检查 URL 是否传入了 file 参数
         const urlParams = new URLSearchParams(window.location.search);
         const fileName = urlParams.get('file');
         const titleFromUrl = urlParams.get('title');
 
+        await fetchHistoryItems();
+        await ensureFavoriteCache();
+
         if (fileName) {
             try {
-                // 如果是从 URL 传入的具体文件，则通过 fetch 异步获取，不再受限 sessionStorage 容量
                 const response = await fetch(`/data/parsed/${fileName}`);
                 if (!response.ok) throw new Error('无法拉取题库数据');
                 questions = await response.json();
-                quizTitleHeader.textContent = titleFromUrl || '大文件题库';
-            } catch (err) {
-                console.error(err);
+                currentQuizFile = fileName;
+                const matchedHistory = getHistoryItem(fileName);
+                currentQuizTitle = titleFromUrl || (matchedHistory && (matchedHistory.origin_name || matchedHistory.title)) || '题库';
+                currentQuizStats = normalizeStats(matchedHistory && matchedHistory.stats);
+                quizTitleHeader.textContent = currentQuizTitle;
+            } catch (error) {
+                console.error(error);
                 if (typeof showToast === 'function') showToast('题库加载失败，请返回重试', 'error');
-                else alert('题库加载失败!');
                 return;
             }
         } else {
-            // 后备方案（兼容旧逻辑）：从 sessionStorage 加载
             const stored = sessionStorage.getItem('quiz_questions');
             const storedTitle = sessionStorage.getItem('quiz_title');
-            if (stored) {
-                try {
-                    questions = JSON.parse(stored);
-                    quizTitleHeader.textContent = storedTitle || '本地题库';
-                } catch (e) {
-                    if (typeof showToast === 'function') showToast('解析缓存数据失败', 'error');
-                }
-            } else {
+            if (!stored) {
                 await openQuizPicker();
+                return;
+            }
+            try {
+                questions = JSON.parse(stored);
+                currentQuizTitle = storedTitle || '本地题库';
+                currentQuizStats = normalizeStats();
+                quizTitleHeader.textContent = currentQuizTitle;
+            } catch (error) {
+                if (typeof showToast === 'function') showToast('解析缓存数据失败', 'error');
                 return;
             }
         }
 
-        if (!questions || questions.length === 0) {
-            questionContentDiv.innerHTML = '<p style="color:red;">未找到题目数据，请先上传解析或通过历史题库进入。</p>';
+        renderTitleStats();
+
+        if (!Array.isArray(questions) || !questions.length) {
+            questionContentDiv.innerHTML = '<p style="color:red;">未找到题目数据，请先上传解析或从历史题库进入。</p>';
             optionsArea.innerHTML = '';
             return;
         }
 
-        // 初始化答题记录
         answerRecord = new Array(questions.length).fill(null);
+        completionSubmitted = false;
+        sessionStartAt = null;
         updateNavigatorSidebar();
         renderQuestion(0);
-    }
-
-    function shuffleArray(arr) {
-        for (let i = arr.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [arr[i], arr[j]] = [arr[j], arr[i]];
-        }
     }
 
     function updateProgressBar() {
         const progress = questions.length > 0 ? ((currentQuestionIndex + 1) / questions.length) * 100 : 0;
         progressBar.style.width = `${progress}%`;
         progressText.textContent = `Question ${currentQuestionIndex + 1} of ${questions.length}`;
-    }
-
-    function renderQuestion(idx) {
-        if (idx < 0 || idx >= questions.length) return;
-
-        currentQuestionIndex = idx;
-        answered = false;
-        feedbackArea.innerHTML = '';
-        nextQuestionBtn.style.display = 'none';
-        optionsArea.innerHTML = ''; // Clear previous options
-
-        updateProgressBar();
-        updateNavigatorSidebar();
-
-        const q = questions[idx];
-        // 使用 Markdown 解析问题内容
-        const questionHTML = parseMarkdown(q.content || q.text || '');
-        questionContentDiv.innerHTML = `<span class="question-text">${idx + 1}. ${questionHTML}</span>`;
-
-        // Update favorite button state
-        updateFavoriteBtn(q);
-
-        // Render options
-        if (q.type === '判断') {
-            createOptionButton('True', '正确', q);
-            createOptionButton('False', '错误', q);
-        } else if (q.type === '填空') {
-            // 填空题：有选项则显示选项，无选项则显示输入框
-            if (Array.isArray(q.options) && q.options.length > 0) {
-                q.options.forEach((opt, i) => {
-                    createOptionButton(i, `${opt}`, q);
-                });
-            } else {
-                // 无选项，显示输入框
-                createFillBlankInput(q);
-            }
-        } else if (Array.isArray(q.options) && q.options.length > 0) {
-            q.options.forEach((opt, i) => {
-                createOptionButton(i, `${opt}`, q);
-            });
-        } else {
-            optionsArea.innerHTML = '<span style="color:#e74c3c;">本题无选项</span>';
-        }
-
-        // If already answered, show feedback immediately
-        if (answerRecord[idx] !== null) {
-            showFeedback(q, answerRecord[idx]);
-            disableOptions();
-            nextQuestionBtn.style.display = (currentQuestionIndex < questions.length - 1) ? 'inline-block' : 'none';
-        }
     }
 
     function createOptionButton(value, text, question) {
@@ -242,351 +279,411 @@ document.addEventListener('DOMContentLoaded', async function() {
         optionsArea.appendChild(button);
     }
 
-    // 为填空题创建输入框
     function createFillBlankInput(question) {
         const inputContainer = document.createElement('div');
         inputContainer.className = 'fill-blank-container';
-        
+
         const label = document.createElement('label');
         label.htmlFor = 'fillBlankInput';
         label.textContent = '请输入答案：';
-        label.style.cssText = 'display:block;margin-bottom:0.8em;font-weight:600;color:#374151;';
-        
+
         const input = document.createElement('input');
         input.type = 'text';
         input.id = 'fillBlankInput';
         input.className = 'fill-blank-input';
-        input.placeholder = '输入您的答案...';
-        input.style.cssText = 'width:100%;padding:0.8em;border:2px solid #e5e7eb;border-radius:0.5em;font-size:1em;box-sizing:border-box;';
-        
+        input.placeholder = '输入你的答案...';
+
         const submitBtn = document.createElement('button');
         submitBtn.type = 'button';
         submitBtn.className = 'option-btn fill-blank-submit';
         submitBtn.textContent = '提交答案';
-        submitBtn.style.cssText = 'margin-top:1em;width:100%;';
         submitBtn.onclick = (e) => {
             e.preventDefault();
             handleFillBlankAnswer(input.value, question, submitBtn);
         };
-        
-        // 支持按回车键提交
+
         input.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                submitBtn.click();
-            }
+            if (e.key === 'Enter') submitBtn.click();
         });
-        
+
         inputContainer.appendChild(label);
         inputContainer.appendChild(input);
         inputContainer.appendChild(submitBtn);
         optionsArea.appendChild(inputContainer);
-        
-        // 页面加载后自动焦点到输入框
         setTimeout(() => input.focus(), 100);
     }
 
-    function handleAnswer(selectedButton, question) {
-        if (answered) return; // Prevent multiple answers
+    function updateFavoriteBtn(question) {
+        favoriteBtn.classList.toggle('bookmarked', isFavorite(question, getFavoriteItems()));
+    }
+
+    function renderQuestion(index) {
+        if (index < 0 || index >= questions.length) return;
+
+        if (!sessionStartAt) {
+            sessionStartAt = Date.now();
+        }
+
+        currentQuestionIndex = index;
+        answered = answerRecord[index] !== null;
+        feedbackArea.innerHTML = '';
+        nextQuestionBtn.style.display = 'none';
+        optionsArea.innerHTML = '';
+
+        updateProgressBar();
+        updateNavigatorSidebar();
+
+        const question = questions[index];
+        questionContentDiv.innerHTML = `<span class="question-text">${index + 1}. ${parseMarkdown(getQuestionPrompt(question))}</span>`;
+        updateFavoriteBtn(question);
+
+        if (question.type === '判断') {
+            createOptionButton('True', '正确', question);
+            createOptionButton('False', '错误', question);
+        } else if (question.type === '填空') {
+            if (Array.isArray(question.options) && question.options.length > 0) {
+                question.options.forEach((opt, optionIndex) => createOptionButton(optionIndex, `${opt}`, question));
+            } else {
+                createFillBlankInput(question);
+            }
+        } else if (Array.isArray(question.options) && question.options.length > 0) {
+            question.options.forEach((opt, optionIndex) => createOptionButton(optionIndex, `${opt}`, question));
+        } else {
+            optionsArea.innerHTML = '<span style="color:#e74c3c;">本题无选项</span>';
+        }
+
+        if (answerRecord[index] !== null) {
+            showFeedback(question, answerRecord[index], null);
+            disableOptions();
+            if (index < questions.length - 1) nextQuestionBtn.style.display = 'inline-flex';
+        }
+    }
+
+    function disableOptions() {
+        optionsArea.querySelectorAll('.option-btn').forEach((btn) => {
+            btn.disabled = true;
+        });
+        const fillInput = document.getElementById('fillBlankInput');
+        if (fillInput) fillInput.disabled = true;
+    }
+
+    function appendStateIcon(button, type) {
+        if (!button || button.querySelector('svg')) return;
+        const icon = type === 'correct'
+            ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>'
+            : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+        button.insertAdjacentHTML('beforeend', ` ${icon}`);
+    }
+
+    function showFeedback(question, isCorrect, selectedButton = null) {
+        optionsArea.querySelectorAll('.option-btn').forEach((btn) => {
+            btn.classList.remove('selected');
+            btn.disabled = true;
+        });
+        feedbackArea.innerHTML = '';
+
+        if (isCorrect) {
+            if (selectedButton) {
+                selectedButton.classList.add('correct-answer');
+                appendStateIcon(selectedButton, 'correct');
+            }
+            return;
+        }
+
+        feedbackArea.innerHTML = `<span class="incorrect-feedback">正确答案：${escapeHtml(getQuestionAnswerText(question))}</span>`;
+
+        if (selectedButton) {
+            selectedButton.classList.add('incorrect-answer');
+            appendStateIcon(selectedButton, 'incorrect');
+        }
+
+        if (question.type === '判断') {
+            const correctBtn = optionsArea.querySelector(`[data-value="${String(question.answer)}"]`);
+            if (correctBtn) {
+                correctBtn.classList.add('correct-answer');
+                appendStateIcon(correctBtn, 'correct');
+            }
+        } else if (question.type === '多选') {
+            const answers = String(question.answer).split('').map((ch) => ch.charCodeAt(0) - 65);
+            answers.forEach((correctIndex) => {
+                const correctBtn = optionsArea.querySelector(`[data-value="${correctIndex}"]`);
+                if (correctBtn) {
+                    correctBtn.classList.add('correct-answer');
+                    appendStateIcon(correctBtn, 'correct');
+                }
+            });
+        } else if (question.type !== '填空') {
+            const correctIndex = String(question.answer).charCodeAt(0) - 65;
+            const correctBtn = optionsArea.querySelector(`[data-value="${correctIndex}"]`);
+            if (correctBtn) {
+                correctBtn.classList.add('correct-answer');
+                appendStateIcon(correctBtn, 'correct');
+            }
+        }
+    }
+
+    async function onQuestionCompleted() {
+        if (currentQuestionIndex < questions.length - 1) {
+            setTimeout(() => {
+                nextQuestionBtn.style.display = 'inline-flex';
+            }, FEEDBACK_DELAY_MS);
+            return;
+        }
+        await completeQuizSession();
+    }
+
+    async function handleAnswer(selectedButton, question) {
+        if (answered) return;
         answered = true;
         disableOptions();
 
         let isCorrect = false;
-        let selectedValue = selectedButton.dataset.value;
+        const selectedValue = selectedButton.dataset.value;
 
         if (question.type === '判断') {
             isCorrect = selectedValue.toLowerCase() === String(question.answer).toLowerCase();
         } else if (question.type === '多选') {
-            // For multiple choice, need to handle checkboxes first, then submit
-            // This UI design implies single click submission, so we'll simplify for now
-            // If multiple selection is needed, optionsArea would contain checkboxes and a separate submit button
-            const selectedOptions = Array.from(optionsArea.querySelectorAll('.option-btn.selected')).map(btn => parseInt(btn.dataset.value));
-            if (!selectedOptions.includes(parseInt(selectedValue))) {
-                selectedOptions.push(parseInt(selectedValue));
-            }
-            const ansArr = String(question.answer).split('').map(ch => ch.charCodeAt(0) - 65);
-            isCorrect = ansArr.length === selectedOptions.length && ansArr.every(idx => selectedOptions.includes(idx));
-        } else if (question.type === '填空') {
-            // 填空题：比对答案（支持多个正确答案用|分割）
-            const userAnswer = String(selectedValue).trim();
-            const correctAnswers = String(question.answer).split('|').map(a => a.trim());
-            isCorrect = correctAnswers.some(ans => userAnswer.toLowerCase() === ans.toLowerCase());
-        } else { // Single choice
-            isCorrect = parseInt(selectedValue) === (String(question.answer).charCodeAt(0) - 65);
+            const currentValue = parseInt(selectedValue, 10);
+            const selectedOptions = [currentValue];
+            const answerValues = String(question.answer).split('').map((ch) => ch.charCodeAt(0) - 65);
+            isCorrect = answerValues.length === selectedOptions.length && answerValues.every((idx) => selectedOptions.includes(idx));
+        } else {
+            isCorrect = parseInt(selectedValue, 10) === (String(question.answer).charCodeAt(0) - 65);
         }
 
         answerRecord[currentQuestionIndex] = isCorrect;
         showFeedback(question, isCorrect, selectedButton);
         updateNavigatorSidebar();
-
-        // Delay before showing next question button
-        setTimeout(() => {
-            nextQuestionBtn.style.display = (currentQuestionIndex < questions.length - 1) ? 'inline-block' : 'none';
-        }, 1500); // 1.5 seconds delay
+        await onQuestionCompleted();
     }
 
-    // 处理填空题答案
-    function handleFillBlankAnswer(userAnswer, question, submitBtn) {
-        if (answered) return; // Prevent multiple answers
+    async function handleFillBlankAnswer(userAnswer, question, submitBtn) {
+        if (answered) return;
         if (!userAnswer || !userAnswer.trim()) {
             alert('请输入答案');
             return;
         }
 
         answered = true;
-        
-        // 禁用输入框和提交按钮
         const input = document.getElementById('fillBlankInput');
-        input.disabled = true;
+        const trimmed = userAnswer.trim();
+        const answers = String(question.answer).split('|').map((item) => item.trim());
+        const isCorrect = answers.some((ans) => trimmed.toLowerCase() === ans.toLowerCase());
+
+        if (input) {
+            input.disabled = true;
+            input.style.borderColor = isCorrect ? '#10b981' : '#ef4444';
+        }
         submitBtn.disabled = true;
-        
-        // 比对答案（支持多个正确答案用|分割）
-        const trimmedAnswer = userAnswer.trim();
-        const correctAnswers = String(question.answer).split('|').map(a => a.trim());
-        const isCorrect = correctAnswers.some(ans => trimmedAnswer.toLowerCase() === ans.toLowerCase());
-        
+        submitBtn.classList.add(isCorrect ? 'correct-answer' : 'incorrect-answer');
+
         answerRecord[currentQuestionIndex] = isCorrect;
-        
-        // 显示反馈
-        if (isCorrect) {
-            feedbackArea.innerHTML = '<span class="correct-feedback">回答正确！</span>';
-            input.style.borderColor = '#10b981'; // 绿色边框
-            submitBtn.classList.add('correct-answer');
-        } else {
-            const ansText = correctAnswers.join(' 或 ');
-            feedbackArea.innerHTML = `<span class="incorrect-feedback">回答错误！<br>正确答案：${ansText}</span>`;
-            input.style.borderColor = '#ef4444'; // 红色边框
-            submitBtn.classList.add('incorrect-answer');
-        }
-        
+        feedbackArea.innerHTML = isCorrect ? '' : `<span class="incorrect-feedback">正确答案：${escapeHtml(answers.join(' / '))}</span>`;
         updateNavigatorSidebar();
-        
-        // Delay before showing next question button
-        setTimeout(() => {
-            nextQuestionBtn.style.display = (currentQuestionIndex < questions.length - 1) ? 'inline-block' : 'none';
-        }, 1500); // 1.5 seconds delay
+        await onQuestionCompleted();
     }
 
-    function showFeedback(question, isCorrect, selectedButton = null) {
-        optionsArea.querySelectorAll('.option-btn').forEach(btn => {
-            btn.classList.remove('selected'); // Remove any selected state
-            btn.disabled = true; // Disable all options
-        });
+    async function completeQuizSession() {
+        if (completionSubmitted) return;
+        completionSubmitted = true;
 
-        if (isCorrect) {
-            feedbackArea.innerHTML = '<span class="correct-feedback">回答正确！</span>';
-            if (selectedButton) {
-                selectedButton.classList.add('correct-answer');
-                selectedButton.innerHTML += ' <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
-            }
-        } else {
-            let ansText = '';
-            if (question.type === '填空') {
-                // 填空题：显示所有可接受的答案
-                if (typeof question.answer === 'string') {
-                    ansText = question.answer.split('|').map(a => a.trim()).join(' 或 ');
-                }
-            } else if (typeof question.answer === 'string') {
-                ansText = question.answer;
-            } else if (Array.isArray(question.answer)) {
-                ansText = question.answer.map(a => typeof a === 'number' ? String.fromCharCode(65 + a) : a).join(', ');
-            }
-            feedbackArea.innerHTML = `<span class="incorrect-feedback">回答错误！<br>正确答案：${ansText || '无'}</span>`;
+        const answeredCount = getCurrentAnsweredCount();
+        const correctCount = getCurrentCorrectCount();
+        const durationSeconds = Math.max(0, Math.round(((Date.now() - (sessionStartAt || Date.now())) / 1000)));
+        let updatedStats = normalizeStats(currentQuizStats);
 
-            if (selectedButton) {
-                selectedButton.classList.add('incorrect-answer');
-                selectedButton.innerHTML += ' <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
-            }
-
-            // Highlight correct answer for multiple choice questions
-            if (question.type === '判断') {
-                const correctBtn = optionsArea.querySelector(`[data-value="${String(question.answer)}"]`);
-                if (correctBtn) {
-                    correctBtn.classList.add('correct-answer');
-                    correctBtn.innerHTML += ' <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
-                }
-            } else if (question.type === '多选') {
-                const ansArr = String(question.answer).split('').map(ch => ch.charCodeAt(0) - 65);
-                ansArr.forEach(correctIdx => {
-                    const correctBtn = optionsArea.querySelector(`[data-value="${correctIdx}"]`);
-                    if (correctBtn) {
-                        correctBtn.classList.add('correct-answer');
-                        correctBtn.innerHTML += ' <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
-                    }
+        if (currentQuizFile) {
+            try {
+                const resp = await fetch('/api/quiz_session_complete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        file: currentQuizFile,
+                        answered_count: answeredCount,
+                        correct_count: correctCount,
+                        completed_at: new Date().toISOString(),
+                        duration_seconds: durationSeconds
+                    })
                 });
-            } else if (question.type === '填空') {
-                // 填空题有选项时，高亮正确选项
-                // (但 handleFillBlankAnswer 已经在显示时处理了)
-            } else { // Single choice
-                const correctIdx = String(question.answer).charCodeAt(0) - 65;
-                const correctBtn = optionsArea.querySelector(`[data-value="${correctIdx}"]`);
-                if (correctBtn) {
-                    correctBtn.classList.add('correct-answer');
-                    correctBtn.innerHTML += ' <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+                const data = await resp.json();
+                if (data.success && data.stats) {
+                    updatedStats = normalizeStats(data.stats);
                 }
+            } catch (error) {
+                console.error('quiz completion sync failed', error);
             }
         }
+
+        currentQuizStats = updatedStats;
+        renderTitleStats();
+        showCompletionModal(correctCount, answeredCount, updatedStats, durationSeconds);
     }
 
-    function disableOptions() {
-        optionsArea.querySelectorAll('.option-btn').forEach(btn => {
-            btn.disabled = true;
+    function showCompletionModal(correctCount, answeredCount, updatedStats, durationSeconds) {
+        const accuracy = answeredCount ? Math.round((correctCount / answeredCount) * 100) : 0;
+        quizCompleteSummary.textContent = `${currentQuizTitle || '本题库'} 已完成，本轮共答 ${answeredCount} 题。`;
+        quizCompleteAccuracy.textContent = `${accuracy}%`;
+        quizCompleteScore.textContent = `${correctCount} / ${answeredCount}`;
+        quizCompleteRuns.textContent = `${normalizeStats(updatedStats).completed_runs} 次`;
+        quizCompleteDuration.textContent = formatDuration(durationSeconds);
+        setOverlayVisible(quizCompleteModal, true);
+    }
+
+    async function renderFavoriteFolderList() {
+        await ensureFavoriteCache();
+        favoriteFolderList.innerHTML = '';
+        const folders = getFavoriteFolders();
+        const question = questions[currentQuestionIndex];
+        const entries = getQuestionFavoriteEntries(question);
+        favoriteFolderEmpty.style.display = folders.length ? 'none' : 'block';
+
+        folders.forEach((folder) => {
+            const matchedEntry = entries.find((entry) => entry.folder_id === folder.id);
+            const row = document.createElement('button');
+            row.type = 'button';
+            row.className = `favorite-folder-item${matchedEntry ? ' is-active' : ''}`;
+            row.innerHTML = `
+                <span class="favorite-folder-main">
+                    <span class="favorite-folder-name">${escapeHtml(folder.name)}</span>
+                    <span class="favorite-folder-count">${folder.count || 0} 题</span>
+                </span>
+                <span class="favorite-folder-action">${matchedEntry ? '移除' : '添加'}</span>
+            `;
+            row.onclick = async () => {
+                try {
+                    if (matchedEntry) {
+                        await removeFavorite(question, folder.id, matchedEntry.id);
+                        if (typeof showToast === 'function') showToast(`已从 ${folder.name} 移除`, 'success');
+                    } else {
+                        await addFavorite(question, folder.id, {
+                            source_file: currentQuizFile,
+                            source_title: currentQuizTitle
+                        });
+                        if (typeof showToast === 'function') showToast(`已收藏到 ${folder.name}`, 'success');
+                    }
+                    await refreshFavoriteCache();
+                    updateFavoriteBtn(question);
+                    updateNavigatorSidebar();
+                    await renderFavoriteFolderList();
+                } catch (error) {
+                    if (typeof showToast === 'function') showToast(error.message || '收藏操作失败', 'error');
+                }
+            };
+            favoriteFolderList.appendChild(row);
         });
-        // 禁用填空题输入框
-        const fillInput = document.getElementById('fillBlankInput');
-        if (fillInput) {
-            fillInput.disabled = true;
-        }
     }
 
-    function updateFavoriteBtn(q) {
-        let favList = getLocalFavorites();
-        if (isFavorite(q, favList)) {
-            favoriteBtn.classList.add('bookmarked');
-        } else {
-            favoriteBtn.classList.remove('bookmarked');
-        }
+    async function openFavoriteModal() {
+        await refreshFavoriteCache().catch(() => ensureFavoriteCache());
+        await renderFavoriteFolderList();
+        setOverlayVisible(favoriteModal, true);
+        if (favoriteFolderInput) favoriteFolderInput.value = '';
     }
 
-    favoriteBtn.onclick = async function() {
-        const q = questions[currentQuestionIndex];
-        let favList = getLocalFavorites();
-        if (isFavorite(q, favList)) {
-            await removeFavorite(q);
-        } else {
-            await addFavorite(q);
-        }
-        updateFavoriteBtn(q);
-        updateNavigatorSidebar(); // Update bookmark status in sidebar
+    function updateNavigatorSidebar() {
+        navigatorGrid.innerHTML = '';
+        const favoriteItems = getFavoriteItems();
+
+        questions.forEach((question, index) => {
+            const item = document.createElement('div');
+            item.className = 'navigator-item';
+            item.textContent = index + 1;
+            if (index === currentQuestionIndex) item.classList.add('current');
+            else if (answerRecord[index] === true) item.classList.add('correct');
+            else if (answerRecord[index] === false) item.classList.add('incorrect');
+            if (isFavorite(question, favoriteItems)) item.classList.add('bookmarked');
+            item.onclick = () => renderQuestion(index);
+            navigatorGrid.appendChild(item);
+        });
+    }
+
+    initMarkdown();
+
+    favoriteBtn.onclick = async function () {
+        if (!questions[currentQuestionIndex]) return;
+        await openFavoriteModal();
     };
 
-    nextQuestionBtn.onclick = function() {
+    if (favoriteModalClose) {
+        favoriteModalClose.addEventListener('click', () => setOverlayVisible(favoriteModal, false));
+    }
+
+    if (createFavoriteFolderBtn) {
+        createFavoriteFolderBtn.addEventListener('click', async () => {
+            const folderName = (favoriteFolderInput.value || '').trim();
+            if (!folderName) {
+                if (typeof showToast === 'function') showToast('请输入收藏夹名称', 'error');
+                return;
+            }
+            try {
+                await createFavoriteFolder(folderName);
+                await refreshFavoriteCache();
+                favoriteFolderInput.value = '';
+                await renderFavoriteFolderList();
+                if (typeof showToast === 'function') showToast(`收藏夹 ${folderName} 已创建`, 'success');
+            } catch (error) {
+                if (typeof showToast === 'function') showToast(error.message || '创建收藏夹失败', 'error');
+            }
+        });
+    }
+
+    if (quizPickerClose) {
+        quizPickerClose.addEventListener('click', () => setOverlayVisible(quizPickerModal, false));
+    }
+
+    if (reviewQuizBtn) {
+        reviewQuizBtn.addEventListener('click', () => {
+            setOverlayVisible(quizCompleteModal, false);
+            renderQuestion(0);
+        });
+    }
+
+    nextQuestionBtn.onclick = function () {
         if (currentQuestionIndex < questions.length - 1) {
             renderQuestion(currentQuestionIndex + 1);
         }
     };
 
-    function updateNavigatorSidebar() {
-        navigatorGrid.innerHTML = '';
-        let favList = getLocalFavorites();
+    document.onkeydown = function (e) {
+        if (!questions.length || favoriteModal.classList.contains('is-open') || quizCompleteModal.classList.contains('is-open')) return;
 
-        questions.forEach((q, i) => {
-            const item = document.createElement('div');
-            item.className = 'navigator-item';
-            item.textContent = i + 1;
-            item.dataset.index = i;
-
-            if (i === currentQuestionIndex) {
-                item.classList.add('current');
-            } else if (answerRecord[i] === true) {
-                item.classList.add('correct');
-            } else if (answerRecord[i] === false) {
-                item.classList.add('incorrect');
-            }
-
-            if (isFavorite(q, favList)) {
-                item.classList.add('bookmarked');
-            }
-
-            item.onclick = () => renderQuestion(i);
-            navigatorGrid.appendChild(item);
-        });
-    }
-
-    // Keyboard shortcuts
-    document.onkeydown = function(e) {
-        if (!questions.length) return;
-        
-        // 如果焦点在输入框、textarea或contentEditable元素内，不触发快捷键
         const activeElement = document.activeElement;
         if (activeElement && (
-            activeElement.tagName === 'INPUT' || 
-            activeElement.tagName === 'TEXTAREA' || 
+            activeElement.tagName === 'INPUT' ||
+            activeElement.tagName === 'TEXTAREA' ||
             activeElement.contentEditable === 'true'
-        )) {
-            return;
-        }
-        
-        const q = questions[currentQuestionIndex];
+        )) return;
+
+        const question = questions[currentQuestionIndex];
         const key = e.key.toUpperCase();
 
         if (key === 'ENTER' || key === ' ') {
             e.preventDefault();
             if (answered && nextQuestionBtn.style.display !== 'none') {
                 nextQuestionBtn.click();
-            } else if (!answered) {
-                // Attempt to submit answer if not already answered
-                // For true/false, click the selected one
-                // For multiple choice, if one is selected, click it
-                const selectedOption = optionsArea.querySelector('.option-btn.selected');
-                if (selectedOption) {
-                    selectedOption.click();
-                } else if (q.type === '判断') {
-                    // If true/false and nothing selected, do nothing or prompt
-                } else if (q.type === '多选') {
-                    // If multiple choice, and no explicit submit button, assume current selection is final
-                    // This part might need refinement if multi-select with a separate submit is desired
-                }
             }
-        } else if (key === 'R') { // R key for favorite
+        } else if (key === 'R') {
             e.preventDefault();
             favoriteBtn.click();
-        } else if (key === 'Q') { // Q key for previous question
+        } else if (key === 'Q') {
             e.preventDefault();
-            if (currentQuestionIndex > 0) {
-                renderQuestion(currentQuestionIndex - 1);
-            }
-        } else if (key === 'E') { // E key for next question
+            if (currentQuestionIndex > 0) renderQuestion(currentQuestionIndex - 1);
+        } else if (key === 'E') {
             e.preventDefault();
-            if (currentQuestionIndex < questions.length - 1) {
-                renderQuestion(currentQuestionIndex + 1);
-            }
-        } else if (!answered) { // Only allow option selection if not answered
-            if (q.type === '判断') {
-                if (key === 'A') {
-                    optionsArea.querySelector('[data-value="True"]').click();
-                    e.preventDefault();
-                } else if (key === 'D') {
-                    optionsArea.querySelector('[data-value="False"]').click();
-                    e.preventDefault();
-                }
-            } else { // Single and Multiple choice
-                const keyMap = { 'W': 0, 'A': 1, 'S': 2, 'D': 3 };
+            if (currentQuestionIndex < questions.length - 1) renderQuestion(currentQuestionIndex + 1);
+        } else if (!answered && question.type !== '填空') {
+            if (question.type === '判断') {
+                if (key === 'A') optionsArea.querySelector('[data-value="True"]')?.click();
+                if (key === 'D') optionsArea.querySelector('[data-value="False"]')?.click();
+            } else {
+                const keyMap = { W: 0, A: 1, S: 2, D: 3 };
                 if (key in keyMap) {
-                    const optionIndex = keyMap[key];
-                    const optionButton = optionsArea.querySelector(`[data-value="${optionIndex}"]`);
-                    if (optionButton) {
-                        // For single choice, deselect others
-                        if (q.type !== '多选') {
-                            optionsArea.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected'));
-                        }
-                        optionButton.classList.toggle('selected');
-                        e.preventDefault();
-                    }
+                    const optionButton = optionsArea.querySelector(`[data-value="${keyMap[key]}"]`);
+                    optionButton?.click();
                 }
             }
         }
     };
 
-    loadQuizData();
-    return;
-
-    // Initial load logic
-    const storedQuestions = sessionStorage.getItem('quiz_questions');
-    const storedTitle = sessionStorage.getItem('quiz_title');
-
-    if (storedQuestions && storedTitle) {
-        try {
-            questions = JSON.parse(storedQuestions);
-            quizTitleHeader.textContent = storedTitle;
-            shuffleArray(questions);
-            answerRecord = Array(questions.length).fill(null);
-            renderQuestion(currentQuestionIndex);
-            updateNavigatorSidebar();
-        } catch (e) {
-            console.error('Error parsing stored questions:', e);
-            questionContentDiv.innerHTML = '<div style="text-align:center;margin-top:60px;font-size:18px;color:#e74c3c;">加载题库失败，请返回历史题库重新选择。<br><a href="parsed_list.html" style="color:#409eff;">返回历史题库</a></div>';
-        }
-    } else {
-        questionContentDiv.innerHTML = '<div style="text-align:center;margin-top:60px;font-size:18px;color:#e74c3c;">未选择题库，请从历史题库页面选择一个题库。<br><a href="parsed_list.html" style="color:#409eff;">去历史题库</a></div>';
-    }
+    await loadQuizData();
 });

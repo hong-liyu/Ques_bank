@@ -1,8 +1,38 @@
-# 环境变量文件
+# Environment variables
 .env
+.env.*
+!.env.example
 
-# 题库文件
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+env/
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Runtime data and local artifacts
 data/
 api/data/
+web-artifacts-builder/
+*.log
+*.tmp
+*.bak
 
-web-artifacts-builder
+# IDE / OS
+.DS_Store
+Thumbs.db
+.vscode/

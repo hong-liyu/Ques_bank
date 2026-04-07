@@ -20,7 +20,10 @@
                     <path d="M15 6L9 12L15 18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
             </a>
-            <h1 id="quizTitleHeader">刷题页</h1>
+            <div class="quiz-title-group">
+                <h1 id="quizTitleHeader">刷题页</h1>
+                <div class="quiz-title-stats" id="quizTitleStats"></div>
+            </div>
         </header>
 
         <div class="main-layout">
@@ -73,6 +76,56 @@
             <div class="quiz-picker-footer">
                 <a class="quiz-picker-link" href="upload.html">去上传题库</a>
                 <a class="quiz-picker-link" href="parsed_list.html">查看历史题库</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="quiz-favorite-overlay" id="favoriteModal" aria-hidden="true">
+        <div class="quiz-favorite-card" role="dialog" aria-modal="true" aria-labelledby="favoriteModalTitle">
+            <div class="quiz-favorite-header">
+                <div>
+                    <p class="quiz-picker-kicker mono">Favorite Folders</p>
+                    <h2 id="favoriteModalTitle">收藏到收藏夹</h2>
+                </div>
+                <button type="button" class="quiz-picker-close" id="favoriteModalClose" aria-label="关闭">×</button>
+            </div>
+            <p class="quiz-picker-subtitle">选择已有收藏夹进行添加或移除，也可以立即创建新的收藏夹。</p>
+            <div class="favorite-create-row">
+                <input type="text" id="favoriteFolderInput" placeholder="新建收藏夹名称">
+                <button type="button" class="action-btn next-btn" id="createFavoriteFolderBtn">新建</button>
+            </div>
+            <div class="favorite-folder-list" id="favoriteFolderList"></div>
+            <div class="quiz-picker-empty" id="favoriteFolderEmpty">暂无收藏夹，请先创建一个。</div>
+        </div>
+    </div>
+
+    <div class="quiz-complete-overlay" id="quizCompleteModal" aria-hidden="true">
+        <div class="quiz-complete-card" role="dialog" aria-modal="true" aria-labelledby="quizCompleteTitle">
+            <div class="quiz-complete-glow" aria-hidden="true"></div>
+            <p class="quiz-complete-kicker mono">Session Complete</p>
+            <h2 id="quizCompleteTitle">本轮完成</h2>
+            <p class="quiz-complete-summary" id="quizCompleteSummary"></p>
+            <div class="quiz-complete-metrics">
+                <div class="quiz-complete-metric">
+                    <span class="quiz-complete-metric-value" id="quizCompleteAccuracy">0%</span>
+                    <span class="quiz-complete-metric-label">本轮正确率</span>
+                </div>
+                <div class="quiz-complete-metric">
+                    <span class="quiz-complete-metric-value" id="quizCompleteScore">0 / 0</span>
+                    <span class="quiz-complete-metric-label">答对题数</span>
+                </div>
+                <div class="quiz-complete-metric">
+                    <span class="quiz-complete-metric-value" id="quizCompleteRuns">0 次</span>
+                    <span class="quiz-complete-metric-label">累计已刷</span>
+                </div>
+                <div class="quiz-complete-metric">
+                    <span class="quiz-complete-metric-value" id="quizCompleteDuration">0秒</span>
+                    <span class="quiz-complete-metric-label">本轮用时</span>
+                </div>
+            </div>
+            <div class="quiz-complete-actions">
+                <button type="button" class="action-btn next-btn" id="reviewQuizBtn">回顾本题库</button>
+                <a href="parsed_list.html" class="quiz-complete-link">返回题库列表</a>
             </div>
         </div>
     </div>

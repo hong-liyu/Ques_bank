@@ -28,6 +28,7 @@
 
         <div class="nav-secondary-links" aria-label="更多入口">
             <a class="nav-btn tertiary" href="parsed_list.html">历史题库</a>
+            <a class="nav-btn tertiary" href="favorites.html">收藏夹</a>
             <a class="nav-btn tertiary" href="quiz.html">题库选择</a>
         </div>
     </header>
@@ -142,16 +143,6 @@
             const recentMetaEl = document.getElementById('recentMeta');
             const continueBtn = document.getElementById('continuePracticeBtn');
 
-            function safeParseFavorites() {
-                try {
-                    const raw = localStorage.getItem('quiz_favorites');
-                    const parsed = raw ? JSON.parse(raw) : [];
-                    return Array.isArray(parsed) ? parsed : [];
-                } catch (error) {
-                    return [];
-                }
-            }
-
             function pickRecent(history) {
                 return [...history].sort((a, b) => {
                     const at = new Date(a.time || 0).getTime();
@@ -160,9 +151,13 @@
                 })[0];
             }
 
-            favoriteCountEl.textContent = String(safeParseFavorites().length);
-
             try {
+                const favoriteResp = await fetch('/api/favorite_questions');
+                const favoriteData = await favoriteResp.json();
+                favoriteCountEl.textContent = String(
+                    favoriteData.success && Array.isArray(favoriteData.items) ? favoriteData.items.length : 0
+                );
+
                 const resp = await fetch('/api/history_questions?t=' + Date.now());
                 const data = await resp.json();
 

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>收藏夹</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/refactor_pages.css">
+    <link rel="stylesheet" href="../css/favorites.css">
+</head>
+<body class="refactor-page refactor-history">
+    <div class="grain" aria-hidden="true"></div>
+    <div class="main-container">
+        <a href="index.html" class="back-home-btn" title="返回首页">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M15 6L9 12L15 18"></path>
+            </svg>
+        </a>
+        <header class="app-header">
+            <h1>收藏夹</h1>
+        </header>
+        <div class="favorites-shell">
+            <aside class="folder-sidebar">
+                <div class="favorite-create-row">
+                    <input type="text" id="folderNameInput" placeholder="新建收藏夹">
+                    <button type="button" class="action-btn study-btn" id="createFolderBtn">创建</button>
+                </div>
+                <div class="folder-list" id="folderList"></div>
+            </aside>
+            <main class="favorites-main">
+                <div class="favorites-main-header">
+                    <div>
+                        <h2 id="activeFolderTitle">请选择收藏夹</h2>
+                        <p id="activeFolderMeta">在左侧切换收藏夹，查看题目并开始刷题。</p>
+                    </div>
+                    <button type="button" class="action-btn study-btn" id="studyFolderBtn" disabled>刷这个收藏夹</button>
+                </div>
+                <div class="favorite-items" id="favoriteItems"></div>
+                <div class="empty-tip" id="favoriteEmptyTip">当前收藏夹暂无题目。</div>
+            </main>
+        </div>
+    </div>
+    <script src="../js/dialog_toast.js"></script>
+    <script src="../js/favorite.js"></script>
+    <script src="../js/favorites.js"></script>
+    <script src="../js/theme_toggle.js"></script>
+</body>
+</html>

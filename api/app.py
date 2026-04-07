@@ -31,6 +31,33 @@ DATA_DIR = os.path.join(BASE_DIR, 'data')
 HISTORY_FILE = os.path.join(DATA_DIR, 'parsed_questions.json')
 PARSED_DIR = os.path.join(DATA_DIR, 'parsed')
 ASSETS_DIR = os.path.join(BASE_DIR, 'assets')
+FAVORITES_FILE = os.path.join(PARSED_DIR, 'favorites.json')
+
+
+def default_stats():
+    return {
+        'completed_runs': 0,
+        'total_answered': 0,
+        'total_correct': 0,
+        'last_completed_at': None
+    }
+
+
+def normalize_history_record(record):
+    normalized = dict(record or {})
+    raw_stats = normalized.get('stats') or {}
+    stats = default_stats()
+
+    for key in ('completed_runs', 'total_answered', 'total_correct'):
+        try:
+            stats[key] = max(0, int(raw_stats.get(key, stats[key])))
+        except (TypeError, ValueError):
+            stats[key] = 0
+
+    last_completed_at = raw_stats.get('last_completed_at')
+    stats['last_completed_at'] = last_completed_at if isinstance(last_completed_at, str) and last_completed_at.strip() else None
+    normalized['stats'] = stats
+    return normalized
 
 # 工具函数：加载历史题库
 def load_history():
@@ -38,7 +65,10 @@ def load_history():
         return []
     try:
         with open(HISTORY_FILE, 'r', encoding='utf-8') as f:
-            return json.load(f)
+            history = json.load(f)
+        if not isinstance(history, list):
+            return []
+        return [normalize_history_record(item) for item in history]
     except Exception as e:
         logger.error(f"读取历史题库失败: {e}")
         return []
@@ -50,7 +80,7 @@ def save_history(history):
         file_path = os.path.join(DATA_DIR, 'parsed_questions.json')
         logger.info(f"保存历史题库到: {os.path.abspath(file_path)}")
         with open(file_path, 'w', encoding='utf-8') as f:
-            json.dump(history, f, ensure_ascii=False, indent=2)
+            json.dump([normalize_history_record(item) for item in history], f, ensure_ascii=False, indent=2)
         logger.info(f"历史题库保存成功，共 {len(history)} 条记录")
     except Exception as e:
         logger.error(f"保存历史题库失败: {e}")
@@ -71,6 +101,130 @@ def save_parsed_questions(questions):
         raise
     return file_name
 
+
+def default_favorites_data():
+    return {
+        'folders': [],
+        'items': []
+    }
+
+
+def favorite_question_key(question):
+    return json.dumps({
+        'content': question.get('content'),
+        'options': question.get('options'),
+        'answer': question.get('answer'),
+        'type': question.get('type')
+    }, ensure_ascii=False, sort_keys=True)
+
+
+def normalize_favorites_data(data):
+    default_folder_id = 'default-folder'
+    now_text = time.strftime('%Y-%m-%d %H:%M:%S')
+
+    if isinstance(data, list):
+        return {
+            'folders': [{
+                'id': default_folder_id,
+                'name': '默认收藏夹',
+                'created_at': now_text
+            }],
+            'items': [{
+                'id': str(uuid.uuid4()),
+                'folder_id': default_folder_id,
+                'folder_name': '默认收藏夹',
+                'source_file': None,
+                'source_title': '未标记来源',
+                'type': item.get('type'),
+                'content': item.get('content'),
+                'options': item.get('options'),
+                'answer': item.get('answer'),
+                'created_at': now_text
+            } for item in data if isinstance(item, dict)]
+        }
+
+    normalized = default_favorites_data()
+    if isinstance(data, dict):
+        folders = data.get('folders')
+        items = data.get('items')
+
+        if isinstance(folders, list):
+            for folder in folders:
+                if not isinstance(folder, dict):
+                    continue
+                folder_id = str(folder.get('id') or uuid.uuid4())
+                folder_name = str(folder.get('name') or '未命名收藏夹').strip() or '未命名收藏夹'
+                normalized['folders'].append({
+                    'id': folder_id,
+                    'name': folder_name,
+                    'created_at': folder.get('created_at') or now_text
+                })
+
+        folder_map = {folder['id']: folder['name'] for folder in normalized['folders']}
+
+        if isinstance(items, list):
+            for item in items:
+                if not isinstance(item, dict):
+                    continue
+                folder_id = str(item.get('folder_id') or default_folder_id)
+                folder_name = item.get('folder_name') or folder_map.get(folder_id) or '默认收藏夹'
+                if folder_id not in folder_map:
+                    normalized['folders'].append({
+                        'id': folder_id,
+                        'name': folder_name,
+                        'created_at': now_text
+                    })
+                    folder_map[folder_id] = folder_name
+                normalized['items'].append({
+                    'id': str(item.get('id') or uuid.uuid4()),
+                    'folder_id': folder_id,
+                    'folder_name': folder_name,
+                    'source_file': item.get('source_file'),
+                    'source_title': item.get('source_title') or '未标记来源',
+                    'type': item.get('type'),
+                    'content': item.get('content'),
+                    'options': item.get('options'),
+                    'answer': item.get('answer'),
+                    'created_at': item.get('created_at') or now_text
+                })
+
+    return normalized
+
+
+def load_favorites_data():
+    os.makedirs(PARSED_DIR, exist_ok=True)
+    if not os.path.exists(FAVORITES_FILE):
+        return default_favorites_data()
+    try:
+        with open(FAVORITES_FILE, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        normalized = normalize_favorites_data(data)
+        if normalized != data:
+            save_favorites_data(normalized)
+        return normalized
+    except Exception as e:
+        logger.error(f"读取收藏数据失败: {e}")
+        return default_favorites_data()
+
+
+def save_favorites_data(data):
+    os.makedirs(PARSED_DIR, exist_ok=True)
+    normalized = normalize_favorites_data(data)
+    with open(FAVORITES_FILE, 'w', encoding='utf-8') as f:
+        json.dump(normalized, f, ensure_ascii=False, indent=2)
+
+
+def build_favorite_folder_summary(data):
+    counts = {}
+    for item in data.get('items', []):
+        folder_id = item.get('folder_id')
+        counts[folder_id] = counts.get(folder_id, 0) + 1
+
+    return [{
+        **folder,
+        'count': counts.get(folder.get('id'), 0)
+    } for folder in data.get('folders', [])]
+
 # ========== 新增：历史题库接口 ==========
 @app.route('/api/history_questions')
 def history_questions():
@@ -85,7 +239,7 @@ def history_questions():
         for record in history:
             file_path = os.path.join(PARSED_DIR, record.get('file', ''))
             if os.path.exists(file_path):
-                valid_history.append(record)
+                valid_history.append(normalize_history_record(record))
             else:
                 logger.warning(f"历史记录指向不存在的文件，已移除: {record.get('file')}")
         
@@ -129,7 +283,13 @@ def upload_question():
         # 保存索引到历史题库，增加origin_name
         history = load_history()
         origin_name = custom_name if custom_name else file.filename
-        history.append({'type': 'local', 'file': file_name, 'origin_name': origin_name, 'time': time.strftime('%Y-%m-%d %H:%M:%S')})
+        history.append({
+            'type': 'local',
+            'file': file_name,
+            'origin_name': origin_name,
+            'time': time.strftime('%Y-%m-%d %H:%M:%S'),
+            'stats': default_stats()
+        })
         save_history(history)
         return jsonify(success=True, questions=result)
     except Exception as e:
@@ -185,7 +345,14 @@ def ai_upload_question():
             # 保存索引到历史题库，增加origin_name
             history = load_history()
             origin_name = custom_name if custom_name else filename
-            history.append({'type': 'ai', 'file': file_name, 'origin_name': origin_name, 'time': time.strftime('%Y-%m-%d %H:%M:%S'), 'model': model})
+            history.append({
+                'type': 'ai',
+                'file': file_name,
+                'origin_name': origin_name,
+                'time': time.strftime('%Y-%m-%d %H:%M:%S'),
+                'model': model,
+                'stats': default_stats()
+            })
             save_history(history)
         except Exception as e:
             progress_dict[task_id] = {'status': 'error', 'error': str(e), 'percent': 0, 'msg': '出现错误'}
@@ -296,8 +463,41 @@ def rename_question():
         return jsonify(success=False, error=f'保存失败: {str(e)}')
 
 # ========== 收藏题目接口 ==========
-@app.route('/api/favorite_question', methods=['GET', 'POST', 'DELETE'])
-def favorite_question():
+@app.route('/api/quiz_session_complete', methods=['POST'])
+def quiz_session_complete():
+    data = request.get_json() or {}
+    file_name = data.get('file')
+    completed_at = data.get('completed_at')
+
+    if not file_name:
+        return jsonify(success=False, error='missing file parameter'), 400
+
+    try:
+        answered_count = max(0, int(data.get('answered_count', 0)))
+        correct_count = max(0, int(data.get('correct_count', 0)))
+        duration_seconds = max(0, int(data.get('duration_seconds', 0)))
+    except (TypeError, ValueError):
+        return jsonify(success=False, error='invalid answered_count, correct_count, or duration_seconds'), 400
+
+    history = load_history()
+    target = next((item for item in history if item.get('file') == file_name), None)
+
+    if not target:
+        return jsonify(success=False, error='quiz not found'), 404
+
+    stats = normalize_history_record(target).get('stats', default_stats())
+    stats['completed_runs'] += 1
+    stats['total_answered'] += answered_count
+    stats['total_correct'] += min(correct_count, answered_count)
+    stats['last_completed_at'] = completed_at if isinstance(completed_at, str) and completed_at.strip() else time.strftime('%Y-%m-%d %H:%M:%S')
+    target['stats'] = stats
+
+    save_history(history)
+    return jsonify(success=True, stats=stats, duration_seconds=duration_seconds)
+
+
+@app.route('/api/favorite_question_legacy_unused', methods=['GET', 'POST', 'DELETE'])
+def favorite_question_legacy_unused():
     """
     GET: 获取所有收藏的题目
     POST: 收藏单个题目，保存到 favorites.json，避免重复收藏。
@@ -351,6 +551,227 @@ def favorite_question():
             return jsonify(success=False, error='不支持的操作')
     except Exception as e:
         return jsonify(success=False, error=str(e))
+
+@app.route('/api/favorite_folders', methods=['GET', 'POST'])
+def favorite_folders():
+    try:
+        data = load_favorites_data()
+        if request.method == 'GET':
+            return jsonify(success=True, folders=build_favorite_folder_summary(data))
+
+        payload = request.get_json() or {}
+        name = str(payload.get('name') or '').strip()
+        if not name:
+            return jsonify(success=False, error='收藏夹名称不能为空'), 400
+
+        exists = any(folder.get('name', '').strip().lower() == name.lower() for folder in data.get('folders', []))
+        if exists:
+            return jsonify(success=False, error='收藏夹名称已存在'), 400
+
+        folder = {
+            'id': str(uuid.uuid4()),
+            'name': name,
+            'created_at': time.strftime('%Y-%m-%d %H:%M:%S')
+        }
+        data['folders'].append(folder)
+        save_favorites_data(data)
+        return jsonify(success=True, folder={**folder, 'count': 0})
+    except Exception as e:
+        logger.error(f"收藏夹接口失败: {e}")
+        return jsonify(success=False, error=str(e)), 500
+
+
+@app.route('/api/favorite_questions', methods=['GET', 'POST', 'DELETE'])
+def favorite_questions():
+    try:
+        data = load_favorites_data()
+
+        if request.method == 'GET':
+            folder_id = request.args.get('folder_id')
+            items = data.get('items', [])
+            if folder_id:
+                items = [item for item in items if item.get('folder_id') == folder_id]
+            return jsonify(success=True, items=items, folders=build_favorite_folder_summary(data))
+
+        payload = request.get_json() or {}
+        folder_id = str(payload.get('folder_id') or '').strip()
+        if not folder_id:
+            return jsonify(success=False, error='缺少 folder_id'), 400
+
+        folder = next((item for item in data.get('folders', []) if item.get('id') == folder_id), None)
+        if not folder:
+            return jsonify(success=False, error='收藏夹不存在'), 404
+
+        question = {
+            'content': payload.get('content'),
+            'options': payload.get('options'),
+            'answer': payload.get('answer'),
+            'type': payload.get('type')
+        }
+        question_key = favorite_question_key(question)
+
+        if request.method == 'POST':
+            exists = next((
+                item for item in data.get('items', [])
+                if item.get('folder_id') == folder_id and favorite_question_key(item) == question_key
+            ), None)
+            if exists:
+                return jsonify(success=False, error='该题已在当前收藏夹中'), 400
+
+            favorite_item = {
+                'id': str(uuid.uuid4()),
+                'folder_id': folder_id,
+                'folder_name': folder.get('name'),
+                'source_file': payload.get('source_file'),
+                'source_title': payload.get('source_title') or '未标记来源',
+                'type': payload.get('type'),
+                'content': payload.get('content'),
+                'options': payload.get('options'),
+                'answer': payload.get('answer'),
+                'created_at': time.strftime('%Y-%m-%d %H:%M:%S')
+            }
+            data['items'].append(favorite_item)
+            save_favorites_data(data)
+            return jsonify(success=True, item=favorite_item, folders=build_favorite_folder_summary(data))
+
+        item_id = payload.get('item_id')
+        removed = False
+        if item_id:
+            new_items = [item for item in data.get('items', []) if item.get('id') != item_id]
+            removed = len(new_items) != len(data.get('items', []))
+            data['items'] = new_items
+        else:
+            new_items = []
+            for item in data.get('items', []):
+                same_folder = item.get('folder_id') == folder_id
+                same_question = favorite_question_key(item) == question_key
+                if same_folder and same_question and not removed:
+                    removed = True
+                    continue
+                new_items.append(item)
+            data['items'] = new_items
+
+        if not removed:
+            return jsonify(success=False, error='未找到要移除的收藏'), 404
+
+        save_favorites_data(data)
+        return jsonify(success=True, folders=build_favorite_folder_summary(data))
+    except Exception as e:
+        logger.error(f"收藏题目接口失败: {e}")
+        return jsonify(success=False, error=str(e)), 500
+
+
+@app.route('/api/favorite_question', methods=['GET', 'POST', 'DELETE'])
+def favorite_question_legacy():
+    data = load_favorites_data()
+    if request.method == 'GET':
+        return jsonify(success=True, favorites=data.get('items', []))
+
+    payload = request.get_json() or {}
+    if not data.get('folders'):
+        folder = {
+            'id': str(uuid.uuid4()),
+            'name': '默认收藏夹',
+            'created_at': time.strftime('%Y-%m-%d %H:%M:%S')
+        }
+        data['folders'].append(folder)
+        save_favorites_data(data)
+    payload['folder_id'] = payload.get('folder_id') or data['folders'][0]['id']
+
+    with app.test_request_context(
+        '/api/favorite_questions',
+        method=request.method,
+        json=payload
+    ):
+        return favorite_questions()
+
+
+@app.route('/api/split_question_bank', methods=['POST'])
+def split_question_bank():
+    payload = request.get_json() or {}
+    file_name = payload.get('file')
+    mode = payload.get('mode')
+    delete_original = bool(payload.get('delete_original', False))
+
+    if not file_name or not mode:
+        return jsonify(success=False, error='缺少 file 或 mode'), 400
+
+    file_path = os.path.join(PARSED_DIR, file_name)
+    if not os.path.exists(file_path):
+        return jsonify(success=False, error='题库文件不存在'), 404
+
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            questions = json.load(f)
+    except Exception as e:
+        return jsonify(success=False, error=f'读取题库失败: {e}'), 500
+
+    if not isinstance(questions, list) or len(questions) < 2:
+        return jsonify(success=False, error='题目数量不足，无法拆分'), 400
+
+    if mode == 'even':
+        split_index = (len(questions) + 1) // 2
+    elif mode == 'range':
+        try:
+            split_index = int(payload.get('split_point', 0))
+        except (TypeError, ValueError):
+            return jsonify(success=False, error='split_point 必须是整数'), 400
+    else:
+        return jsonify(success=False, error='不支持的拆分模式'), 400
+
+    if split_index <= 0 or split_index >= len(questions):
+        return jsonify(success=False, error='拆分位置超出范围'), 400
+
+    first_questions = questions[:split_index]
+    second_questions = questions[split_index:]
+    history = load_history()
+    source_item = next((item for item in history if item.get('file') == file_name), None)
+    source_title = (source_item or {}).get('origin_name') or file_name
+    now_text = time.strftime('%Y-%m-%d %H:%M:%S')
+
+    if mode == 'even':
+        first_title = f'{source_title}（上半）'
+        second_title = f'{source_title}（下半）'
+    else:
+        first_title = f'{source_title}（1-{split_index}）'
+        second_title = f'{source_title}（{split_index + 1}-{len(questions)}）'
+
+    first_file = save_parsed_questions(first_questions)
+    second_file = save_parsed_questions(second_questions)
+
+    created_records = [
+        {
+            'type': (source_item or {}).get('type', 'split'),
+            'file': first_file,
+            'origin_name': first_title,
+            'time': now_text,
+            'model': (source_item or {}).get('model'),
+            'stats': default_stats(),
+            'split_from': file_name
+        },
+        {
+            'type': (source_item or {}).get('type', 'split'),
+            'file': second_file,
+            'origin_name': second_title,
+            'time': now_text,
+            'model': (source_item or {}).get('model'),
+            'stats': default_stats(),
+            'split_from': file_name
+        }
+    ]
+
+    history.extend(created_records)
+
+    if delete_original:
+        history = [item for item in history if item.get('file') != file_name]
+        try:
+            os.remove(file_path)
+        except OSError as e:
+            logger.error(f"删除原题库失败: {e}")
+
+    save_history(history)
+    return jsonify(success=True, created=created_records, deleted_original=delete_original)
+
 
 @app.route('/css/<path:filename>')
 def serve_css(filename):
