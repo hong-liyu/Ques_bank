@@ -8,11 +8,15 @@ document.addEventListener('DOMContentLoaded', async function () {
     const optionsArea = document.getElementById('optionsArea');
     const feedbackArea = document.getElementById('feedbackArea');
     const nextQuestionBtn = document.getElementById('nextQuestionBtn');
+    const reviewAllBtn = document.getElementById('reviewAllBtn');
+    const submitExamBtn = document.getElementById('submitExamBtn');
     const navigatorGrid = document.getElementById('navigatorGrid');
     const quizPickerModal = document.getElementById('quizPickerModal');
     const quizPickerList = document.getElementById('quizPickerList');
     const quizPickerEmpty = document.getElementById('quizPickerEmpty');
     const quizPickerClose = document.getElementById('quizPickerClose');
+    const quizPickerModeSegment = document.getElementById('quizPickerModeSegment');
+    const modePickerModal = document.getElementById('modePickerModal');
     const favoriteModal = document.getElementById('favoriteModal');
     const favoriteModalClose = document.getElementById('favoriteModalClose');
     const favoriteFolderInput = document.getElementById('favoriteFolderInput');
@@ -26,19 +30,28 @@ document.addEventListener('DOMContentLoaded', async function () {
     const quizCompleteRuns = document.getElementById('quizCompleteRuns');
     const quizCompleteDuration = document.getElementById('quizCompleteDuration');
     const reviewQuizBtn = document.getElementById('reviewQuizBtn');
+    const reviewWrongBtn = document.getElementById('reviewWrongBtn');
 
     const FEEDBACK_DELAY_MS = 500;
+    const MODE_PRACTICE = 'practice';
+    const MODE_EXAM = 'exam';
 
     let questions = [];
     let historyItems = [];
     let currentQuestionIndex = 0;
     let answered = false;
     let answerRecord = [];
+    let userAnswerRecord = [];
     let currentQuizFile = '';
     let currentQuizTitle = '';
     let currentQuizStats = null;
     let completionSubmitted = false;
     let sessionStartAt = null;
+    let answerMode = MODE_PRACTICE;
+    let pickerSelectedMode = MODE_PRACTICE;
+    let examSubmitted = false;
+    let modePickerResolve = null;
+    let reviewMode = 'all';
 
     function getDefaultStats() {
         return {
@@ -91,6 +104,43 @@ document.addEventListener('DOMContentLoaded', async function () {
         element.setAttribute('aria-hidden', (!isOpen).toString());
     }
 
+    function normalizeQuizMode(mode) {
+        return mode === MODE_EXAM || mode === MODE_PRACTICE ? mode : '';
+    }
+
+    function isExamMode() {
+        return answerMode === MODE_EXAM;
+    }
+
+    function setAnswerMode(mode) {
+        answerMode = normalizeQuizMode(mode) || MODE_PRACTICE;
+    }
+
+    function setPickerMode(mode) {
+        pickerSelectedMode = normalizeQuizMode(mode) || MODE_PRACTICE;
+        if (!quizPickerModeSegment) return;
+        quizPickerModeSegment.querySelectorAll('.quiz-mode-option').forEach((button) => {
+            button.classList.toggle('is-active', button.dataset.mode === pickerSelectedMode);
+        });
+    }
+
+    function promptForAnswerMode() {
+        setOverlayVisible(modePickerModal, true);
+        return new Promise((resolve) => {
+            modePickerResolve = resolve;
+        });
+    }
+
+    function chooseAnswerMode(mode) {
+        const normalized = normalizeQuizMode(mode) || MODE_PRACTICE;
+        setAnswerMode(normalized);
+        setOverlayVisible(modePickerModal, false);
+        if (modePickerResolve) {
+            modePickerResolve(normalized);
+            modePickerResolve = null;
+        }
+    }
+
     function escapeHtml(value) {
         return String(value ?? '')
             .replace(/&/g, '&amp;')
@@ -137,7 +187,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             `;
             btn.onclick = () => {
                 if (!item.file) return;
-                window.location.href = `quiz.html?file=${encodeURIComponent(item.file)}&title=${encodeURIComponent(title)}`;
+                window.location.href = `quiz.html?file=${encodeURIComponent(item.file)}&title=${encodeURIComponent(title)}&mode=${encodeURIComponent(pickerSelectedMode)}`;
             };
             quizPickerList.appendChild(btn);
         });
@@ -189,8 +239,28 @@ document.addEventListener('DOMContentLoaded', async function () {
         return question.content || question.text || '';
     }
 
+    function getQuestionType(question) {
+        return String((question && question.type) || '');
+    }
+
+    function isJudgementQuestion(question) {
+        return getQuestionType(question).includes('判断');
+    }
+
+    function isMultiChoiceQuestion(question) {
+        return getQuestionType(question).includes('多选');
+    }
+
+    function isFillBlankQuestion(question) {
+        return getQuestionType(question).includes('填空');
+    }
+
+    function isFreeTextFillQuestion(question) {
+        return isFillBlankQuestion(question) && (!Array.isArray(question.options) || question.options.length === 0);
+    }
+
     function getQuestionAnswerText(question) {
-        if (question.type === '填空' && typeof question.answer === 'string') {
+        if (isFillBlankQuestion(question) && typeof question.answer === 'string') {
             return question.answer.split('|').map((item) => item.trim()).join(' / ');
         }
         if (typeof question.answer === 'string') return question.answer;
@@ -198,6 +268,42 @@ document.addEventListener('DOMContentLoaded', async function () {
             return question.answer.map((item) => typeof item === 'number' ? String.fromCharCode(65 + item) : item).join(', ');
         }
         return '无';
+    }
+
+    function hasStoredUserAnswer(index) {
+        const value = userAnswerRecord[index];
+        return value !== null && value !== undefined && String(value).trim() !== '';
+    }
+
+    function calculateChoiceCorrect(question, selectedValue) {
+        if (selectedValue === null || selectedValue === undefined || selectedValue === '') return null;
+
+        if (isJudgementQuestion(question)) {
+            return String(selectedValue).toLowerCase() === String(question.answer).toLowerCase();
+        }
+
+        if (isMultiChoiceQuestion(question)) {
+            const currentValue = parseInt(selectedValue, 10);
+            const selectedOptions = [currentValue];
+            const answerValues = String(question.answer).split('').map((ch) => ch.charCodeAt(0) - 65);
+            return answerValues.length === selectedOptions.length && answerValues.every((idx) => selectedOptions.includes(idx));
+        }
+
+        return parseInt(selectedValue, 10) === (String(question.answer).charCodeAt(0) - 65);
+    }
+
+    function calculateFillBlankCorrect(question, userAnswer) {
+        if (!userAnswer || !String(userAnswer).trim()) return null;
+        const trimmed = String(userAnswer).trim();
+        const answers = String(question.answer).split('|').map((item) => item.trim());
+        return answers.some((ans) => trimmed.toLowerCase() === ans.toLowerCase());
+    }
+
+    function calculateStoredAnswerCorrect(question, storedAnswer) {
+        if (isFreeTextFillQuestion(question)) {
+            return calculateFillBlankCorrect(question, storedAnswer);
+        }
+        return calculateChoiceCorrect(question, storedAnswer);
     }
 
     function getCurrentAnsweredCount() {
@@ -208,10 +314,50 @@ document.addEventListener('DOMContentLoaded', async function () {
         return answerRecord.filter(Boolean).length;
     }
 
+    function getWrongQuestionIndexes() {
+        return answerRecord
+            .map((result, index) => result === true ? null : index)
+            .filter((index) => index !== null);
+    }
+
+    function getReviewQuestionIndexes() {
+        return reviewMode === 'wrong' ? getWrongQuestionIndexes() : questions.map((_question, index) => index);
+    }
+
+    function getNextReviewIndex(offset) {
+        const indexes = getReviewQuestionIndexes();
+        if (!indexes.length) return null;
+        const currentPosition = indexes.indexOf(currentQuestionIndex);
+        if (currentPosition === -1) return indexes[0];
+        return indexes[currentPosition + offset] ?? null;
+    }
+
+    function resetReviewMode() {
+        reviewMode = 'all';
+    }
+
+    function enterAllReview(startIndex = 0) {
+        reviewMode = 'all';
+        setOverlayVisible(quizCompleteModal, false);
+        renderQuestion(startIndex);
+    }
+
+    function enterWrongReview() {
+        const wrongIndexes = getWrongQuestionIndexes();
+        if (!wrongIndexes.length) {
+            enterAllReview(0);
+            return;
+        }
+        reviewMode = 'wrong';
+        setOverlayVisible(quizCompleteModal, false);
+        renderQuestion(wrongIndexes[0]);
+    }
+
     async function loadQuizData() {
         const urlParams = new URLSearchParams(window.location.search);
         const fileName = urlParams.get('file');
         const titleFromUrl = urlParams.get('title');
+        const requestedMode = normalizeQuizMode(urlParams.get('mode'));
 
         await fetchHistoryItems();
         await ensureFavoriteCache();
@@ -249,6 +395,12 @@ document.addEventListener('DOMContentLoaded', async function () {
             }
         }
 
+        if (requestedMode) {
+            setAnswerMode(requestedMode);
+        } else {
+            await promptForAnswerMode();
+        }
+
         renderTitleStats();
 
         if (!Array.isArray(questions) || !questions.length) {
@@ -258,7 +410,10 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
 
         answerRecord = new Array(questions.length).fill(null);
+        userAnswerRecord = new Array(questions.length).fill(null);
         completionSubmitted = false;
+        examSubmitted = false;
+        resetReviewMode();
         sessionStartAt = null;
         updateNavigatorSidebar();
         renderQuestion(0);
@@ -296,11 +451,19 @@ document.addEventListener('DOMContentLoaded', async function () {
         const submitBtn = document.createElement('button');
         submitBtn.type = 'button';
         submitBtn.className = 'option-btn fill-blank-submit';
-        submitBtn.textContent = '提交答案';
+        submitBtn.textContent = isExamMode() && !examSubmitted ? '保存答案' : '提交答案';
         submitBtn.onclick = (e) => {
             e.preventDefault();
             handleFillBlankAnswer(input.value, question, submitBtn);
         };
+
+        if (isExamMode()) {
+            input.value = userAnswerRecord[currentQuestionIndex] || '';
+            input.addEventListener('input', () => {
+                userAnswerRecord[currentQuestionIndex] = input.value;
+                updateNavigatorSidebar();
+            });
+        }
 
         input.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') submitBtn.click();
@@ -317,6 +480,27 @@ document.addEventListener('DOMContentLoaded', async function () {
         favoriteBtn.classList.toggle('bookmarked', isFavorite(question, getFavoriteItems()));
     }
 
+    function getStoredChoiceButton(index) {
+        const value = userAnswerRecord[index];
+        if (value === null || value === undefined || value === '') return null;
+        return optionsArea.querySelector(`[data-value="${String(value)}"]`);
+    }
+
+    function markStoredChoice(index) {
+        optionsArea.querySelectorAll('.option-btn').forEach((btn) => {
+            btn.classList.remove('selected', 'exam-selected');
+        });
+        const selectedButton = getStoredChoiceButton(index);
+        if (selectedButton) selectedButton.classList.add('selected', 'exam-selected');
+    }
+
+    function showFillBlankResult(isCorrect) {
+        const input = document.getElementById('fillBlankInput');
+        const submitBtn = optionsArea.querySelector('.fill-blank-submit');
+        if (input) input.style.borderColor = isCorrect ? '#10b981' : '#ef4444';
+        if (submitBtn) submitBtn.classList.add(isCorrect ? 'correct-answer' : 'incorrect-answer');
+    }
+
     function renderQuestion(index) {
         if (index < 0 || index >= questions.length) return;
 
@@ -325,9 +509,11 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
 
         currentQuestionIndex = index;
-        answered = answerRecord[index] !== null;
+        answered = isExamMode() ? false : answerRecord[index] !== null;
         feedbackArea.innerHTML = '';
         nextQuestionBtn.style.display = 'none';
+        reviewAllBtn.style.display = reviewMode === 'wrong' ? 'inline-flex' : 'none';
+        submitExamBtn.style.display = isExamMode() && !examSubmitted ? 'inline-flex' : 'none';
         optionsArea.innerHTML = '';
 
         updateProgressBar();
@@ -337,10 +523,10 @@ document.addEventListener('DOMContentLoaded', async function () {
         questionContentDiv.innerHTML = `<span class="question-text">${index + 1}. ${parseMarkdown(getQuestionPrompt(question))}</span>`;
         updateFavoriteBtn(question);
 
-        if (question.type === '判断') {
+        if (isJudgementQuestion(question)) {
             createOptionButton('True', '正确', question);
             createOptionButton('False', '错误', question);
-        } else if (question.type === '填空') {
+        } else if (isFillBlankQuestion(question)) {
             if (Array.isArray(question.options) && question.options.length > 0) {
                 question.options.forEach((opt, optionIndex) => createOptionButton(optionIndex, `${opt}`, question));
             } else {
@@ -352,10 +538,35 @@ document.addEventListener('DOMContentLoaded', async function () {
             optionsArea.innerHTML = '<span style="color:#e74c3c;">本题无选项</span>';
         }
 
+        if (isExamMode()) {
+            if (isFreeTextFillQuestion(question)) {
+                const input = document.getElementById('fillBlankInput');
+                if (input) input.value = userAnswerRecord[index] || '';
+            } else {
+                markStoredChoice(index);
+            }
+
+            if (examSubmitted) {
+                if (answerRecord[index] !== null) {
+                    showFeedback(question, answerRecord[index], getStoredChoiceButton(index));
+                    if (isFreeTextFillQuestion(question)) showFillBlankResult(answerRecord[index]);
+                } else {
+                    showFeedback(question, false, null);
+                    feedbackArea.innerHTML = `<span class="incorrect-feedback">未作答，正确答案：${escapeHtml(getQuestionAnswerText(question))}</span>`;
+                }
+                disableOptions();
+                if (getNextReviewIndex(1) !== null) nextQuestionBtn.style.display = 'inline-flex';
+                return;
+            }
+
+            if (getNextReviewIndex(1) !== null) nextQuestionBtn.style.display = 'inline-flex';
+            return;
+        }
+
         if (answerRecord[index] !== null) {
-            showFeedback(question, answerRecord[index], null);
+            showFeedback(question, answerRecord[index], getStoredChoiceButton(index));
             disableOptions();
-            if (index < questions.length - 1) nextQuestionBtn.style.display = 'inline-flex';
+            if (getNextReviewIndex(1) !== null) nextQuestionBtn.style.display = 'inline-flex';
         }
     }
 
@@ -397,13 +608,13 @@ document.addEventListener('DOMContentLoaded', async function () {
             appendStateIcon(selectedButton, 'incorrect');
         }
 
-        if (question.type === '判断') {
+        if (isJudgementQuestion(question)) {
             const correctBtn = optionsArea.querySelector(`[data-value="${String(question.answer)}"]`);
             if (correctBtn) {
                 correctBtn.classList.add('correct-answer');
                 appendStateIcon(correctBtn, 'correct');
             }
-        } else if (question.type === '多选') {
+        } else if (isMultiChoiceQuestion(question)) {
             const answers = String(question.answer).split('').map((ch) => ch.charCodeAt(0) - 65);
             answers.forEach((correctIndex) => {
                 const correctBtn = optionsArea.querySelector(`[data-value="${correctIndex}"]`);
@@ -412,7 +623,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                     appendStateIcon(correctBtn, 'correct');
                 }
             });
-        } else if (question.type !== '填空') {
+        } else if (!isFillBlankQuestion(question)) {
             const correctIndex = String(question.answer).charCodeAt(0) - 65;
             const correctBtn = optionsArea.querySelector(`[data-value="${correctIndex}"]`);
             if (correctBtn) {
@@ -423,7 +634,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
 
     async function onQuestionCompleted() {
-        if (currentQuestionIndex < questions.length - 1) {
+        if (getNextReviewIndex(1) !== null) {
             setTimeout(() => {
                 nextQuestionBtn.style.display = 'inline-flex';
             }, FEEDBACK_DELAY_MS);
@@ -433,24 +644,21 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
 
     async function handleAnswer(selectedButton, question) {
+        if (isExamMode() && !examSubmitted) {
+            userAnswerRecord[currentQuestionIndex] = selectedButton.dataset.value;
+            markStoredChoice(currentQuestionIndex);
+            updateNavigatorSidebar();
+            return;
+        }
+
         if (answered) return;
         answered = true;
         disableOptions();
 
-        let isCorrect = false;
         const selectedValue = selectedButton.dataset.value;
+        const isCorrect = calculateChoiceCorrect(question, selectedValue);
 
-        if (question.type === '判断') {
-            isCorrect = selectedValue.toLowerCase() === String(question.answer).toLowerCase();
-        } else if (question.type === '多选') {
-            const currentValue = parseInt(selectedValue, 10);
-            const selectedOptions = [currentValue];
-            const answerValues = String(question.answer).split('').map((ch) => ch.charCodeAt(0) - 65);
-            isCorrect = answerValues.length === selectedOptions.length && answerValues.every((idx) => selectedOptions.includes(idx));
-        } else {
-            isCorrect = parseInt(selectedValue, 10) === (String(question.answer).charCodeAt(0) - 65);
-        }
-
+        userAnswerRecord[currentQuestionIndex] = selectedValue;
         answerRecord[currentQuestionIndex] = isCorrect;
         showFeedback(question, isCorrect, selectedButton);
         updateNavigatorSidebar();
@@ -458,6 +666,13 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
 
     async function handleFillBlankAnswer(userAnswer, question, submitBtn) {
+        if (isExamMode() && !examSubmitted) {
+            userAnswerRecord[currentQuestionIndex] = userAnswer || '';
+            updateNavigatorSidebar();
+            if (typeof showToast === 'function') showToast('答案已保存', 'success');
+            return;
+        }
+
         if (answered) return;
         if (!userAnswer || !userAnswer.trim()) {
             alert('请输入答案');
@@ -468,7 +683,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         const input = document.getElementById('fillBlankInput');
         const trimmed = userAnswer.trim();
         const answers = String(question.answer).split('|').map((item) => item.trim());
-        const isCorrect = answers.some((ans) => trimmed.toLowerCase() === ans.toLowerCase());
+        const isCorrect = calculateFillBlankCorrect(question, trimmed);
 
         if (input) {
             input.disabled = true;
@@ -477,10 +692,22 @@ document.addEventListener('DOMContentLoaded', async function () {
         submitBtn.disabled = true;
         submitBtn.classList.add(isCorrect ? 'correct-answer' : 'incorrect-answer');
 
+        userAnswerRecord[currentQuestionIndex] = trimmed;
         answerRecord[currentQuestionIndex] = isCorrect;
         feedbackArea.innerHTML = isCorrect ? '' : `<span class="incorrect-feedback">正确答案：${escapeHtml(answers.join(' / '))}</span>`;
         updateNavigatorSidebar();
         await onQuestionCompleted();
+    }
+
+    async function submitExam() {
+        if (!isExamMode() || examSubmitted) return;
+
+        examSubmitted = true;
+        answerRecord = questions.map((question, index) => calculateStoredAnswerCorrect(question, userAnswerRecord[index]));
+        submitExamBtn.style.display = 'none';
+        updateNavigatorSidebar();
+        renderQuestion(currentQuestionIndex);
+        await completeQuizSession();
     }
 
     async function completeQuizSession() {
@@ -521,11 +748,16 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     function showCompletionModal(correctCount, answeredCount, updatedStats, durationSeconds) {
         const accuracy = answeredCount ? Math.round((correctCount / answeredCount) * 100) : 0;
+        const wrongCount = getWrongQuestionIndexes().length;
         quizCompleteSummary.textContent = `${currentQuizTitle || '本题库'} 已完成，本轮共答 ${answeredCount} 题。`;
         quizCompleteAccuracy.textContent = `${accuracy}%`;
         quizCompleteScore.textContent = `${correctCount} / ${answeredCount}`;
         quizCompleteRuns.textContent = `${normalizeStats(updatedStats).completed_runs} 次`;
         quizCompleteDuration.textContent = formatDuration(durationSeconds);
+        if (reviewWrongBtn) {
+            reviewWrongBtn.disabled = wrongCount === 0;
+            reviewWrongBtn.textContent = wrongCount ? `回顾错题（${wrongCount}）` : '没有错题';
+        }
         setOverlayVisible(quizCompleteModal, true);
     }
 
@@ -585,10 +817,12 @@ document.addEventListener('DOMContentLoaded', async function () {
         const favoriteItems = getFavoriteItems();
 
         questions.forEach((question, index) => {
+            if (reviewMode === 'wrong' && answerRecord[index] === true) return;
             const item = document.createElement('div');
             item.className = 'navigator-item';
             item.textContent = index + 1;
             if (index === currentQuestionIndex) item.classList.add('current');
+            else if (isExamMode() && !examSubmitted && hasStoredUserAnswer(index)) item.classList.add('answered');
             else if (answerRecord[index] === true) item.classList.add('correct');
             else if (answerRecord[index] === false) item.classList.add('incorrect');
             if (isFavorite(question, favoriteItems)) item.classList.add('bookmarked');
@@ -631,21 +865,56 @@ document.addEventListener('DOMContentLoaded', async function () {
         quizPickerClose.addEventListener('click', () => setOverlayVisible(quizPickerModal, false));
     }
 
+    if (quizPickerModeSegment) {
+        quizPickerModeSegment.querySelectorAll('.quiz-mode-option').forEach((button) => {
+            button.addEventListener('click', () => setPickerMode(button.dataset.mode));
+        });
+        setPickerMode(pickerSelectedMode);
+    }
+
+    if (modePickerModal) {
+        modePickerModal.querySelectorAll('.mode-picker-option').forEach((button) => {
+            button.addEventListener('click', () => chooseAnswerMode(button.dataset.mode));
+        });
+    }
+
+    if (submitExamBtn) {
+        submitExamBtn.addEventListener('click', () => {
+            submitExam();
+        });
+    }
+
     if (reviewQuizBtn) {
         reviewQuizBtn.addEventListener('click', () => {
-            setOverlayVisible(quizCompleteModal, false);
-            renderQuestion(0);
+            enterAllReview(0);
+        });
+    }
+
+    if (reviewWrongBtn) {
+        reviewWrongBtn.addEventListener('click', () => {
+            enterWrongReview();
+        });
+    }
+
+    if (reviewAllBtn) {
+        reviewAllBtn.addEventListener('click', () => {
+            enterAllReview(currentQuestionIndex);
         });
     }
 
     nextQuestionBtn.onclick = function () {
-        if (currentQuestionIndex < questions.length - 1) {
-            renderQuestion(currentQuestionIndex + 1);
-        }
+        const nextIndex = getNextReviewIndex(1);
+        if (nextIndex !== null) renderQuestion(nextIndex);
     };
 
     document.onkeydown = function (e) {
-        if (!questions.length || favoriteModal.classList.contains('is-open') || quizCompleteModal.classList.contains('is-open')) return;
+        if (
+            !questions.length ||
+            favoriteModal.classList.contains('is-open') ||
+            quizCompleteModal.classList.contains('is-open') ||
+            quizPickerModal.classList.contains('is-open') ||
+            modePickerModal.classList.contains('is-open')
+        ) return;
 
         const activeElement = document.activeElement;
         if (activeElement && (
@@ -659,7 +928,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         if (key === 'ENTER' || key === ' ') {
             e.preventDefault();
-            if (answered && nextQuestionBtn.style.display !== 'none') {
+            if (nextQuestionBtn.style.display !== 'none') {
                 nextQuestionBtn.click();
             }
         } else if (key === 'R') {
@@ -667,12 +936,14 @@ document.addEventListener('DOMContentLoaded', async function () {
             favoriteBtn.click();
         } else if (key === 'Q') {
             e.preventDefault();
-            if (currentQuestionIndex > 0) renderQuestion(currentQuestionIndex - 1);
+            const previousIndex = getNextReviewIndex(-1);
+            if (previousIndex !== null) renderQuestion(previousIndex);
         } else if (key === 'E') {
             e.preventDefault();
-            if (currentQuestionIndex < questions.length - 1) renderQuestion(currentQuestionIndex + 1);
-        } else if (!answered && question.type !== '填空') {
-            if (question.type === '判断') {
+            const nextIndex = getNextReviewIndex(1);
+            if (nextIndex !== null) renderQuestion(nextIndex);
+        } else if ((isExamMode() || !answered) && !examSubmitted && !isFreeTextFillQuestion(question)) {
+            if (isJudgementQuestion(question)) {
                 if (key === 'A') optionsArea.querySelector('[data-value="True"]')?.click();
                 if (key === 'D') optionsArea.querySelector('[data-value="False"]')?.click();
             } else {

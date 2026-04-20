@@ -47,6 +47,8 @@ body.refactor-page {
     padding: 0;
     min-height: 100vh;
     position: relative;
+    isolation: isolate;
+    overflow-x: clip;
     font-family: "Manrope", "Segoe UI", system-ui, sans-serif;
     display: block;
     text-rendering: optimizeLegibility;
@@ -63,6 +65,9 @@ body.refactor-page::before {
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    will-change: transform;
 }
 
 [data-theme="dark"] body.refactor-page::before {
@@ -80,6 +85,8 @@ body.refactor-page::after {
     z-index: -1;
     background: none;
     opacity: 0;
+    transform: translateZ(0);
+    backface-visibility: hidden;
 }
 
 .refactor-page .grain {
@@ -90,6 +97,9 @@ body.refactor-page::after {
     opacity: 0.16;
     mix-blend-mode: soft-light;
     background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='120' height='120' filter='url(%23n)' opacity='0.65'/></svg>");
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    will-change: transform;
 }
 
 .refactor-page a {
@@ -111,6 +121,8 @@ body.refactor-page::after {
     font-family: inherit;
     backdrop-filter: blur(var(--glass-blur));
     -webkit-backdrop-filter: blur(var(--glass-blur));
+    transform: translateZ(0);
+    backface-visibility: hidden;
 }
 
 .refactor-page input:focus,
@@ -136,6 +148,8 @@ body.refactor-page::after {
     backdrop-filter: blur(var(--glass-blur));
     -webkit-backdrop-filter: blur(var(--glass-blur));
     transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    transform: translateZ(0);
+    backface-visibility: hidden;
 }
 
 .refactor-page .back-home-btn:hover {
@@ -153,7 +167,7 @@ body.refactor-page::after {
     box-shadow: none;
     border-radius: 0;
     min-height: auto;
-    width: min(1280px, calc(100vw - 32px));
+    width: min(1320px, calc(100vw - 32px));
     margin: 28px auto 40px;
     overflow: visible;
 }
@@ -172,6 +186,8 @@ body.refactor-page::after {
     margin: 24px 24px 14px;
     backdrop-filter: blur(var(--glass-blur));
     -webkit-backdrop-filter: blur(var(--glass-blur));
+    transform: translateZ(0);
+    backface-visibility: hidden;
 }
 
 .refactor-quiz .main-layout {
@@ -233,6 +249,9 @@ body.refactor-page::after {
     display: flex;
     flex-direction: column;
     min-height: min(760px, calc(100vh - 180px));
+    min-height: min(760px, calc(100dvh - 180px));
+    transform: translateZ(0);
+    backface-visibility: hidden;
 }
 
 .refactor-quiz .progress-section {
@@ -371,6 +390,12 @@ body.refactor-page::after {
     box-shadow: 0 0 0 2px rgba(35, 42, 51, 0.15);
 }
 
+.refactor-quiz .option-btn.exam-selected {
+    border-color: var(--accent-strong);
+    background: rgba(255, 255, 255, 0.72);
+    box-shadow: 0 0 0 2px rgba(35, 42, 51, 0.15);
+}
+
 .refactor-quiz .option-btn.correct-answer {
     background-color: var(--success-soft);
     border-color: var(--success);
@@ -418,6 +443,8 @@ body.refactor-page::after {
     margin-top: 8px;
     display: flex;
     justify-content: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
 }
 
 .refactor-quiz .action-btn.next-btn {
@@ -441,6 +468,28 @@ body.refactor-page::after {
 .refactor-quiz .action-btn.next-btn:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow-hover);
+}
+
+.refactor-quiz .submit-exam-btn {
+    background-color: #7c2d12;
+}
+
+.refactor-quiz .review-all-btn,
+.refactor-quiz .secondary-review-btn {
+    background-color: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    color: var(--accent-strong);
+}
+
+[data-theme="dark"] .refactor-quiz .submit-exam-btn {
+    background-color: #fed7aa;
+    color: #1f1309;
+}
+
+[data-theme="dark"] .refactor-quiz .review-all-btn,
+[data-theme="dark"] .refactor-quiz .secondary-review-btn {
+    background-color: rgba(16, 22, 29, 0.72);
+    color: var(--accent-strong);
 }
 
 .refactor-quiz .fill-blank-container {
@@ -543,6 +592,7 @@ body.refactor-page::after {
     position: sticky;
     top: 24px;
     max-height: calc(100vh - 140px);
+    max-height: calc(100dvh - 140px);
     overflow-y: auto;
     overflow-x: hidden;
     padding: 20px;
@@ -587,6 +637,12 @@ body.refactor-page::after {
 .refactor-quiz .navigator-item.current {
     background: var(--accent-strong);
     color: #f6f7f9;
+}
+
+.refactor-quiz .navigator-item.answered {
+    border-color: var(--accent);
+    background: rgba(255, 255, 255, 0.62);
+    color: var(--accent-strong);
 }
 
 .refactor-quiz .navigator-item.correct {
@@ -668,6 +724,96 @@ body.refactor-page::after {
     margin: 0 0 18px;
     color: var(--muted);
     font-size: 0.95rem;
+}
+
+.refactor-quiz .quiz-mode-block {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin: 0 0 18px;
+    padding: 12px;
+    border-radius: 14px;
+    background: var(--surface-muted);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+.refactor-quiz .quiz-mode-label {
+    color: var(--accent-strong);
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.refactor-quiz .quiz-mode-segment {
+    display: inline-grid;
+    grid-template-columns: repeat(2, minmax(96px, 1fr));
+    gap: 6px;
+    padding: 4px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.48);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+.refactor-quiz .quiz-mode-option {
+    min-height: 36px;
+    border: none;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--muted);
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 0 14px;
+    transition: background-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.refactor-quiz .quiz-mode-option.is-active {
+    background: var(--accent-strong);
+    color: #f6f7f9;
+    box-shadow: 0 8px 20px rgba(18, 24, 30, 0.14);
+}
+
+.refactor-quiz .mode-picker-card {
+    width: min(560px, 92vw);
+}
+
+.refactor-quiz .mode-picker-options {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.refactor-quiz .mode-picker-option {
+    display: grid;
+    gap: 8px;
+    min-height: 132px;
+    padding: 18px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    background: var(--surface-muted);
+    color: var(--text);
+    text-align: left;
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background-color 0.18s ease;
+}
+
+.refactor-quiz .mode-picker-option:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent);
+    box-shadow: var(--shadow-soft);
+}
+
+.refactor-quiz .mode-picker-title {
+    color: var(--accent-strong);
+    font-size: 1.08rem;
+    font-weight: 800;
+}
+
+.refactor-quiz .mode-picker-desc {
+    color: var(--muted);
+    font-size: 0.92rem;
+    line-height: 1.5;
 }
 
 .refactor-quiz .quiz-picker-close {
@@ -768,6 +914,8 @@ body.refactor-page::after {
     gap: 12px;
     backdrop-filter: blur(var(--glass-blur));
     -webkit-backdrop-filter: blur(var(--glass-blur));
+    transform: translateZ(0);
+    backface-visibility: hidden;
 }
 
 .refactor-history .history-grid {
@@ -789,6 +937,8 @@ body.refactor-page::after {
     border-radius: 14px;
     backdrop-filter: blur(var(--glass-blur));
     -webkit-backdrop-filter: blur(var(--glass-blur));
+    transform: translateZ(0);
+    backface-visibility: hidden;
 }
 
 .refactor-history .history-card::before {
@@ -1246,6 +1396,117 @@ body.refactor-page::after {
     margin-bottom: 24px;
 }
 
+@media (max-width: 1700px) and (min-width: 901px) and (hover: none) and (pointer: coarse) {
+    .refactor-quiz .app-container {
+        width: min(100vw - 18px, 1460px);
+        margin: 16px auto 24px;
+    }
+
+    .refactor-quiz .app-header {
+        margin: 14px 14px 12px;
+        padding: 14px 20px;
+    }
+
+    .refactor-quiz .main-layout {
+        padding: 0 14px 18px;
+        gap: 12px;
+    }
+
+    .refactor-quiz .question-card {
+        padding: 22px;
+        min-height: min(680px, calc(100dvh - 156px));
+    }
+
+    .refactor-quiz .navigator-sidebar {
+        flex: 0 0 clamp(244px, 23vw, 296px);
+        margin: 0 0 0 6px;
+        padding: 16px;
+        top: 14px;
+        max-height: calc(100dvh - 76px);
+    }
+
+    .refactor-quiz .navigator-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .refactor-quiz .navigator-item {
+        min-height: 50px;
+    }
+
+    .refactor-history .main-container {
+        max-width: 100%;
+        padding: 24px 16px 44px;
+    }
+
+    .refactor-history .filter-controls {
+        grid-template-columns: minmax(0, 1fr) minmax(180px, 220px) auto;
+        gap: 10px;
+    }
+
+    .refactor-history .history-grid {
+        gap: 14px;
+    }
+
+    .refactor-history .history-card {
+        padding: 18px;
+    }
+
+    .refactor-upload .upload-container {
+        max-width: 100%;
+        padding: 24px 16px 44px;
+    }
+
+    .refactor-upload .upload-grid {
+        grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.95fr);
+        gap: 16px;
+    }
+
+    .refactor-upload .upload-panel,
+    .refactor-upload .side-card,
+    .refactor-upload .progress-card,
+    .refactor-upload .result-card {
+        border-radius: 16px;
+        padding: 18px;
+    }
+}
+
+@media (min-width: 900px) and (max-width: 1200px) and (orientation: portrait) and (hover: none) and (pointer: coarse) {
+    .refactor-quiz .main-layout {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .refactor-quiz .navigator-sidebar {
+        position: static;
+        max-height: none;
+        overflow: visible;
+        margin: 0;
+        order: -1;
+        flex: 1 1 auto;
+        width: auto;
+        padding: 14px;
+    }
+
+    .refactor-quiz .navigator-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .refactor-quiz .question-card {
+        min-height: min(760px, calc(100dvh - 220px));
+        padding: 22px;
+    }
+
+    .refactor-history .filter-controls {
+        grid-template-columns: 1fr;
+    }
+
+    .refactor-upload .upload-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 .refactor-upload .upload-side {
     display: grid;
     gap: 18px;
@@ -1263,6 +1524,8 @@ body.refactor-page::after {
     box-shadow: var(--shadow-soft), inset 0 0 0 1px rgba(255, 255, 255, 0.12);
     backdrop-filter: blur(var(--glass-blur));
     -webkit-backdrop-filter: blur(var(--glass-blur));
+    transform: translateZ(0);
+    backface-visibility: hidden;
 }
 
 .refactor-upload .side-card.compact {
@@ -1673,6 +1936,8 @@ body.refactor-page::after {
 .refactor-quiz .navigator-item,
 .refactor-quiz .quiz-picker-card,
 .refactor-quiz .quiz-picker-item,
+.refactor-quiz .mode-picker-card,
+.refactor-quiz .mode-picker-option,
 .refactor-history .filter-controls,
 .refactor-history .history-card,
 .refactor-history .modal-content,
@@ -1685,6 +1950,7 @@ body.refactor-page::after {
 .refactor-upload .parse-result,
 .refactor-upload .name-modal-card {
     position: relative;
+    contain: paint;
 }
 
 .refactor-page .back-home-btn::after,
@@ -1694,6 +1960,8 @@ body.refactor-page::after {
 .refactor-quiz .navigator-item::after,
 .refactor-quiz .quiz-picker-card::after,
 .refactor-quiz .quiz-picker-item::after,
+.refactor-quiz .mode-picker-card::after,
+.refactor-quiz .mode-picker-option::after,
 .refactor-history .filter-controls::after,
 .refactor-history .history-card::after,
 .refactor-history .modal-content::after,
@@ -1804,6 +2072,19 @@ body.refactor-page::after {
     .refactor-quiz .action-btn.next-btn {
         width: 100%;
         min-width: 0;
+    }
+
+    .refactor-quiz .quiz-mode-block {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .refactor-quiz .quiz-mode-segment {
+        width: 100%;
+    }
+
+    .refactor-quiz .mode-picker-options {
+        grid-template-columns: 1fr;
     }
 
     .refactor-quiz .navigator-sidebar {

@@ -36,3 +36,6 @@ web-artifacts-builder/
 .DS_Store
 Thumbs.db
 .vscode/
+
+SuperStart.vbs
+start_ques.ps1

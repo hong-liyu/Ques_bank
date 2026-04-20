@@ -49,6 +49,8 @@
                     <div class="feedback-area" id="feedbackArea"></div>
 
                     <div class="navigation-buttons">
+                        <button id="reviewAllBtn" class="action-btn next-btn review-all-btn" type="button" style="display:none;">查看全部</button>
+                        <button id="submitExamBtn" class="action-btn next-btn submit-exam-btn" type="button" style="display:none;">交卷</button>
                         <button id="nextQuestionBtn" class="action-btn next-btn" type="button" style="display:none;">下一题</button>
                     </div>
                 </div>
@@ -71,11 +73,40 @@
                 <button type="button" class="quiz-picker-close" id="quizPickerClose" aria-label="关闭">×</button>
             </div>
             <p class="quiz-picker-subtitle">请选择要进入的题库，系统会自动加载。</p>
+            <div class="quiz-mode-block" aria-label="答题模式">
+                <span class="quiz-mode-label">答题模式</span>
+                <div class="quiz-mode-segment" id="quizPickerModeSegment">
+                    <button type="button" class="quiz-mode-option is-active" data-mode="practice">练习模式</button>
+                    <button type="button" class="quiz-mode-option" data-mode="exam">考试模式</button>
+                </div>
+            </div>
             <div class="quiz-picker-list" id="quizPickerList"></div>
             <div class="quiz-picker-empty" id="quizPickerEmpty">暂无题库，请先上传。</div>
             <div class="quiz-picker-footer">
                 <a class="quiz-picker-link" href="upload.html">去上传题库</a>
                 <a class="quiz-picker-link" href="parsed_list.html">查看历史题库</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="quiz-picker-overlay" id="modePickerModal" aria-hidden="true">
+        <div class="quiz-picker-card mode-picker-card" role="dialog" aria-modal="true" aria-labelledby="modePickerTitle">
+            <div class="quiz-picker-header">
+                <div>
+                    <p class="quiz-picker-kicker mono">Choose Mode</p>
+                    <h2 id="modePickerTitle">选择答题模式</h2>
+                </div>
+            </div>
+            <p class="quiz-picker-subtitle">请选择本次刷题的判分方式。</p>
+            <div class="mode-picker-options">
+                <button type="button" class="mode-picker-option" data-mode="practice">
+                    <span class="mode-picker-title">练习模式</span>
+                    <span class="mode-picker-desc">选择选项后立即判断答案。</span>
+                </button>
+                <button type="button" class="mode-picker-option" data-mode="exam">
+                    <span class="mode-picker-title">考试模式</span>
+                    <span class="mode-picker-desc">先完成作答，交卷后统一判断。</span>
+                </button>
             </div>
         </div>
     </div>
@@ -124,7 +155,8 @@
                 </div>
             </div>
             <div class="quiz-complete-actions">
-                <button type="button" class="action-btn next-btn" id="reviewQuizBtn">回顾本题库</button>
+                <button type="button" class="action-btn next-btn" id="reviewWrongBtn">回顾错题</button>
+                <button type="button" class="action-btn next-btn secondary-review-btn" id="reviewQuizBtn">回顾全部</button>
                 <a href="parsed_list.html" class="quiz-complete-link">返回题库列表</a>
             </div>
         </div>

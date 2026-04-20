@@ -89,6 +89,40 @@ http://127.0.0.1:5000/
 python main.py
 ```
 
+### 一键启动（桌面快捷方式 + 开机自启动）
+
+项目内置了 [SuperStart.vbs](SuperStart.vbs)，会按顺序静默启动：
+- 题库服务（调用 [start_ques.ps1](start_ques.ps1)）
+- frpc 内网穿透
+
+你可以运行 [Install-SuperStartShortcuts.ps1](Install-SuperStartShortcuts.ps1) 自动创建：
+- 桌面快捷方式
+- 开机启动快捷方式（当前用户启动目录）
+
+安装（默认同时创建两者）：
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Install-SuperStartShortcuts.ps1
+```
+
+只创建桌面快捷方式：
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Install-SuperStartShortcuts.ps1 -DesktopOnly
+```
+
+只创建开机启动快捷方式：
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Install-SuperStartShortcuts.ps1 -StartupOnly
+```
+
+移除快捷方式：
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Install-SuperStartShortcuts.ps1 -Remove
+```
+
 ## 发布到 GitHub 前的安全建议
 
 - 不要提交 `.env`
