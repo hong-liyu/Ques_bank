@@ -183,7 +183,7 @@ def parse_file_with_ai(file_bytes, file_extension, model="deepseek-chat", custom
         full_content = "\n".join(lines)
     elif file_extension == ".pdf":
         full_content = extract_text_from_pdf(file_bytes)
-    elif file_extension == ".txt":
+    elif file_extension in [".txt", ".md", ".json"]:
         full_content = extract_text_from_txt(file_bytes)
     else:
         raise ValueError(f"不支持的文件类型: {file_extension}")

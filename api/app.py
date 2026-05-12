@@ -305,7 +305,7 @@ def ai_upload_question():
     filename = file.filename
     file_extension = os.path.splitext(filename)[1].lower()
     
-    supported_extensions = ['.docx', '.pdf', '.txt']
+    supported_extensions = ['.docx', '.pdf', '.txt', '.md', '.json']
     if file_extension not in supported_extensions:
         return jsonify(success=False, error=f'不支持的文件类型: {file_extension}，目前仅支持 {", ".join(supported_extensions)}')
 

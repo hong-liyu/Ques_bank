@@ -278,9 +278,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         const lowerName = selectedFile.name.toLowerCase();
-        const isAllowed = lowerName.endsWith('.docx') || lowerName.endsWith('.pdf') || lowerName.endsWith('.txt');
+        const isAllowed = lowerName.endsWith('.docx') || lowerName.endsWith('.pdf') || lowerName.endsWith('.txt') || lowerName.endsWith('.md') || lowerName.endsWith('.json');
         if (!isAllowed) {
-            setStatus('仅支持 .docx、.pdf、.txt 文件', '#e74c3c');
+            setStatus('仅支持 .docx、.pdf、.txt、.md、.json 文件', '#e74c3c');
             return;
         }
 
