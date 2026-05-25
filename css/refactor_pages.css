@@ -396,14 +396,16 @@ body.refactor-page::after {
     box-shadow: 0 0 0 2px rgba(35, 42, 51, 0.15);
 }
 
-.refactor-quiz .option-btn.correct-answer {
+.refactor-quiz .option-btn.correct-answer,
+.refactor-quiz .action-btn.correct-answer {
     background-color: var(--success-soft);
     border-color: var(--success);
     color: var(--text);
     box-shadow: none;
 }
 
-.refactor-quiz .option-btn.incorrect-answer {
+.refactor-quiz .option-btn.incorrect-answer,
+.refactor-quiz .action-btn.incorrect-answer {
     background-color: var(--danger-soft);
     border-color: var(--danger);
     color: var(--text);
@@ -442,7 +444,7 @@ body.refactor-page::after {
 .refactor-quiz .navigation-buttons {
     margin-top: 8px;
     display: flex;
-    justify-content: flex-end;
+    justify-content: center;
     gap: 12px;
     flex-wrap: wrap;
 }
@@ -451,7 +453,7 @@ body.refactor-page::after {
     background-color: var(--accent-strong);
     box-shadow: none;
     border: none;
-    border-radius: 999px;
+    border-radius: 12px;
     color: #f6f7f9;
     min-height: 52px;
     min-width: 164px;

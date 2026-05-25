@@ -263,21 +263,24 @@ body {
     box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
 }
 
-.option-btn.correct-answer {
+.option-btn.correct-answer,
+.action-btn.correct-answer {
     background-color: var(--correct-color);
     border-color: var(--correct-color);
     color: var(--text-light);
     box-shadow: 0 4px 15px rgba(40, 167, 69, 0.15);
 }
 
-.option-btn.incorrect-answer {
+.option-btn.incorrect-answer,
+.action-btn.incorrect-answer {
     background-color: var(--incorrect-color);
     border-color: var(--incorrect-color);
     color: var(--text-light);
     box-shadow: 0 4px 15px rgba(220, 53, 69, 0.15);
 }
 
-.option-btn.correct-answer svg, .option-btn.incorrect-answer svg {
+.option-btn.correct-answer svg, .option-btn.incorrect-answer svg,
+.action-btn.correct-answer svg, .action-btn.incorrect-answer svg {
     margin-left: 10px;
     width: 20px;
     height: 20px;

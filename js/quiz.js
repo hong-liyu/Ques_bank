@@ -247,6 +247,14 @@ document.addEventListener('DOMContentLoaded', async function () {
         return getQuestionType(question).includes('判断');
     }
 
+    function normalizeJudgementAnswer(ans) {
+        if (ans === null || ans === undefined) return '';
+        const s = String(ans).trim().toLowerCase();
+        if (['true', '正确', '对', '√', 't', 'a', '1', 'yes'].includes(s)) return 'True';
+        if (['false', '错误', '错', '×', 'f', 'b', '0', 'no'].includes(s)) return 'False';
+        return String(ans);
+    }
+
     function isMultiChoiceQuestion(question) {
         return getQuestionType(question).includes('多选');
     }
@@ -279,14 +287,13 @@ document.addEventListener('DOMContentLoaded', async function () {
         if (selectedValue === null || selectedValue === undefined || selectedValue === '') return null;
 
         if (isJudgementQuestion(question)) {
-            return String(selectedValue).toLowerCase() === String(question.answer).toLowerCase();
+            return String(selectedValue) === normalizeJudgementAnswer(question.answer);
         }
 
         if (isMultiChoiceQuestion(question)) {
-            const currentValue = parseInt(selectedValue, 10);
-            const selectedOptions = [currentValue];
-            const answerValues = String(question.answer).split('').map((ch) => ch.charCodeAt(0) - 65);
-            return answerValues.length === selectedOptions.length && answerValues.every((idx) => selectedOptions.includes(idx));
+            const selectedOptions = String(selectedValue).split(',').map(v => parseInt(v, 10)).sort((a, b) => a - b);
+            const answerValues = String(question.answer).split('').map((ch) => ch.charCodeAt(0) - 65).sort((a, b) => a - b);
+            return answerValues.length === selectedOptions.length && answerValues.every((val, i) => val === selectedOptions[i]);
         }
 
         return parseInt(selectedValue, 10) === (String(question.answer).charCodeAt(0) - 65);
@@ -419,6 +426,47 @@ document.addEventListener('DOMContentLoaded', async function () {
         renderQuestion(0);
     }
 
+    function setupGlobalSubmitButton() {
+        let globalSubmitBtn = document.getElementById('globalSubmitBtn');
+        if (!globalSubmitBtn) {
+            globalSubmitBtn = document.createElement('button');
+            globalSubmitBtn.id = 'globalSubmitBtn';
+            globalSubmitBtn.type = 'button';
+            globalSubmitBtn.className = 'action-btn next-btn';
+            
+            const navButtons = document.querySelector('.navigation-buttons');
+            navButtons.insertBefore(globalSubmitBtn, nextQuestionBtn);
+
+            globalSubmitBtn.onclick = (e) => {
+                e.preventDefault();
+                const question = questions[currentQuestionIndex];
+                if (isFillBlankQuestion(question) && (!Array.isArray(question.options) || question.options.length === 0)) {
+                    const input = document.getElementById('fillBlankInput');
+                    handleFillBlankAnswer(input ? input.value : '', question, globalSubmitBtn);
+                } else {
+                    handleChoiceSubmit(question, globalSubmitBtn);
+                }
+            };
+        }
+        return globalSubmitBtn;
+    }
+
+    function toggleNavigationButtons() {
+        const globalSubmitBtn = setupGlobalSubmitButton();
+        globalSubmitBtn.textContent = isExamMode() && !examSubmitted ? '保存答案' : '提交答案';
+        globalSubmitBtn.disabled = false;
+        
+        const isAnswered = isExamMode() ? examSubmitted : answerRecord[currentQuestionIndex] !== null;
+
+        if (isAnswered) {
+            globalSubmitBtn.style.display = 'none';
+        } else {
+            globalSubmitBtn.style.display = 'inline-flex';
+            globalSubmitBtn.classList.remove('correct-answer', 'incorrect-answer');
+            nextQuestionBtn.style.display = 'none';
+        }
+    }
+
     function updateProgressBar() {
         const progress = questions.length > 0 ? ((currentQuestionIndex + 1) / questions.length) * 100 : 0;
         progressBar.style.width = `${progress}%`;
@@ -448,15 +496,6 @@ document.addEventListener('DOMContentLoaded', async function () {
         input.className = 'fill-blank-input';
         input.placeholder = '输入你的答案...';
 
-        const submitBtn = document.createElement('button');
-        submitBtn.type = 'button';
-        submitBtn.className = 'option-btn fill-blank-submit';
-        submitBtn.textContent = isExamMode() && !examSubmitted ? '保存答案' : '提交答案';
-        submitBtn.onclick = (e) => {
-            e.preventDefault();
-            handleFillBlankAnswer(input.value, question, submitBtn);
-        };
-
         if (isExamMode()) {
             input.value = userAnswerRecord[currentQuestionIndex] || '';
             input.addEventListener('input', () => {
@@ -466,12 +505,18 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
 
         input.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') submitBtn.click();
+            if (e.key === 'Enter') {
+                const globalBtn = document.getElementById('globalSubmitBtn');
+                if (globalBtn && !globalBtn.disabled && globalBtn.style.display !== 'none') {
+                    globalBtn.click();
+                } else if (nextQuestionBtn.style.display !== 'none') {
+                    nextQuestionBtn.click();
+                }
+            }
         });
 
         inputContainer.appendChild(label);
         inputContainer.appendChild(input);
-        inputContainer.appendChild(submitBtn);
         optionsArea.appendChild(inputContainer);
         setTimeout(() => input.focus(), 100);
     }
@@ -483,6 +528,9 @@ document.addEventListener('DOMContentLoaded', async function () {
     function getStoredChoiceButton(index) {
         const value = userAnswerRecord[index];
         if (value === null || value === undefined || value === '') return null;
+        if (String(value).includes(',')) {
+            return String(value).split(',').map(v => optionsArea.querySelector(`[data-value="${v}"]`));
+        }
         return optionsArea.querySelector(`[data-value="${String(value)}"]`);
     }
 
@@ -490,13 +538,19 @@ document.addEventListener('DOMContentLoaded', async function () {
         optionsArea.querySelectorAll('.option-btn').forEach((btn) => {
             btn.classList.remove('selected', 'exam-selected');
         });
-        const selectedButton = getStoredChoiceButton(index);
-        if (selectedButton) selectedButton.classList.add('selected', 'exam-selected');
+        const selectedButtons = getStoredChoiceButton(index);
+        if (selectedButtons) {
+            if (Array.isArray(selectedButtons)) {
+                selectedButtons.forEach(btn => btn && btn.classList.add('selected', 'exam-selected'));
+            } else {
+                selectedButtons.classList.add('selected', 'exam-selected');
+            }
+        }
     }
 
     function showFillBlankResult(isCorrect) {
         const input = document.getElementById('fillBlankInput');
-        const submitBtn = optionsArea.querySelector('.fill-blank-submit');
+        const submitBtn = document.getElementById('globalSubmitBtn');
         if (input) input.style.borderColor = isCorrect ? '#10b981' : '#ef4444';
         if (submitBtn) submitBtn.classList.add(isCorrect ? 'correct-answer' : 'incorrect-answer');
     }
@@ -511,13 +565,13 @@ document.addEventListener('DOMContentLoaded', async function () {
         currentQuestionIndex = index;
         answered = isExamMode() ? false : answerRecord[index] !== null;
         feedbackArea.innerHTML = '';
-        nextQuestionBtn.style.display = 'none';
         reviewAllBtn.style.display = reviewMode === 'wrong' ? 'inline-flex' : 'none';
         submitExamBtn.style.display = isExamMode() && !examSubmitted ? 'inline-flex' : 'none';
         optionsArea.innerHTML = '';
 
         updateProgressBar();
         updateNavigatorSidebar();
+        toggleNavigationButtons();
 
         const question = questions[index];
         questionContentDiv.innerHTML = `<span class="question-text">${index + 1}. ${parseMarkdown(getQuestionPrompt(question))}</span>`;
@@ -555,18 +609,30 @@ document.addEventListener('DOMContentLoaded', async function () {
                     feedbackArea.innerHTML = `<span class="incorrect-feedback">未作答，正确答案：${escapeHtml(getQuestionAnswerText(question))}</span>`;
                 }
                 disableOptions();
-                if (getNextReviewIndex(1) !== null) nextQuestionBtn.style.display = 'inline-flex';
+                if (getNextReviewIndex(1) !== null) {
+                    nextQuestionBtn.style.display = 'inline-flex';
+                    const globalBtn = document.getElementById('globalSubmitBtn');
+                    if (globalBtn) globalBtn.style.display = 'none';
+                }
                 return;
             }
 
-            if (getNextReviewIndex(1) !== null) nextQuestionBtn.style.display = 'inline-flex';
+            if (getNextReviewIndex(1) !== null) {
+                nextQuestionBtn.style.display = 'inline-flex';
+                const globalBtn = document.getElementById('globalSubmitBtn');
+                if (globalBtn) globalBtn.style.display = 'none';
+            }
             return;
         }
 
         if (answerRecord[index] !== null) {
             showFeedback(question, answerRecord[index], getStoredChoiceButton(index));
             disableOptions();
-            if (getNextReviewIndex(1) !== null) nextQuestionBtn.style.display = 'inline-flex';
+            if (getNextReviewIndex(1) !== null) {
+                nextQuestionBtn.style.display = 'inline-flex';
+                const globalBtn = document.getElementById('globalSubmitBtn');
+                if (globalBtn) globalBtn.style.display = 'none';
+            }
         }
     }
 
@@ -574,6 +640,9 @@ document.addEventListener('DOMContentLoaded', async function () {
         optionsArea.querySelectorAll('.option-btn').forEach((btn) => {
             btn.disabled = true;
         });
+        const globalBtn = document.getElementById('globalSubmitBtn');
+        if (globalBtn) globalBtn.disabled = true;
+        
         const fillInput = document.getElementById('fillBlankInput');
         if (fillInput) fillInput.disabled = true;
     }
@@ -591,12 +660,24 @@ document.addEventListener('DOMContentLoaded', async function () {
             btn.classList.remove('selected');
             btn.disabled = true;
         });
+        const globalBtn = document.getElementById('globalSubmitBtn');
+        if (globalBtn) globalBtn.disabled = true;
+        
         feedbackArea.innerHTML = '';
 
         if (isCorrect) {
             if (selectedButton) {
-                selectedButton.classList.add('correct-answer');
-                appendStateIcon(selectedButton, 'correct');
+                if (Array.isArray(selectedButton)) {
+                    selectedButton.forEach(btn => {
+                        if (btn) {
+                            btn.classList.add('correct-answer');
+                            appendStateIcon(btn, 'correct');
+                        }
+                    });
+                } else {
+                    selectedButton.classList.add('correct-answer');
+                    appendStateIcon(selectedButton, 'correct');
+                }
             }
             return;
         }
@@ -604,12 +685,21 @@ document.addEventListener('DOMContentLoaded', async function () {
         feedbackArea.innerHTML = `<span class="incorrect-feedback">正确答案：${escapeHtml(getQuestionAnswerText(question))}</span>`;
 
         if (selectedButton) {
-            selectedButton.classList.add('incorrect-answer');
-            appendStateIcon(selectedButton, 'incorrect');
+            if (Array.isArray(selectedButton)) {
+                selectedButton.forEach(btn => {
+                    if (btn) {
+                        btn.classList.add('incorrect-answer');
+                        appendStateIcon(btn, 'incorrect');
+                    }
+                });
+            } else {
+                selectedButton.classList.add('incorrect-answer');
+                appendStateIcon(selectedButton, 'incorrect');
+            }
         }
 
         if (isJudgementQuestion(question)) {
-            const correctBtn = optionsArea.querySelector(`[data-value="${String(question.answer)}"]`);
+            const correctBtn = optionsArea.querySelector(`[data-value="${normalizeJudgementAnswer(question.answer)}"]`);
             if (correctBtn) {
                 correctBtn.classList.add('correct-answer');
                 appendStateIcon(correctBtn, 'correct');
@@ -637,32 +727,65 @@ document.addEventListener('DOMContentLoaded', async function () {
         if (getNextReviewIndex(1) !== null) {
             setTimeout(() => {
                 nextQuestionBtn.style.display = 'inline-flex';
+                const globalBtn = document.getElementById('globalSubmitBtn');
+                if (globalBtn) globalBtn.style.display = 'none';
             }, FEEDBACK_DELAY_MS);
             return;
         }
         await completeQuizSession();
     }
 
-    async function handleAnswer(selectedButton, question) {
+    async function handleChoiceSubmit(question, submitBtn) {
         if (isExamMode() && !examSubmitted) {
-            userAnswerRecord[currentQuestionIndex] = selectedButton.dataset.value;
-            markStoredChoice(currentQuestionIndex);
-            updateNavigatorSidebar();
+            if (typeof showToast === 'function') showToast('答案已保存', 'success');
             return;
         }
 
         if (answered) return;
+
+        const selectedValue = userAnswerRecord[currentQuestionIndex];
+        if (selectedValue === null || selectedValue === undefined || selectedValue === '') {
+            alert('请选择答案');
+            return;
+        }
+
         answered = true;
         disableOptions();
+        if (submitBtn) submitBtn.disabled = true;
 
-        const selectedValue = selectedButton.dataset.value;
         const isCorrect = calculateChoiceCorrect(question, selectedValue);
-
-        userAnswerRecord[currentQuestionIndex] = selectedValue;
         answerRecord[currentQuestionIndex] = isCorrect;
-        showFeedback(question, isCorrect, selectedButton);
+        
+        showFeedback(question, isCorrect, getStoredChoiceButton(currentQuestionIndex));
         updateNavigatorSidebar();
         await onQuestionCompleted();
+    }
+
+    async function handleAnswer(selectedButton, question) {
+        if ((answered && !isExamMode()) || (isExamMode() && examSubmitted)) return;
+
+        if (isMultiChoiceQuestion(question)) {
+            selectedButton.classList.toggle('selected');
+            selectedButton.classList.toggle('exam-selected');
+        } else {
+            optionsArea.querySelectorAll('.option-btn').forEach((btn) => {
+                if (!btn.classList.contains('choice-submit-btn') && !btn.classList.contains('fill-blank-submit')) {
+                    btn.classList.remove('selected', 'exam-selected');
+                }
+            });
+            selectedButton.classList.add('selected', 'exam-selected');
+        }
+
+        const selectedBtns = optionsArea.querySelectorAll('.option-btn.selected:not(.choice-submit-btn):not(.fill-blank-submit)');
+        const values = Array.from(selectedBtns).map((b) => b.dataset.value);
+
+        if (isMultiChoiceQuestion(question)) {
+            userAnswerRecord[currentQuestionIndex] = values.length > 0 ? values.map(v => parseInt(v, 10)).sort((a, b) => a - b).join(',') : null;
+        } else {
+            userAnswerRecord[currentQuestionIndex] = values.length > 0 ? values[0] : null;
+        }
+        
+        updateNavigatorSidebar();
     }
 
     async function handleFillBlankAnswer(userAnswer, question, submitBtn) {
@@ -689,8 +812,10 @@ document.addEventListener('DOMContentLoaded', async function () {
             input.disabled = true;
             input.style.borderColor = isCorrect ? '#10b981' : '#ef4444';
         }
-        submitBtn.disabled = true;
-        submitBtn.classList.add(isCorrect ? 'correct-answer' : 'incorrect-answer');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.classList.add(isCorrect ? 'correct-answer' : 'incorrect-answer');
+        }
 
         userAnswerRecord[currentQuestionIndex] = trimmed;
         answerRecord[currentQuestionIndex] = isCorrect;
@@ -930,6 +1055,9 @@ document.addEventListener('DOMContentLoaded', async function () {
             e.preventDefault();
             if (nextQuestionBtn.style.display !== 'none') {
                 nextQuestionBtn.click();
+            } else {
+                const globalBtn = document.getElementById('globalSubmitBtn');
+                if (globalBtn && !globalBtn.disabled && globalBtn.style.display !== 'none') globalBtn.click();
             }
         } else if (key === 'R') {
             e.preventDefault();
