@@ -1,5 +1,6 @@
 import os
 import json
+import json_repair
 import re
 import requests
 import uuid
@@ -37,7 +38,7 @@ def extract_json_from_text(text):
     try:
         # 策略1：直接尝试解析整个文本
         try:
-            data = json.loads(text)
+            data = json_repair.loads(text)
             if isinstance(data, list):
                 return data
             elif isinstance(data, dict) and any(isinstance(data.get(k), list) for k in data):
@@ -48,23 +49,23 @@ def extract_json_from_text(text):
             # 如果是其他字典格式，可能是单个题
             elif isinstance(data, dict) and "content" in data:
                 return [data]
-        except json.JSONDecodeError:
+        except Exception:
             pass  # 直接解析失败，尝试其他策略
             
         # 策略2：查找 markdown 代码块中的 JSON
         code_blocks = re.findall(r'```json(.*?)```', text, re.DOTALL)
         for block in code_blocks:
             try:
-                return json.loads(block)
-            except json.JSONDecodeError:
+                return json_repair.loads(block)
+            except Exception:
                 continue  # 跳过无效 JSON，继续找下一个
 
         # 策略3：使用正则表达式提取 JSON 数组
         matches = re.findall(r'\[.*?\]', text, re.DOTALL)  # 非贪婪匹配所有数组
         for match in matches:
             try:
-                return json.loads(match)
-            except json.JSONDecodeError:
+                return json_repair.loads(match)
+            except Exception:
                 continue  # 跳过无效 JSON，继续找下一个
 
         raise ValueError("未能提取到合法 JSON 数组")
@@ -208,19 +209,26 @@ def parse_file_with_ai(file_bytes, file_extension, model="deepseek-chat", custom
             raise Exception("任务被中断")
         # 只在开头检查 outline 区
         if not outline_checked:
-            if any(pat.search(line) for pat in outline_patterns):
+            if not in_outline and any(pat.search(line) for pat in outline_patterns):
                 in_outline = True
                 continue
-            # 检查是否离开outline区（遇到练习题或题目区）
-            if in_outline and re.search(r'练习题|题目|题库|题型|选择题|判断题|填空题', line):
-                in_outline = False
-                outline_checked = True  # 一旦离开 outline 区，不再进入
-                continue  # 跳过本行，下一行才是题目内容
+            
             if in_outline:
-                continue
-            # 如果没进入 outline 区，遇到题目区直接标记已检查
-            if re.search(r'练习题|题目|题库|题型|选择题|判断题|填空题', line):
-                outline_checked = True
+                # 检查是否离开outline区（遇到练习题或题目区，或者遇到疑似题号开头）
+                if re.search(r'练习题|题目|题库|题型|选择题|判断题|填空题', line):
+                    in_outline = False
+                    outline_checked = True  # 一旦离开 outline 区，不再进入
+                    continue  # 跳过本行（标题行）
+                elif re.match(r'^(\d+|[一二三四五六七八九十]+)[\.、\s]', line):
+                    in_outline = False
+                    outline_checked = True
+                    # 遇到类似题号的内容，说明已经离开outline区，此行不可跳过，直接追加到 filtered_lines
+                else:
+                    continue  # 继续跳过 outline 内容
+            else:
+                # 如果没进入 outline 区，遇到题目区直接标记已检查，防止后续再进 outline
+                if re.search(r'练习题|题目|题库|题型|选择题|判断题|填空题', line):
+                    outline_checked = True
         filtered_lines.append(line)
     logger.info(f"{task_prefix} 过滤outline后剩余行数：{len(filtered_lines)}")
 
@@ -269,8 +277,8 @@ def parse_file_with_ai(file_bytes, file_extension, model="deepseek-chat", custom
 
 返回一个 JSON 数组，每题包含字段：
 - "type"：题型（单选/多选/判断/填空）
-- "content"：题干。若含代码，**必须按下述规范使用 Markdown**
-- "options"：选项列表，无则为 []
+- "content"：仅包含题干（问题主体）本身，**切勿将 A/B/C/D 选项内容附加在题干中**。**【重要】如果题目中包含代码（如 C++、Java 等），即使原文因提取原因被压缩成了单行（例如连在一起的 import <iostream>; using namespace...），你也必须主动识别出代码部分，自动为其添加正确的换行和缩进进行排版还原，并严格使用 Markdown 代码块（如 ```cpp ... ```）包裹代码！**
+- "options"：选择题的选项字符串数组，请务必把所有的选项提取到这里，例如：["A. 选项一", "B. 选项二", "C. 选项三", "D. 选项四"]。非选择题则为 []
 - "answer"：答案文本
 
 ## 【代码块 Markdown 规范】
