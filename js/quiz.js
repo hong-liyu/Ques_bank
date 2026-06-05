@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     const progressText = document.getElementById('progressText');
     const questionContentDiv = document.getElementById('questionContent');
     const favoriteBtn = document.getElementById('favoriteBtn');
+    const copyBtn = document.getElementById('copyBtn');
     const optionsArea = document.getElementById('optionsArea');
     const feedbackArea = document.getElementById('feedbackArea');
     const nextQuestionBtn = document.getElementById('nextQuestionBtn');
@@ -963,6 +964,35 @@ document.addEventListener('DOMContentLoaded', async function () {
         await openFavoriteModal();
     };
 
+    if (copyBtn) {
+        copyBtn.onclick = async function () {
+            const question = questions[currentQuestionIndex];
+            if (!question) return;
+
+            let copyText = getQuestionPrompt(question);
+
+            if (Array.isArray(question.options) && question.options.length > 0) {
+                copyText += '\n';
+                question.options.forEach((opt, idx) => {
+                    const label = String.fromCharCode(65 + idx);
+                    copyText += `\n${label}. ${opt}`;
+                });
+            }
+
+            try {
+                await navigator.clipboard.writeText(copyText);
+                if (typeof showToast === 'function') {
+                    showToast('已复制题目信息', 'success');
+                }
+            } catch (err) {
+                console.error('Failed to copy text: ', err);
+                if (typeof showToast === 'function') {
+                    showToast('复制失败', 'error');
+                }
+            }
+        };
+    }
+
     if (favoriteModalClose) {
         favoriteModalClose.addEventListener('click', () => setOverlayVisible(favoriteModal, false));
     }
@@ -1062,6 +1092,9 @@ document.addEventListener('DOMContentLoaded', async function () {
         } else if (key === 'R') {
             e.preventDefault();
             favoriteBtn.click();
+        } else if (key === 'C') {
+            e.preventDefault();
+            if (copyBtn) copyBtn.click();
         } else if (key === 'Q') {
             e.preventDefault();
             const previousIndex = getNextReviewIndex(-1);

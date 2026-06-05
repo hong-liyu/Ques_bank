@@ -87,9 +87,18 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         currentHistory.sort((a, b) => {
-            const at = new Date(a.time || 0).getTime();
-            const bt = new Date(b.time || 0).getTime();
-            return sortOrderSelect.value === 'newest' ? bt - at : at - bt;
+            const sortVal = sortOrderSelect.value;
+            if (sortVal === 'nameAsc' || sortVal === 'nameDesc') {
+                const nameA = String(a.origin_name || '').toLowerCase();
+                const nameB = String(b.origin_name || '').toLowerCase();
+                return sortVal === 'nameAsc' 
+                    ? nameA.localeCompare(nameB, 'zh-CN', { numeric: true }) 
+                    : nameB.localeCompare(nameA, 'zh-CN', { numeric: true });
+            } else {
+                const at = new Date(a.time || 0).getTime();
+                const bt = new Date(b.time || 0).getTime();
+                return sortVal === 'newest' ? bt - at : at - bt;
+            }
         });
 
         historyGrid.innerHTML = '';

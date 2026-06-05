@@ -317,6 +317,12 @@ body.refactor-page::after {
     margin-bottom: 24px;
 }
 
+.refactor-quiz .question-actions {
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+}
+
 .refactor-quiz .favorite-btn {
     display: inline-flex;
     align-items: center;
@@ -2319,4 +2325,52 @@ body.refactor-page::after {
     .refactor-upload .prompt-details {
         margin-top: 10px;
     }
+}
+
+/* Toast Overrides for Refactored Pages */
+.refactor-page #global-toast-container .toast-message {
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-left-width: 5px;
+    border-radius: 12px;
+    box-shadow: var(--shadow-soft), inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+}
+
+[data-theme="dark"] .refactor-page #global-toast-container .toast-message {
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+.refactor-page #global-toast-container .toast-message .toast-icon {
+    background: var(--surface-muted);
+}
+
+.refactor-page #global-toast-container .toast-message.success {
+    border-left-color: var(--success);
+}
+.refactor-page #global-toast-container .toast-message.success .toast-icon {
+    color: var(--success);
+}
+
+.refactor-page #global-toast-container .toast-message.error {
+    border-left-color: var(--danger);
+}
+.refactor-page #global-toast-container .toast-message.error .toast-icon {
+    color: var(--danger);
+}
+
+.refactor-page #global-toast-container .toast-message.warning {
+    border-left-color: var(--warning);
+}
+.refactor-page #global-toast-container .toast-message.warning .toast-icon {
+    color: var(--warning);
+}
+
+.refactor-page #global-toast-container .toast-message.info {
+    border-left-color: #3B82F6;
+}
+.refactor-page #global-toast-container .toast-message.info .toast-icon {
+    color: #3B82F6;
 }
