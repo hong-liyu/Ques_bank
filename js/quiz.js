@@ -1,9 +1,14 @@
 document.addEventListener('DOMContentLoaded', async function () {
+    document.body.setAttribute('tabindex', '-1');
     const quizTitleHeader = document.getElementById('quizTitleHeader');
     const quizTitleStats = document.getElementById('quizTitleStats');
     const progressBar = document.getElementById('progressBar');
     const progressText = document.getElementById('progressText');
     const questionContentDiv = document.getElementById('questionContent');
+    if (questionContentDiv) {
+        questionContentDiv.setAttribute('tabindex', '-1');
+        questionContentDiv.style.outline = 'none';
+    }
     const favoriteBtn = document.getElementById('favoriteBtn');
     const copyBtn = document.getElementById('copyBtn');
     const optionsArea = document.getElementById('optionsArea');
@@ -32,6 +37,19 @@ document.addEventListener('DOMContentLoaded', async function () {
     const quizCompleteDuration = document.getElementById('quizCompleteDuration');
     const reviewQuizBtn = document.getElementById('reviewQuizBtn');
     const reviewWrongBtn = document.getElementById('reviewWrongBtn');
+
+    // 题目便签 DOM 元素
+    const notesToggleBtn = document.getElementById('notesToggleBtn');
+    const notesBadge = document.getElementById('notesBadge');
+    const notesDrawer = document.getElementById('notesDrawer');
+    const notesDrawerClose = document.getElementById('notesDrawerClose');
+    const notesTextarea = document.getElementById('notesTextarea');
+    const notesMarkdownPreview = document.getElementById('notesMarkdownPreview');
+    const notesSaveBtn = document.getElementById('notesSaveBtn');
+    const notesStatusText = document.getElementById('notesStatusText');
+    const notesDrawerTitle = document.getElementById('notesDrawerTitle');
+
+    let notesAutoSaveTimer = null;
 
     const FEEDBACK_DELAY_MS = 500;
     const MODE_PRACTICE = 'practice';
@@ -233,6 +251,76 @@ document.addEventListener('DOMContentLoaded', async function () {
         } catch (error) {
             console.warn('Markdown parse error:', error);
             return content;
+        }
+    }
+
+    function updateNotesPreview(markdownText) {
+        if (!notesMarkdownPreview) return;
+        if (!markdownText || !markdownText.trim()) {
+            notesMarkdownPreview.innerHTML = '<span style="color:var(--muted); font-style:italic;">暂无预览内容</span>';
+            return;
+        }
+        notesMarkdownPreview.innerHTML = parseMarkdown(markdownText);
+    }
+
+    async function saveQuestionNotes(index) {
+        if (index < 0 || index >= questions.length) return;
+        const question = questions[index];
+        const notesValue = notesTextarea ? notesTextarea.value : '';
+        
+        if (notesStatusText) {
+            notesStatusText.textContent = '正在保存...';
+            notesStatusText.style.color = 'var(--muted)';
+        }
+
+        if (!currentQuizFile) {
+            // 没有物理文件，仅更新内存
+            question.notes = notesValue;
+            if (notesStatusText) {
+                notesStatusText.textContent = '已保存至内存';
+                notesStatusText.style.color = '#10b981';
+            }
+            // 更新按钮状态和角标
+            const hasNotes = notesValue && notesValue.trim();
+            if (notesToggleBtn) notesToggleBtn.classList.toggle('has-notes', !!hasNotes);
+            if (notesBadge) notesBadge.style.display = hasNotes ? 'block' : 'none';
+            return;
+        }
+
+        try {
+            const resp = await fetch('/api/update_question_notes', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    file: currentQuizFile,
+                    index: index,
+                    notes: notesValue
+                })
+            });
+            const data = await resp.json();
+            if (data.success) {
+                question.notes = notesValue;
+                if (notesStatusText) {
+                    notesStatusText.textContent = '已同步保存';
+                    notesStatusText.style.color = '#10b981';
+                }
+                
+                // 更新按钮状态和角标
+                const hasNotes = notesValue && notesValue.trim();
+                if (notesToggleBtn) notesToggleBtn.classList.toggle('has-notes', !!hasNotes);
+                if (notesBadge) notesBadge.style.display = hasNotes ? 'block' : 'none';
+            } else {
+                throw new Error(data.error || '保存失败');
+            }
+        } catch (error) {
+            console.error('便签保存失败:', error);
+            if (notesStatusText) {
+                notesStatusText.textContent = '同步失败，点击重试';
+                notesStatusText.style.color = 'var(--danger)';
+            }
+            if (typeof showToast === 'function') showToast('便签保存失败: ' + error.message, 'error');
         }
     }
 
@@ -559,6 +647,13 @@ document.addEventListener('DOMContentLoaded', async function () {
     function renderQuestion(index) {
         if (index < 0 || index >= questions.length) return;
 
+        // 如果有未保存的便签修改，切换题目时立即执行保存以防止丢失
+        if (notesAutoSaveTimer) {
+            clearTimeout(notesAutoSaveTimer);
+            notesAutoSaveTimer = null;
+            saveQuestionNotes(currentQuestionIndex);
+        }
+
         if (!sessionStartAt) {
             sessionStartAt = Date.now();
         }
@@ -633,6 +728,28 @@ document.addEventListener('DOMContentLoaded', async function () {
                 nextQuestionBtn.style.display = 'inline-flex';
                 const globalBtn = document.getElementById('globalSubmitBtn');
                 if (globalBtn) globalBtn.style.display = 'none';
+            }
+        }
+
+        // 更新便签按钮点亮状态与角标
+        const hasNotes = question.notes && String(question.notes).trim();
+        if (notesToggleBtn) {
+            notesToggleBtn.classList.toggle('has-notes', !!hasNotes);
+        }
+        if (notesBadge) {
+            notesBadge.style.display = hasNotes ? 'block' : 'none';
+        }
+
+        // 如果便签抽屉已开启，自动同步输入框和预览
+        if (notesDrawer && notesDrawer.classList.contains('is-open')) {
+            if (notesTextarea) notesTextarea.value = question.notes || '';
+            updateNotesPreview(question.notes || '');
+            if (notesDrawerTitle) {
+                notesDrawerTitle.textContent = `第 ${index + 1} 题 便笺`;
+            }
+            if (notesStatusText) {
+                notesStatusText.textContent = '已同步保存';
+                notesStatusText.style.color = '';
             }
         }
     }
@@ -1020,6 +1137,116 @@ document.addEventListener('DOMContentLoaded', async function () {
         quizPickerClose.addEventListener('click', () => setOverlayVisible(quizPickerModal, false));
     }
 
+    // 题目便签相关事件监听
+    if (notesToggleBtn && notesDrawer) {
+        notesToggleBtn.addEventListener('click', () => {
+            const isOpen = !notesDrawer.classList.contains('is-open');
+            setOverlayVisible(notesDrawer, isOpen);
+            
+            if (isOpen && questions.length > 0) {
+                const question = questions[currentQuestionIndex];
+                if (notesDrawerTitle) {
+                    notesDrawerTitle.textContent = `第 ${currentQuestionIndex + 1} 题 便笺`;
+                }
+                if (notesTextarea) {
+                    notesTextarea.value = question.notes || '';
+                    notesTextarea.focus();
+                }
+                updateNotesPreview(question.notes || '');
+                if (notesStatusText) {
+                    notesStatusText.textContent = '已同步保存';
+                    notesStatusText.style.color = '';
+                }
+            } else {
+                if (notesTextarea) notesTextarea.blur();
+                window.focus();
+                if (questionContentDiv) questionContentDiv.focus();
+                // 关闭抽屉时，如果有未保存的内容，立即同步一次
+                if (notesAutoSaveTimer) {
+                    clearTimeout(notesAutoSaveTimer);
+                    notesAutoSaveTimer = null;
+                    saveQuestionNotes(currentQuestionIndex);
+                }
+            }
+        });
+    }
+
+    if (notesDrawerClose && notesDrawer) {
+        notesDrawerClose.addEventListener('click', () => {
+            setOverlayVisible(notesDrawer, false);
+            if (notesTextarea) notesTextarea.blur();
+            window.focus();
+            if (questionContentDiv) questionContentDiv.focus();
+            if (notesAutoSaveTimer) {
+                clearTimeout(notesAutoSaveTimer);
+                notesAutoSaveTimer = null;
+                saveQuestionNotes(currentQuestionIndex);
+            }
+        });
+    }
+
+    if (notesDrawer) {
+        notesDrawer.addEventListener('click', (e) => {
+            // 如果点击的是 overlay 背景本身（非抽屉卡片内部），则关闭抽屉
+            if (e.target === notesDrawer) {
+                setOverlayVisible(notesDrawer, false);
+                if (notesTextarea) notesTextarea.blur();
+                window.focus();
+                if (questionContentDiv) questionContentDiv.focus();
+                if (notesAutoSaveTimer) {
+                    clearTimeout(notesAutoSaveTimer);
+                    notesAutoSaveTimer = null;
+                    saveQuestionNotes(currentQuestionIndex);
+                }
+            }
+        });
+    }
+
+    if (notesTextarea) {
+        notesTextarea.addEventListener('input', function () {
+            updateNotesPreview(this.value);
+            
+            if (notesStatusText) {
+                notesStatusText.textContent = '正在输入...';
+                notesStatusText.style.color = 'var(--muted)';
+            }
+            
+            if (notesAutoSaveTimer) {
+                clearTimeout(notesAutoSaveTimer);
+            }
+            
+            notesAutoSaveTimer = setTimeout(() => {
+                saveQuestionNotes(currentQuestionIndex);
+                notesAutoSaveTimer = null;
+            }, 1500);
+        });
+
+        notesTextarea.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                if (notesAutoSaveTimer) {
+                    clearTimeout(notesAutoSaveTimer);
+                    notesAutoSaveTimer = null;
+                }
+                saveQuestionNotes(currentQuestionIndex);
+                setOverlayVisible(notesDrawer, false);
+                notesTextarea.blur();
+                window.focus();
+                if (questionContentDiv) questionContentDiv.focus();
+            }
+        });
+    }
+
+    if (notesSaveBtn) {
+        notesSaveBtn.addEventListener('click', () => {
+            if (notesAutoSaveTimer) {
+                clearTimeout(notesAutoSaveTimer);
+                notesAutoSaveTimer = null;
+            }
+            saveQuestionNotes(currentQuestionIndex);
+        });
+    }
+
     if (quizPickerModeSegment) {
         quizPickerModeSegment.querySelectorAll('.quiz-mode-option').forEach((button) => {
             button.addEventListener('click', () => setPickerMode(button.dataset.mode));
@@ -1063,23 +1290,52 @@ document.addEventListener('DOMContentLoaded', async function () {
     };
 
     document.onkeydown = function (e) {
+        const activeElement = document.activeElement;
+        const isTyping = activeElement && (
+            activeElement.tagName === 'INPUT' ||
+            activeElement.tagName === 'TEXTAREA' ||
+            activeElement.contentEditable === 'true'
+        );
+
+        if (e.key === 'Escape') {
+            if (notesDrawer && notesDrawer.classList.contains('is-open')) {
+                e.preventDefault();
+                setOverlayVisible(notesDrawer, false);
+                if (notesTextarea) notesTextarea.blur();
+                window.focus();
+                if (questionContentDiv) questionContentDiv.focus();
+                if (notesAutoSaveTimer) {
+                    clearTimeout(notesAutoSaveTimer);
+                    notesAutoSaveTimer = null;
+                    saveQuestionNotes(currentQuestionIndex);
+                }
+                return;
+            }
+        }
+
+        const key = e.key.toUpperCase();
+
+        // 允许通过 N 键切换收起/展开，除非用户正在输入框中打字
+        if (key === 'N' && !isTyping) {
+            e.preventDefault();
+            if (notesToggleBtn) {
+                notesToggleBtn.click();
+            }
+            return;
+        }
+
+        // 如果用户正在打字，或者其他模态弹窗打开，则忽略其他的刷题快捷键
         if (
+            isTyping ||
             !questions.length ||
             favoriteModal.classList.contains('is-open') ||
             quizCompleteModal.classList.contains('is-open') ||
             quizPickerModal.classList.contains('is-open') ||
-            modePickerModal.classList.contains('is-open')
+            modePickerModal.classList.contains('is-open') ||
+            (notesDrawer && notesDrawer.classList.contains('is-open'))
         ) return;
 
-        const activeElement = document.activeElement;
-        if (activeElement && (
-            activeElement.tagName === 'INPUT' ||
-            activeElement.tagName === 'TEXTAREA' ||
-            activeElement.contentEditable === 'true'
-        )) return;
-
         const question = questions[currentQuestionIndex];
-        const key = e.key.toUpperCase();
 
         if (key === 'ENTER' || key === ' ') {
             e.preventDefault();
@@ -1092,6 +1348,9 @@ document.addEventListener('DOMContentLoaded', async function () {
         } else if (key === 'R') {
             e.preventDefault();
             favoriteBtn.click();
+        } else if (key === 'N') {
+            e.preventDefault();
+            if (notesToggleBtn) notesToggleBtn.click();
         } else if (key === 'C') {
             e.preventDefault();
             if (copyBtn) copyBtn.click();

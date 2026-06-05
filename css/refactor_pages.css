@@ -294,6 +294,7 @@ body.refactor-page::after {
     padding-right: 10px;
     scrollbar-width: thin;
     scrollbar-color: rgba(107, 122, 136, 0.38) transparent;
+    outline: none;
 }
 
 .refactor-quiz .question-content::-webkit-scrollbar {
@@ -2373,4 +2374,194 @@ body.refactor-page::after {
 }
 .refactor-page #global-toast-container .toast-message.info .toast-icon {
     color: #3B82F6;
+}
+
+/* ==========================================
+   题目便签抽屉样式 (Notes Drawer)
+   ========================================== */
+
+/* 抽屉遮罩层，对齐到右侧 */
+.refactor-quiz .notes-drawer-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end; /* 使卡片靠右对齐 */
+    background: rgba(11, 14, 18, 0.15); /* 轻透背景，不遮挡/变暗左侧 */
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: 40; /* 盖在普通弹窗上 */
+}
+
+.refactor-quiz .notes-drawer-overlay.is-open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* 抽屉卡片，右侧滑出 */
+.refactor-quiz .notes-drawer-card {
+    width: min(380px, 95vw); /* 约 350px - 400px，不遮挡左侧题目 */
+    height: 100%;
+    background: var(--surface);
+    border-left: 1px solid rgba(255, 255, 255, 0.4);
+    border-top: none;
+    border-right: none;
+    border-bottom: none;
+    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.25);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.refactor-quiz .notes-drawer-overlay.is-open .notes-drawer-card {
+    transform: translateX(0);
+}
+
+/* 抽屉头部 */
+.refactor-quiz .notes-drawer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    padding-bottom: 12px;
+}
+
+.refactor-quiz .notes-drawer-header h2 {
+    margin: 0;
+    font-size: 1.4rem;
+    color: var(--accent-strong);
+}
+
+/* 抽屉内容区 */
+.refactor-quiz .notes-drawer-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin: 16px 0;
+    min-height: 0; /* 必须设置以允许内部滚动 */
+}
+
+/* 输入框 */
+.refactor-quiz .notes-textarea {
+    width: 100%;
+    flex: 3; /* 占 30% 比例 */
+    min-height: 80px;
+    resize: none; /* 固定比例，禁止手动拉伸 */
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    background: var(--surface-muted);
+    color: var(--accent-strong);
+    font-family: inherit;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.refactor-quiz .notes-textarea:focus {
+    border-color: var(--accent-strong);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+/* 预览区 */
+.refactor-quiz .notes-preview-section {
+    flex: 7; /* 占 70% 比例 */
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.refactor-quiz .notes-preview-title {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    margin-bottom: 8px;
+    font-weight: 700;
+}
+
+.refactor-quiz .notes-markdown-preview {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px dashed rgba(255, 255, 255, 0.15);
+    font-size: 0.95rem;
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+/* 预览内容样式 */
+.refactor-quiz .notes-markdown-preview p {
+    margin: 0 0 10px;
+}
+
+.refactor-quiz .notes-markdown-preview code {
+    background: rgba(255, 255, 255, 0.08);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 0.88em;
+}
+
+.refactor-quiz .notes-markdown-preview pre {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 10px;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 10px 0;
+}
+
+.refactor-quiz .notes-markdown-preview pre code {
+    background: transparent;
+    padding: 0;
+    font-size: 0.9em;
+}
+
+/* 底部区域 */
+.refactor-quiz .notes-drawer-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    padding-top: 16px;
+}
+
+.refactor-quiz .notes-status-text {
+    font-size: 0.85rem;
+    color: var(--muted);
+    transition: color 0.2s;
+}
+
+/* 状态角标与高亮 */
+.refactor-quiz .favorite-btn {
+    position: relative; /* 允许角标定位 */
+}
+
+.refactor-quiz .notes-badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #10b981; /* 绿色点 */
+    border: 1px solid var(--surface);
+    box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
+    display: none;
+}
+
+.refactor-quiz .favorite-btn.has-notes {
+    color: #10b981;
 }

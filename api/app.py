@@ -462,6 +462,53 @@ def rename_question():
         logger.error(f"保存重命名失败: {e}")
         return jsonify(success=False, error=f'保存失败: {str(e)}')
 
+@app.route('/api/update_question_notes', methods=['POST'])
+def update_question_notes():
+    """
+    更新指定题目的便签 notes 属性，写入到对应的 JSON 文件中
+    """
+    data = request.get_json() or {}
+    file_name = data.get('file')
+    try:
+        index = int(data.get('index'))
+    except (TypeError, ValueError):
+        return jsonify(success=False, error='invalid index'), 400
+    
+    notes = data.get('notes', '')
+
+    if not file_name:
+        return jsonify(success=False, error='missing file parameter'), 400
+
+    file_path = os.path.join(PARSED_DIR, file_name)
+    
+    # 安全检查：确保请求的文件在允许的目录内
+    if not os.path.abspath(file_path).startswith(os.path.abspath(PARSED_DIR)):
+        return jsonify(success=False, error='access denied'), 403
+
+    if not os.path.exists(file_path):
+        return jsonify(success=False, error='file not found'), 404
+
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            questions = json.load(f)
+    except Exception as e:
+        return jsonify(success=False, error=f'failed to read file: {e}'), 500
+
+    if not isinstance(questions, list) or index < 0 or index >= len(questions):
+        return jsonify(success=False, error='index out of range'), 400
+
+    # 更新题目属性
+    questions[index]['notes'] = notes
+
+    try:
+        with open(file_path, 'w', encoding='utf-8') as f:
+            json.dump(questions, f, ensure_ascii=False, indent=2)
+        logger.info(f"成功为题库 {file_name} 的第 {index} 题保存便签，长度: {len(notes)}")
+        return jsonify(success=True)
+    except Exception as e:
+        logger.error(f"保存便签失败: {e}")
+        return jsonify(success=False, error=str(e)), 500
+
 # ========== 收藏题目接口 ==========
 @app.route('/api/quiz_session_complete', methods=['POST'])
 def quiz_session_complete():
