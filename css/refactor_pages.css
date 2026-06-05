@@ -19,6 +19,10 @@
     --glass-blur: 18px;
     --glass-highlight: rgba(255, 255, 255, 0.7);
     --natural-image: url("/assets/cover1.jpg");
+    /* 主页左栏优化变量 */
+    --home-left-text-shadow: none;
+    --home-left-mask: transparent;
+    --home-shortcut-bg: rgba(255, 255, 255, 0.75);
 }
 
 [data-theme="dark"] .refactor-page {
@@ -38,6 +42,10 @@
     --danger-soft: rgba(255, 107, 94, 0.18);
     --warning: #e6b24c;
     --glass-highlight: rgba(255, 255, 255, 0.12);
+    /* 主页左栏优化变量 */
+    --home-left-text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9), 0 2px 10px rgba(0, 0, 0, 0.8);
+    --home-left-mask: linear-gradient(to right, rgba(17, 19, 22, 0.65) 0%, rgba(17, 19, 22, 0.3) 70%, transparent 100%);
+    --home-shortcut-bg: rgba(20, 24, 28, 0.85);
 }
 
 body.refactor-page {
@@ -174,6 +182,7 @@ body.refactor-page::after {
 
 .refactor-quiz .app-header {
     display: flex;
+    flex-direction: column; /* 允许展开时纵向排列标题与面板 */
     align-items: center;
     justify-content: center;
     position: relative;
@@ -188,11 +197,127 @@ body.refactor-page::after {
     -webkit-backdrop-filter: blur(var(--glass-blur));
     transform: translateZ(0);
     backface-visibility: hidden;
+    transition: min-height 0.35s ease, padding 0.3s ease;
+}
+
+/* 展开快捷键时的内边距调整 */
+.refactor-quiz .app-header.has-shortcuts-open {
+    padding-bottom: 24px;
+}
+
+/* 快捷键切换按钮 */
+.refactor-quiz .app-header .shortcuts-toggle-btn {
+    position: absolute;
+    right: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 36px;
+    padding: 0 14px;
+    border-radius: 10px;
+    background: var(--surface-muted);
+    border: 1px solid var(--border);
+    color: var(--accent-strong);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+    z-index: 10;
+}
+
+.refactor-quiz .app-header .shortcuts-toggle-btn:hover {
+    background: var(--surface);
+    border-color: var(--accent-strong);
+}
+
+.refactor-quiz .app-header .shortcuts-toggle-btn:active {
+    transform: translateY(-50%) scale(0.97);
+}
+
+.refactor-quiz .app-header .shortcuts-toggle-btn .keyboard-icon {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+}
+
+/* 快捷键折叠面板 */
+.refactor-quiz .header-shortcuts-panel {
+    width: 100%;
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, margin 0.3s ease, padding 0.3s ease;
+}
+
+.refactor-quiz .app-header.has-shortcuts-open .header-shortcuts-panel {
+    max-height: 500px;
+    opacity: 1;
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+    overflow: visible;
+}
+
+.refactor-quiz .shortcuts-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    text-align: left;
+}
+
+.refactor-quiz .shortcuts-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.refactor-quiz .group-title {
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.refactor-quiz .shortcut-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.82rem;
+}
+
+.refactor-quiz .key-cap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 26px;
+    height: 24px;
+    padding: 0 6px;
+    border-radius: 6px;
+    background: var(--surface-muted);
+    border: 1px solid var(--border);
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    color: var(--accent-strong);
+    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.refactor-quiz .key-caps-combo {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.refactor-quiz .key-desc {
+    color: var(--text);
+    opacity: 0.85;
 }
 
 .refactor-quiz .main-layout {
     display: flex;
-    align-items: flex-start;
+    align-items: stretch;
     gap: 18px;
     padding: 0 24px 24px;
 }
@@ -236,6 +361,10 @@ body.refactor-page::after {
     flex: 1 1 0;
     min-width: 0;
     padding: 0;
+    display: flex;
+    flex-direction: column;
+    max-width: none;
+    margin: 0;
 }
 
 .refactor-quiz .question-card {
@@ -252,6 +381,7 @@ body.refactor-page::after {
     min-height: min(760px, calc(100dvh - 180px));
     transform: translateZ(0);
     backface-visibility: hidden;
+    flex: 1;
 }
 
 .refactor-quiz .progress-section {
@@ -310,18 +440,23 @@ body.refactor-page::after {
     border-radius: 999px;
 }
 
-.refactor-quiz .question-area {
+.refactor-quiz .progress-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
-    gap: 18px;
+    align-items: center;
+    gap: 16px;
+    margin-top: 4px;
+}
+
+.refactor-quiz .question-area {
+    display: block; /* 题目与代码段独占 100% 宽度，消除左右排版冲突 */
     margin-bottom: 24px;
 }
 
 .refactor-quiz .question-actions {
     display: flex;
     flex-direction: row;
-    gap: 12px;
+    gap: 8px; /* 紧凑间距 */
 }
 
 .refactor-quiz .favorite-btn {
@@ -329,8 +464,8 @@ body.refactor-page::after {
     align-items: center;
     justify-content: center;
     flex: 0 0 auto;
-    width: 46px;
-    height: 46px;
+    width: 36px; /* 缩减尺寸以完美适配顶部进度提示栏 */
+    height: 36px;
     border-radius: 999px;
     border: 1px solid rgba(255, 255, 255, 0.35);
     background: var(--surface-muted);
@@ -340,8 +475,8 @@ body.refactor-page::after {
 
 .refactor-quiz .favorite-btn svg {
     stroke: var(--accent);
-    width: 22px;
-    height: 22px;
+    width: 18px; /* 缩减图标尺寸 */
+    height: 18px;
     transition: stroke 0.18s ease, fill 0.18s ease;
 }
 
@@ -597,11 +732,6 @@ body.refactor-page::after {
 
 .refactor-quiz .navigator-sidebar {
     flex: 0 0 292px;
-    align-self: flex-start;
-    position: sticky;
-    top: 24px;
-    max-height: calc(100vh - 140px);
-    max-height: calc(100dvh - 140px);
     overflow-y: auto;
     overflow-x: hidden;
     padding: 20px;
@@ -609,7 +739,7 @@ body.refactor-page::after {
     border: 1px solid rgba(255, 255, 255, 0.4);
     box-shadow: var(--shadow-soft), inset 0 0 0 1px rgba(255, 255, 255, 0.12);
     border-radius: 16px;
-    margin: 0 24px 24px 0;
+    margin: 0 0 24px 0;
     backdrop-filter: blur(var(--glass-blur));
     -webkit-backdrop-filter: blur(var(--glass-blur));
 }
@@ -1430,8 +1560,7 @@ body.refactor-page::after {
         flex: 0 0 clamp(244px, 23vw, 296px);
         margin: 0 0 0 6px;
         padding: 16px;
-        top: 14px;
-        max-height: calc(100dvh - 76px);
+        max-height: none;
     }
 
     .refactor-quiz .navigator-grid {
@@ -2039,6 +2168,23 @@ body.refactor-page::after {
         transform: none;
     }
 
+    .refactor-quiz .app-header .shortcuts-toggle-btn {
+        position: static;
+        transform: none;
+        width: 100%;
+        justify-content: center;
+        margin-top: 4px;
+    }
+
+    .refactor-quiz .app-header.has-shortcuts-open .header-shortcuts-panel {
+        max-height: 800px;
+    }
+
+    .refactor-quiz .shortcuts-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
     .refactor-quiz .app-header h1 {
         font-size: 1.35rem;
         text-align: left;
@@ -2435,7 +2581,7 @@ body.refactor-page::after {
 
 .refactor-quiz .notes-drawer-header h2 {
     margin: 0;
-    font-size: 1.4rem;
+    font-size: 1.6rem;
     color: var(--accent-strong);
 }
 
@@ -2461,7 +2607,7 @@ body.refactor-page::after {
     background: var(--surface-muted);
     color: var(--accent-strong);
     font-family: inherit;
-    font-size: 0.95rem;
+    font-size: 1.1rem;
     line-height: 1.5;
     outline: none;
     transition: border-color 0.2s, box-shadow 0.2s;
@@ -2481,7 +2627,7 @@ body.refactor-page::after {
 }
 
 .refactor-quiz .notes-preview-title {
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     text-transform: uppercase;
     letter-spacing: 0.12em;
     color: var(--muted);
@@ -2496,7 +2642,7 @@ body.refactor-page::after {
     border-radius: 12px;
     background: rgba(255, 255, 255, 0.03);
     border: 1px dashed rgba(255, 255, 255, 0.15);
-    font-size: 0.95rem;
+    font-size: 1.1rem;
     color: var(--text-color);
     line-height: 1.6;
 }
@@ -2511,7 +2657,7 @@ body.refactor-page::after {
     padding: 2px 6px;
     border-radius: 4px;
     font-family: monospace;
-    font-size: 0.88em;
+    font-size: 0.92em;
 }
 
 .refactor-quiz .notes-markdown-preview pre {
@@ -2525,7 +2671,7 @@ body.refactor-page::after {
 .refactor-quiz .notes-markdown-preview pre code {
     background: transparent;
     padding: 0;
-    font-size: 0.9em;
+    font-size: 0.95em;
 }
 
 /* 底部区域 */
@@ -2539,7 +2685,7 @@ body.refactor-page::after {
 }
 
 .refactor-quiz .notes-status-text {
-    font-size: 0.85rem;
+    font-size: 0.95rem;
     color: var(--muted);
     transition: color 0.2s;
 }
@@ -2551,10 +2697,10 @@ body.refactor-page::after {
 
 .refactor-quiz .notes-badge {
     position: absolute;
-    top: 4px;
-    right: 4px;
-    width: 8px;
-    height: 8px;
+    top: 2px; /* 适配较小的 36px 动作按钮 */
+    right: 2px;
+    width: 7px;
+    height: 7px;
     border-radius: 50%;
     background: #10b981; /* 绿色点 */
     border: 1px solid var(--surface);
@@ -2564,4 +2710,491 @@ body.refactor-page::after {
 
 .refactor-quiz .favorite-btn.has-notes {
     color: #10b981;
+}
+
+/* ==========================================
+   重构主页样式 (Refactored Homepage Style - Scheme 3)
+   ========================================== */
+
+.refactor-home .homepage-container {
+    display: grid;
+    grid-template-columns: 3.8fr 6.2fr;
+    min-height: calc(100vh - 80px);
+    gap: 32px;
+    max-width: 1320px;
+    margin: 40px auto;
+    padding: 0 24px;
+}
+
+/* 左侧杂志风面板 - 已重构为高阶毛玻璃悬浮卡片以确保最佳可读性 */
+.refactor-home .editorial-left {
+    position: sticky;
+    top: 40px;
+    align-self: flex-start;
+    height: calc(100vh - 120px);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 32px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    box-shadow: var(--shadow-soft);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.refactor-home .editorial-left:hover {
+    box-shadow: var(--shadow-hover);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+[data-theme="dark"] .refactor-home .editorial-left:hover {
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+.refactor-home .left-top {
+    display: flex;
+    flex-direction: column;
+}
+
+.refactor-home .brand {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-bottom: 24px;
+}
+
+.refactor-home .brand-title {
+    font-size: 1.8rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--accent-strong);
+    font-family: "Space Grotesk", "Manrope", sans-serif;
+}
+
+.refactor-home .brand-subtitle {
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+    color: var(--muted);
+    font-weight: 700;
+}
+
+.refactor-home .editorial-hero-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(2.4rem, 4.2vw, 4rem);
+    font-weight: 700;
+    line-height: 1.1;
+    margin: 12px 0 20px 0;
+    color: var(--accent-strong);
+    letter-spacing: -0.02em;
+}
+
+.refactor-home .editorial-tagline {
+    font-size: 1.05rem;
+    color: var(--muted);
+    line-height: 1.6;
+    margin: 0;
+    max-width: 340px;
+}
+
+/* 核心特性清单 */
+.refactor-home .features-section {
+    margin: 40px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.refactor-home .features-title {
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    font-weight: 700;
+}
+
+.refactor-home .features-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.refactor-home .features-list li {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.refactor-home .features-list li strong {
+    font-size: 0.95rem;
+    color: var(--accent-strong);
+    font-weight: 600;
+}
+
+.refactor-home .features-list li span {
+    font-size: 0.88rem;
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+/* 快捷键面板 */
+.refactor-home .shortcuts-accordion {
+    width: 100%;
+}
+
+.refactor-home .shortcuts-details {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--home-shortcut-bg);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: background 0.3s ease, border-color 0.3s ease;
+    overflow: hidden;
+}
+
+.refactor-home .shortcuts-details[open] {
+    background: var(--home-shortcut-bg);
+}
+
+.refactor-home .shortcuts-summary {
+    padding: 14px 18px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--accent-strong);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    list-style: none;
+}
+
+.refactor-home .shortcuts-summary::-webkit-details-marker {
+    display: none;
+}
+
+.refactor-home .chevron-icon {
+    width: 18px;
+    height: 18px;
+    color: var(--muted);
+    transition: transform 0.25s ease;
+}
+
+.refactor-home .shortcuts-details[open] .chevron-icon {
+    transform: rotate(180deg);
+}
+
+.refactor-home .shortcuts-content {
+    padding: 0 18px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+}
+
+.refactor-home .shortcut-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.85rem;
+}
+
+.refactor-home .key-cap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 26px;
+    height: 24px;
+    padding: 0 6px;
+    border-radius: 6px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    color: var(--accent-strong);
+    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.refactor-home .key-desc {
+    color: var(--muted);
+}
+
+/* 右侧面板 */
+.refactor-home .editorial-right {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+/* 最近练习卡片 (巨幕) */
+.refactor-home .recent-session-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: var(--shadow-soft);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.refactor-home .recent-session-card:hover {
+    box-shadow: var(--shadow-hover);
+    border-color: rgba(255, 255, 255, 0.6);
+}
+
+.refactor-home .recent-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.refactor-home .recent-tag {
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    font-weight: 700;
+}
+
+.refactor-home .recent-time {
+    font-size: 0.85rem;
+    color: var(--muted);
+}
+
+.refactor-home .recent-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--accent-strong);
+    line-height: 1.25;
+    margin: 0;
+}
+
+.refactor-home .recent-desc {
+    font-size: 0.95rem;
+    color: var(--muted);
+    line-height: 1.6;
+    margin: 0;
+}
+
+.refactor-home .recent-footer {
+    display: flex;
+    margin-top: 8px;
+}
+
+/* 渐进式 Bento 菜单卡片 */
+.refactor-home .editorial-menu-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.refactor-home .menu-card {
+    background: var(--surface-muted);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    transition: transform 0.3s ease, border-color 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.refactor-home .menu-card:hover {
+    transform: translateY(-4px);
+    background: var(--surface);
+    border-color: var(--accent-strong);
+    box-shadow: var(--shadow-hover);
+}
+
+.refactor-home .menu-card-num {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1;
+    opacity: 0.45;
+}
+
+.refactor-home .menu-card-body {
+    flex: 1;
+}
+
+.refactor-home .menu-card-body h3 {
+    margin: 0 0 6px 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--accent-strong);
+}
+
+.refactor-home .menu-card-body p {
+    margin: 0;
+    font-size: 0.88rem;
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+.refactor-home .menu-card-arrow {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent-strong);
+    transition: transform 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+}
+
+.refactor-home .menu-card:hover .menu-card-arrow {
+    transform: translateX(4px);
+    background: var(--accent-strong);
+    color: var(--bg);
+}
+
+.refactor-home .menu-card-arrow svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* 统计概要 */
+.refactor-home .stats-overview {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    margin-top: 12px;
+}
+
+.refactor-home .stat-item {
+    flex: 1;
+    background: var(--surface-muted);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    backdrop-filter: blur(var(--glass-blur));
+}
+
+.refactor-home .stat-value {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--accent-strong);
+    line-height: 1;
+}
+
+.refactor-home .stat-value.stat-success {
+    color: var(--success);
+    font-family: 'Manrope', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.46;
+}
+
+.refactor-home .stat-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    font-weight: 700;
+}
+
+.refactor-home .mobile-action-bar {
+    display: none;
+}
+
+/* 响应式适配 */
+@media (max-width: 900px) {
+    .refactor-home .homepage-container {
+        grid-template-columns: 1fr;
+        gap: 40px;
+        padding: 40px 16px;
+        margin: 20px auto;
+    }
+    
+    .refactor-home .editorial-left {
+        position: static;
+        height: auto;
+        padding: 24px;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        box-shadow: var(--shadow-soft);
+        gap: 28px;
+    }
+    
+    .refactor-home .editorial-hero-title {
+        font-size: 3rem;
+        margin: 12px 0 16px 0;
+    }
+    
+    .refactor-home .editorial-menu-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .refactor-home .stats-overview {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    /* 移动端悬浮动作底栏 */
+    .refactor-home .mobile-action-bar {
+        position: fixed;
+        left: 16px;
+        right: 16px;
+        bottom: 16px;
+        z-index: 100;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        padding: 12px;
+        border-radius: 16px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        backdrop-filter: blur(var(--glass-blur));
+        -webkit-backdrop-filter: blur(var(--glass-blur));
+        box-shadow: var(--shadow-soft);
+    }
+    
+    .refactor-home .mobile-action-bar .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px 20px;
+        border-radius: 12px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: transform 0.2s ease, opacity 0.2s ease;
+    }
+    
+    .refactor-home .mobile-action-bar .btn:active {
+        transform: scale(0.97);
+    }
+    
+    .refactor-home .mobile-action-bar .btn.primary {
+        background: var(--accent-strong);
+        color: var(--bg);
+    }
+    
+    .refactor-home .mobile-action-bar .btn.ghost {
+        background: var(--surface-muted);
+        color: var(--accent-strong);
+        border: 1px solid var(--border);
+    }
 }

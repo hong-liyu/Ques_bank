@@ -3,132 +3,165 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>刷题系统-首页</title>
+    <title>刷题系统 - 首页</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../css/index_test.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/refactor_pages.css">
 </head>
-<body class="index-page">
+<body class="refactor-page refactor-home">
     <div class="grain" aria-hidden="true"></div>
 
-    <header class="top-nav">
-        <div class="brand">
-            <div class="brand-mark" aria-hidden="true"></div>
-            <div class="brand-text">
-                <span class="brand-title">刷题系统</span>
-                <span class="brand-subtitle mono">Ques Bank</span>
-            </div>
-        </div>
-
-        <div class="nav-primary" aria-label="主操作">
-            <a class="nav-btn primary" href="quiz.html">开始刷题</a>
-            <a class="nav-btn secondary" href="upload.html">上传题库</a>
-        </div>
-
-        <div class="nav-secondary-links" aria-label="更多入口">
-            <a class="nav-btn tertiary" href="parsed_list.html">历史题库</a>
-            <a class="nav-btn tertiary" href="favorites.html">收藏夹</a>
-            <a class="nav-btn tertiary" href="quiz.html">题库选择</a>
-        </div>
-    </header>
-
-    <main class="home-shell">
-        <section class="hero">
-            <div class="hero-text">
-                <p class="eyebrow mono">Task-First Home</p>
-                <h1 class="display-title">3 秒进入刷题状态</h1>
-                <p class="hero-desc">首页只做一件事：帮你快速开始练习，并且随时回到最近一次题库。</p>
-
-                <div class="hero-actions">
-                    <a class="btn primary" id="continuePracticeBtn" href="quiz.html">继续练习</a>
-                    <a class="btn ghost" href="upload.html">上传新题库</a>
+    <div class="homepage-container">
+        <!-- 左侧杂志面板 -->
+        <aside class="editorial-left">
+            <div class="left-top">
+                <div class="brand">
+                    <span class="brand-title">QuesBank</span>
+                    <span class="brand-subtitle mono">AI QUIZ HUB</span>
                 </div>
-
-                <div class="recent-card" aria-live="polite">
-                    <span class="recent-label mono">最近一次练习</span>
-                    <strong id="recentTitle">暂无记录</strong>
-                    <span id="recentMeta">先上传或选择题库后开始练习</span>
-                </div>
+                <h1 class="editorial-hero-title">Read.<br>Practice.<br>Retain.</h1>
+                <p class="editorial-tagline">3 秒进入高效刷题状态，随时温故知新。</p>
             </div>
 
-            <aside class="hero-panel" aria-label="当前进度摘要">
-                <h2 class="panel-title">当前进度摘要</h2>
-                <div class="stat-grid">
-                    <div class="stat-card">
-                        <span class="stat-label mono">题库总数</span>
-                        <span class="stat-value" id="statBankCount">0</span>
-                    </div>
-                    <div class="stat-card">
-                        <span class="stat-label mono">收藏题目</span>
-                        <span class="stat-value" id="statFavoriteCount">0</span>
-                    </div>
-                    <div class="stat-card">
-                        <span class="stat-label mono">最近更新</span>
-                        <span class="stat-value stat-small" id="statRecentTime">-</span>
-                    </div>
-                </div>
-            </aside>
-        </section>
-
-        <section class="entry-grid" aria-label="功能入口">
-            <a href="quiz.html" class="entry-card primary-entry span-8">
-                <div class="card-top">
-                    <span class="card-tag mono">Primary</span>
-                    <span class="status-badge ready">可用</span>
-                </div>
-                <h3>开始刷题</h3>
-                <p>直达题库选择与练习流程。回访用户可从“继续练习”快速进入最近一次题库。</p>
-            </a>
-
-            <a href="upload.html" class="entry-card span-4">
-                <div class="card-top">
-                    <span class="card-tag mono">Secondary</span>
-                    <span class="status-badge update">最近更新</span>
-                </div>
-                <h3>上传题库</h3>
-                <p>支持 .docx / .pdf / .txt / .md / .json，多格式解析后可直接进入练习。</p>
-            </a>
-
-            <a href="parsed_list.html" class="entry-card span-6 muted-entry">
-                <div class="card-top">
-                    <span class="card-tag mono">Management</span>
-                    <span class="status-badge process">处理中</span>
-                </div>
-                <h3>历史题库</h3>
-                <p>管理、预览与筛选历史解析结果，快速定位想练习的题库。</p>
-            </a>
-
-            <div class="entry-card span-6 muted-entry" role="region" aria-label="学习提示">
-                <div class="card-top">
-                    <span class="card-tag mono">Tips</span>
-                </div>
-                <h3>高效练习建议</h3>
-                <ul class="dot-list">
-                    <li>优先做收藏与高频错题，缩短复习路径。</li>
-                    <li>先预览题库结构，再进入刷题能显著提速。</li>
+            <!-- 系统核心特性介绍 -->
+            <div class="features-section">
+                <div class="features-title mono">CORE CAPABILITIES</div>
+                <ul class="features-list">
+                    <li>
+                        <strong>智能文本解析</strong>
+                        <span>支持 docx/pdf/txt 多格式一键分割解析。</span>
+                    </li>
+                    <li>
+                        <strong>练习与考试双模式</strong>
+                        <span>选择模式即时判断，考试模式交卷统一判分。</span>
+                    </li>
+                    <li>
+                        <strong>高效错题收纳</strong>
+                        <span>支持自定义收藏夹与做题进度持久化。</span>
+                    </li>
                 </ul>
             </div>
-        </section>
 
-        <section class="capabilities" aria-label="功能清单">
-            <h2>核心能力</h2>
-            <ul class="core-list">
-                <li>支持多格式题库上传与结构化解析</li>
-                <li>支持单选、多选、判断、填空等常见题型</li>
-                <li>支持收藏、进度记录与错题反馈</li>
-            </ul>
+            <!-- 快捷键折叠面板 -->
+            <div class="shortcuts-accordion">
+                <details class="shortcuts-details">
+                    <summary class="shortcuts-summary">
+                        <span>⌨️ 键盘快捷操作指南</span>
+                        <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </summary>
+                    <div class="shortcuts-content">
+                        <div class="shortcut-row">
+                            <span class="key-cap">N</span>
+                            <span class="key-desc">快速呼出/隐藏题目便签</span>
+                        </div>
+                        <div class="shortcut-row">
+                            <span class="key-cap">Esc</span>
+                            <span class="key-desc">保存便签并关闭侧边栏/浮层</span>
+                        </div>
+                        <div class="shortcut-row">
+                            <span class="key-cap">←</span> / <span class="key-cap">→</span>
+                            <span class="key-desc">切换上一题 / 下一题</span>
+                        </div>
+                        <div class="shortcut-row">
+                            <span class="key-cap">1</span> - <span class="key-cap">4</span>
+                            <span class="key-desc">快速选中选项 A - D</span>
+                        </div>
+                        <div class="shortcut-row">
+                            <span class="key-cap">C</span>
+                            <span class="key-desc">快速复制当前题目与选项</span>
+                        </div>
+                    </div>
+                </details>
+            </div>
+        </aside>
 
-            <details class="more-caps">
-                <summary>查看全部功能</summary>
-                <ul class="more-list">
-                    <li>历史题库可随时预览与管理</li>
-                    <li>解析后题库本地可用，支持快速回访练习</li>
-                </ul>
-            </details>
-        </section>
-    </main>
+        <!-- 右侧主菜单面板 -->
+        <main class="editorial-right">
+            <!-- 最近练习卡片 (巨幕) -->
+            <section class="recent-session-card" id="recentPracticeCard">
+                <div class="recent-header">
+                    <span class="recent-tag mono">RECENT PRACTICE</span>
+                    <span class="recent-time" id="recentMeta">Loading...</span>
+                </div>
+                <h2 class="recent-title" id="recentTitle">暂无练习记录</h2>
+                <p class="recent-desc">您可以直接点击下方按钮继续未完成的练习，或者在下方入口选择其他题库。</p>
+                <div class="recent-footer">
+                    <a class="action-btn next-btn" id="continuePracticeBtn" href="quiz.html">继续练习</a>
+                </div>
+            </section>
 
+            <!-- 渐进式入口网格 Bento Grid -->
+            <section class="editorial-menu-grid">
+                <!-- 01 练习 -->
+                <a href="quiz.html" class="menu-card">
+                    <div class="menu-card-num">01</div>
+                    <div class="menu-card-body">
+                        <h3>开始练习</h3>
+                        <p>直达题库选择，并进入核心刷题流程。</p>
+                    </div>
+                    <div class="menu-card-arrow">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </div>
+                </a>
+
+                <!-- 02 上传 -->
+                <a href="upload.html" class="menu-card">
+                    <div class="menu-card-num">02</div>
+                    <div class="menu-card-body">
+                        <h3>上传题库</h3>
+                        <p>将本地 docx、txt、pdf 解析为在线题库。</p>
+                    </div>
+                    <div class="menu-card-arrow">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </div>
+                </a>
+
+                <!-- 03 历史 -->
+                <a href="parsed_list.html" class="menu-card">
+                    <div class="menu-card-num">03</div>
+                    <div class="menu-card-body">
+                        <h3>历史归档</h3>
+                        <p>查看并管理已经成功解析的历史题库。</p>
+                    </div>
+                    <div class="menu-card-arrow">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </div>
+                </a>
+
+                <!-- 04 收藏 -->
+                <a href="favorites.html" class="menu-card">
+                    <div class="menu-card-num">04</div>
+                    <div class="menu-card-body">
+                        <h3>收藏中心</h3>
+                        <p>分类复习你在做题时收藏的经典疑难点。</p>
+                    </div>
+                    <div class="menu-card-arrow">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </div>
+                </a>
+            </section>
+
+            <!-- 统计摘要 -->
+            <section class="stats-overview">
+                <div class="stat-item">
+                    <span class="stat-value" id="statBankCount">0</span>
+                    <span class="stat-label mono">TOTAL LIBRARIES</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="statFavoriteCount">0</span>
+                    <span class="stat-label mono">BOOKMARKED ITEMS</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" style="font-size: 1.1rem; line-height: 1.4; font-family: 'Manrope', sans-serif;" id="statRecentTime">-</span>
+                    <span class="stat-label mono">LAST UPDATED</span>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- 底部移动端适配动作栏 -->
     <div class="mobile-action-bar" aria-hidden="true">
         <a class="btn primary" href="quiz.html">开始刷题</a>
         <a class="btn ghost" href="upload.html">上传题库</a>
@@ -152,12 +185,14 @@
             }
 
             try {
+                // 加载收藏夹题目数量
                 const favoriteResp = await fetch('/api/favorite_questions');
                 const favoriteData = await favoriteResp.json();
                 favoriteCountEl.textContent = String(
                     favoriteData.success && Array.isArray(favoriteData.items) ? favoriteData.items.length : 0
                 );
 
+                // 加载历史题库
                 const resp = await fetch('/api/history_questions?t=' + Date.now());
                 const data = await resp.json();
 
@@ -169,8 +204,10 @@
                 bankCountEl.textContent = String(history.length);
 
                 if (!history.length) {
-                    recentTimeEl.textContent = '暂无题库';
-                    continueBtn.textContent = '开始第一次刷题';
+                    recentTimeEl.textContent = '暂无已解析的题库';
+                    recentMetaEl.textContent = '无最近练习记录';
+                    recentTitleEl.textContent = '快去上传你的第一个题库吧';
+                    continueBtn.textContent = '上传新题库';
                     continueBtn.setAttribute('href', 'upload.html');
                     return;
                 }
@@ -179,7 +216,7 @@
                 const title = recent.origin_name || recent.title || recent.file || '未命名题库';
                 const time = recent.time || '未知时间';
                 recentTitleEl.textContent = title;
-                recentMetaEl.textContent = time;
+                recentMetaEl.textContent = '上次练习';
                 recentTimeEl.textContent = time;
 
                 if (recent.file) {
@@ -190,7 +227,7 @@
                 }
             } catch (error) {
                 recentTimeEl.textContent = '加载失败';
-                recentMetaEl.textContent = '未能读取历史题库，请稍后重试';
+                recentMetaEl.textContent = '未能读取历史题库，请重试';
                 continueBtn.setAttribute('href', 'parsed_list.html');
             }
         });

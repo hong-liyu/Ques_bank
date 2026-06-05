@@ -24,6 +24,81 @@
                 <h1 id="quizTitleHeader">刷题页</h1>
                 <div class="quiz-title-stats" id="quizTitleStats"></div>
             </div>
+            
+            <button class="shortcuts-toggle-btn" id="shortcutsToggleBtn" type="button" title="快捷键操作指南 (H)">
+                <svg class="keyboard-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="4" width="20" height="16" rx="2" ry="2"></rect>
+                    <line x1="6" y1="8" x2="6" y2="8"></line>
+                    <line x1="10" y1="8" x2="10" y2="8"></line>
+                    <line x1="14" y1="8" x2="14" y2="8"></line>
+                    <line x1="18" y1="8" x2="18" y2="8"></line>
+                    <line x1="6" y1="12" x2="6" y2="12"></line>
+                    <line x1="10" y1="12" x2="18" y2="12"></line>
+                    <line x1="6" y1="16" x2="18" y2="16"></line>
+                </svg>
+                <span>快捷键 (H)</span>
+            </button>
+
+            <!-- 折叠面板：展示详细按键对照表 -->
+            <div class="header-shortcuts-panel" id="headerShortcutsPanel" aria-hidden="true">
+                <div class="shortcuts-grid">
+                    <div class="shortcuts-group">
+                        <div class="group-title mono">答题选项操作 / OPTIONS</div>
+                        <div class="shortcut-item">
+                            <span class="key-cap">W</span>
+                            <span class="key-desc">选中 A 选项</span>
+                        </div>
+                        <div class="shortcut-item">
+                            <span class="key-cap">A</span>
+                            <span class="key-desc">选中 B 选项 / 判断题“正确”</span>
+                        </div>
+                        <div class="shortcut-item">
+                            <span class="key-cap">S</span>
+                            <span class="key-desc">选中 C 选项</span>
+                        </div>
+                        <div class="shortcut-item">
+                            <span class="key-cap">D</span>
+                            <span class="key-desc">选中 D 选项 / 判断题“错误”</span>
+                        </div>
+                    </div>
+                    
+                    <div class="shortcuts-group">
+                        <div class="group-title mono">切题与提交 / NAVIGATION</div>
+                        <div class="shortcut-item">
+                            <span class="key-cap">Q</span>
+                            <span class="key-desc">上一题</span>
+                        </div>
+                        <div class="shortcut-item">
+                            <span class="key-cap">E</span>
+                            <span class="key-desc">下一题</span>
+                        </div>
+                        <div class="shortcut-item">
+                            <span class="key-caps-combo"><span class="key-cap">Space</span> / <span class="key-cap">Enter</span></span>
+                            <span class="key-desc">确认选项 / 下一题 / 提交交卷</span>
+                        </div>
+                    </div>
+                    
+                    <div class="shortcuts-group">
+                        <div class="group-title mono">辅助功能 / UTILITIES</div>
+                        <div class="shortcut-item">
+                            <span class="key-cap">N</span>
+                            <span class="key-desc">打开/折叠本题便签</span>
+                        </div>
+                        <div class="shortcut-item">
+                            <span class="key-cap">R</span>
+                            <span class="key-desc">收藏当前题目 (管理收藏夹)</span>
+                        </div>
+                        <div class="shortcut-item">
+                            <span class="key-cap">C</span>
+                            <span class="key-desc">一键复制本题题干与选项</span>
+                        </div>
+                        <div class="shortcut-item">
+                            <span class="key-cap">Esc</span>
+                            <span class="key-desc">保存便签并关闭所有弹窗</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </header>
 
         <div class="main-layout">
@@ -33,31 +108,33 @@
                         <div class="progress-bar-container">
                             <div class="progress-bar" id="progressBar"></div>
                         </div>
-                        <span class="progress-text" id="progressText">Question 1 of 15</span>
+                        <div class="progress-header">
+                            <span class="progress-text" id="progressText">Question 1 of 15</span>
+                            <div class="question-actions">
+                                <button class="favorite-btn copy-btn" id="copyBtn" type="button" aria-label="复制题目信息" title="复制题目 (C)">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                    </svg>
+                                </button>
+                                <button class="favorite-btn" id="favoriteBtn" type="button" aria-label="收藏题目">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                    </svg>
+                                </button>
+                                <button class="favorite-btn" id="notesToggleBtn" type="button" aria-label="题目便签" title="题目便签 (N)">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                        <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                    </svg>
+                                    <span class="notes-badge" id="notesBadge"></span>
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="question-area">
                         <div class="question-content" id="questionContent"></div>
-                        <div class="question-actions">
-                            <button class="favorite-btn copy-btn" id="copyBtn" type="button" aria-label="复制题目信息" title="复制题目 (C)">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                                </svg>
-                            </button>
-                            <button class="favorite-btn" id="favoriteBtn" type="button" aria-label="收藏题目">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                                </svg>
-                            </button>
-                            <button class="favorite-btn" id="notesToggleBtn" type="button" aria-label="题目便签" title="题目便签 (N)">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                                    <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                                </svg>
-                                <span class="notes-badge" id="notesBadge"></span>
-                            </button>
-                        </div>
                     </div>
 
                     <div class="options-area" id="optionsArea"></div>
@@ -72,7 +149,6 @@
             </main>
 
             <aside class="navigator-sidebar">
-                <h2>题目导航</h2>
                 <div class="navigator-grid" id="navigatorGrid"></div>
             </aside>
         </div>

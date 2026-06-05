@@ -1289,6 +1289,27 @@ document.addEventListener('DOMContentLoaded', async function () {
         if (nextIndex !== null) renderQuestion(nextIndex);
     };
 
+    // 快捷操作指南面板切换
+    const shortcutsToggleBtn = document.getElementById('shortcutsToggleBtn');
+    const headerShortcutsPanel = document.getElementById('headerShortcutsPanel');
+    const appHeader = document.querySelector('.app-header');
+
+    function toggleShortcutsPanel() {
+        if (!appHeader || !headerShortcutsPanel) return;
+        const isOpen = appHeader.classList.contains('has-shortcuts-open');
+        if (isOpen) {
+            appHeader.classList.remove('has-shortcuts-open');
+            headerShortcutsPanel.setAttribute('aria-hidden', 'true');
+        } else {
+            appHeader.classList.add('has-shortcuts-open');
+            headerShortcutsPanel.setAttribute('aria-hidden', 'false');
+        }
+    }
+
+    if (shortcutsToggleBtn) {
+        shortcutsToggleBtn.addEventListener('click', toggleShortcutsPanel);
+    }
+
     document.onkeydown = function (e) {
         const activeElement = document.activeElement;
         const isTyping = activeElement && (
@@ -1298,6 +1319,12 @@ document.addEventListener('DOMContentLoaded', async function () {
         );
 
         if (e.key === 'Escape') {
+            // 如果快捷键面板处于打开状态，Esc 键将优先关闭面板
+            if (appHeader && appHeader.classList.contains('has-shortcuts-open')) {
+                e.preventDefault();
+                toggleShortcutsPanel();
+                return;
+            }
             if (notesDrawer && notesDrawer.classList.contains('is-open')) {
                 e.preventDefault();
                 setOverlayVisible(notesDrawer, false);
@@ -1314,6 +1341,13 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
 
         const key = e.key.toUpperCase();
+
+        // 允许通过 H 键切换快捷键指南面板
+        if (key === 'H' && !isTyping) {
+            e.preventDefault();
+            toggleShortcutsPanel();
+            return;
+        }
 
         // 允许通过 N 键切换收起/展开，除非用户正在输入框中打字
         if (key === 'N' && !isTyping) {
