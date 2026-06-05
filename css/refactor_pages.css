@@ -242,22 +242,77 @@ body.refactor-page::after {
     stroke: currentColor;
 }
 
-/* 快捷键折叠面板 */
-.refactor-quiz .header-shortcuts-panel {
-    width: 100%;
-    max-height: 0;
+/* 快捷键弹窗遮罩 */
+.refactor-quiz .shortcuts-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 12, 16, 0.4);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     opacity: 0;
-    overflow: hidden;
-    transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, margin 0.3s ease, padding 0.3s ease;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
 }
 
-.refactor-quiz .app-header.has-shortcuts-open .header-shortcuts-panel {
-    max-height: 500px;
+.refactor-quiz .shortcuts-modal-overlay.is-open {
     opacity: 1;
-    margin-top: 18px;
-    padding-top: 18px;
+    pointer-events: auto;
+}
+
+/* 快捷键弹窗卡片 */
+.refactor-quiz .shortcuts-modal-card {
+    width: min(760px, calc(100vw - 32px));
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 32px;
+    box-shadow: var(--shadow-hover);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    transform: translateY(20px) scale(0.96);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.refactor-quiz .shortcuts-modal-overlay.is-open .shortcuts-modal-card {
+    transform: translateY(0) scale(1);
+}
+
+/* 弹窗 Header */
+.refactor-quiz .shortcuts-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 16px;
+}
+
+.refactor-quiz .shortcuts-modal-header h2 {
+    margin: 4px 0 0 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent-strong);
+}
+
+/* 弹窗 Footer */
+.refactor-quiz .shortcuts-modal-footer {
+    display: flex;
+    justify-content: center;
     border-top: 1px solid var(--border);
-    overflow: visible;
+    padding-top: 16px;
+}
+
+.refactor-quiz .shortcuts-tip {
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    font-weight: 700;
 }
 
 .refactor-quiz .shortcuts-grid {
@@ -2176,13 +2231,18 @@ body.refactor-page::after {
         margin-top: 4px;
     }
 
-    .refactor-quiz .app-header.has-shortcuts-open .header-shortcuts-panel {
-        max-height: 800px;
-    }
-
-    .refactor-quiz .shortcuts-grid {
+    /* 移动端快捷操作面板：将网格堆叠并启用内滚动 */
+    .refactor-quiz .shortcuts-modal-card .shortcuts-grid {
         grid-template-columns: 1fr;
         gap: 16px;
+        max-height: 50vh;
+        overflow-y: auto;
+        padding-right: 8px;
+    }
+
+    .refactor-quiz .shortcuts-modal-card {
+        padding: 24px;
+        gap: 18px;
     }
 
     .refactor-quiz .app-header h1 {

@@ -1289,25 +1289,30 @@ document.addEventListener('DOMContentLoaded', async function () {
         if (nextIndex !== null) renderQuestion(nextIndex);
     };
 
-    // 快捷操作指南面板切换
+    // 快捷操作指南弹窗开关逻辑
     const shortcutsToggleBtn = document.getElementById('shortcutsToggleBtn');
-    const headerShortcutsPanel = document.getElementById('headerShortcutsPanel');
-    const appHeader = document.querySelector('.app-header');
+    const shortcutsModal = document.getElementById('shortcutsModal');
+    const shortcutsModalClose = document.getElementById('shortcutsModalClose');
 
-    function toggleShortcutsPanel() {
-        if (!appHeader || !headerShortcutsPanel) return;
-        const isOpen = appHeader.classList.contains('has-shortcuts-open');
-        if (isOpen) {
-            appHeader.classList.remove('has-shortcuts-open');
-            headerShortcutsPanel.setAttribute('aria-hidden', 'true');
-        } else {
-            appHeader.classList.add('has-shortcuts-open');
-            headerShortcutsPanel.setAttribute('aria-hidden', 'false');
-        }
+    function toggleShortcutsModal() {
+        if (!shortcutsModal) return;
+        const isOpen = shortcutsModal.classList.contains('is-open');
+        setOverlayVisible(shortcutsModal, !isOpen);
     }
 
     if (shortcutsToggleBtn) {
-        shortcutsToggleBtn.addEventListener('click', toggleShortcutsPanel);
+        shortcutsToggleBtn.addEventListener('click', toggleShortcutsModal);
+    }
+    if (shortcutsModalClose) {
+        shortcutsModalClose.addEventListener('click', () => setOverlayVisible(shortcutsModal, false));
+    }
+    if (shortcutsModal) {
+        // 点击遮罩背景也可关闭弹窗
+        shortcutsModal.addEventListener('click', (e) => {
+            if (e.target === shortcutsModal) {
+                setOverlayVisible(shortcutsModal, false);
+            }
+        });
     }
 
     document.onkeydown = function (e) {
@@ -1319,10 +1324,11 @@ document.addEventListener('DOMContentLoaded', async function () {
         );
 
         if (e.key === 'Escape') {
-            // 如果快捷键面板处于打开状态，Esc 键将优先关闭面板
-            if (appHeader && appHeader.classList.contains('has-shortcuts-open')) {
+            // 如果快捷键弹窗处于打开状态，Esc 键将优先关闭它
+            if (shortcutsModal && shortcutsModal.classList.contains('is-open')) {
                 e.preventDefault();
-                toggleShortcutsPanel();
+                setOverlayVisible(shortcutsModal, false);
+                window.focus();
                 return;
             }
             if (notesDrawer && notesDrawer.classList.contains('is-open')) {
@@ -1342,10 +1348,10 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         const key = e.key.toUpperCase();
 
-        // 允许通过 H 键切换快捷键指南面板
+        // 允许通过 H 键切换快捷键指南弹窗
         if (key === 'H' && !isTyping) {
             e.preventDefault();
-            toggleShortcutsPanel();
+            toggleShortcutsModal();
             return;
         }
 

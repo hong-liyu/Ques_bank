@@ -38,67 +38,6 @@
                 </svg>
                 <span>快捷键 (H)</span>
             </button>
-
-            <!-- 折叠面板：展示详细按键对照表 -->
-            <div class="header-shortcuts-panel" id="headerShortcutsPanel" aria-hidden="true">
-                <div class="shortcuts-grid">
-                    <div class="shortcuts-group">
-                        <div class="group-title mono">答题选项操作 / OPTIONS</div>
-                        <div class="shortcut-item">
-                            <span class="key-cap">W</span>
-                            <span class="key-desc">选中 A 选项</span>
-                        </div>
-                        <div class="shortcut-item">
-                            <span class="key-cap">A</span>
-                            <span class="key-desc">选中 B 选项 / 判断题“正确”</span>
-                        </div>
-                        <div class="shortcut-item">
-                            <span class="key-cap">S</span>
-                            <span class="key-desc">选中 C 选项</span>
-                        </div>
-                        <div class="shortcut-item">
-                            <span class="key-cap">D</span>
-                            <span class="key-desc">选中 D 选项 / 判断题“错误”</span>
-                        </div>
-                    </div>
-                    
-                    <div class="shortcuts-group">
-                        <div class="group-title mono">切题与提交 / NAVIGATION</div>
-                        <div class="shortcut-item">
-                            <span class="key-cap">Q</span>
-                            <span class="key-desc">上一题</span>
-                        </div>
-                        <div class="shortcut-item">
-                            <span class="key-cap">E</span>
-                            <span class="key-desc">下一题</span>
-                        </div>
-                        <div class="shortcut-item">
-                            <span class="key-caps-combo"><span class="key-cap">Space</span> / <span class="key-cap">Enter</span></span>
-                            <span class="key-desc">确认选项 / 下一题 / 提交交卷</span>
-                        </div>
-                    </div>
-                    
-                    <div class="shortcuts-group">
-                        <div class="group-title mono">辅助功能 / UTILITIES</div>
-                        <div class="shortcut-item">
-                            <span class="key-cap">N</span>
-                            <span class="key-desc">打开/折叠本题便签</span>
-                        </div>
-                        <div class="shortcut-item">
-                            <span class="key-cap">R</span>
-                            <span class="key-desc">收藏当前题目 (管理收藏夹)</span>
-                        </div>
-                        <div class="shortcut-item">
-                            <span class="key-cap">C</span>
-                            <span class="key-desc">一键复制本题题干与选项</span>
-                        </div>
-                        <div class="shortcut-item">
-                            <span class="key-cap">Esc</span>
-                            <span class="key-desc">保存便签并关闭所有弹窗</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </header>
 
         <div class="main-layout">
@@ -276,6 +215,81 @@
             <div class="notes-drawer-footer">
                 <span class="notes-status-text" id="notesStatusText">已同步最新内容</span>
                 <button type="button" class="action-btn next-btn" id="notesSaveBtn">保存便签</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 键盘快捷键指南弹窗 -->
+    <div class="shortcuts-modal-overlay" id="shortcutsModal" aria-hidden="true">
+        <div class="shortcuts-modal-card" role="dialog" aria-modal="true" aria-labelledby="shortcutsModalTitle">
+            <div class="shortcuts-modal-header">
+                <div>
+                    <p class="quiz-picker-kicker mono">Keyboard Shortcuts</p>
+                    <h2 id="shortcutsModalTitle">键盘快捷操作指南</h2>
+                </div>
+                <button type="button" class="quiz-picker-close" id="shortcutsModalClose" aria-label="关闭">×</button>
+            </div>
+            
+            <div class="shortcuts-grid">
+                <div class="shortcuts-group">
+                    <div class="group-title mono">答题选项操作 / OPTIONS</div>
+                    <div class="shortcut-item">
+                        <span class="key-cap">W</span>
+                        <span class="key-desc">选中 A 选项</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <span class="key-cap">A</span>
+                        <span class="key-desc">选中 B 选项 / 判断题“正确”</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <span class="key-cap">S</span>
+                        <span class="key-desc">选中 C 选项</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <span class="key-cap">D</span>
+                        <span class="key-desc">选中 D 选项 / 判断题“错误”</span>
+                    </div>
+                </div>
+                
+                <div class="shortcuts-group">
+                    <div class="group-title mono">切题与提交 / NAVIGATION</div>
+                    <div class="shortcut-item">
+                        <span class="key-cap">Q</span>
+                        <span class="key-desc">上一题</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <span class="key-cap">E</span>
+                        <span class="key-desc">下一题</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <span class="key-caps-combo"><span class="key-cap">Space</span> / <span class="key-cap">Enter</span></span>
+                        <span class="key-desc">确认选项 / 下一题 / 提交交卷</span>
+                    </div>
+                </div>
+                
+                <div class="shortcuts-group">
+                    <div class="group-title mono">辅助功能 / UTILITIES</div>
+                    <div class="shortcut-item">
+                        <span class="key-cap">N</span>
+                        <span class="key-desc">打开/折叠本题便签</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <span class="key-cap">R</span>
+                        <span class="key-desc">收藏当前题目 (管理收藏夹)</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <span class="key-cap">C</span>
+                        <span class="key-desc">一键复制本题题干与选项</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <span class="key-cap">Esc</span>
+                        <span class="key-desc">保存便签并关闭所有弹窗</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="shortcuts-modal-footer">
+                <span class="shortcuts-tip mono">PRESS [H] OR [ESC] TO CLOSE</span>
             </div>
         </div>
     </div>
